@@ -36,14 +36,14 @@
     width:100%;max-width:430px;
     min-height:100dvh;
     display:flex;flex-direction:column;
-    padding:8px 10px 10px;
-    gap:8px;
+    padding:8px 10px 8px;
+    gap:7px;
     position:relative;
   }
   /* ---------- 상단 ---------- */
   header{
     display:flex;align-items:center;justify-content:space-between;
-    padding:6px 10px;
+    padding:4px 10px;
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
@@ -59,28 +59,53 @@
   }
   /* ---------- 적 진영: 아바타 전장 (전열/후열) ---------- */
   #enemyArea{
+    flex:1; /* 남는 세로 공간을 몬스터 진영이 흡수 — 위로 넓어진 전장 */
+    min-height:150px;
+    position:relative;
     display:flex;flex-direction:column;justify-content:flex-end;
-    min-height:138px;
-    padding:8px 8px 10px;
+    padding:12px 8px 10px;
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
   }
-  /* 후열: 작게, 위쪽, 살짝 흐리게 — 거리감 */
+  /* 3열 진영: 후후열(가장 멀리) → 중간열 → 전열 */
+  /* v0.11: 적은 수일 때도 가로로 퍼져 전장을 점유 (space-evenly), 다수일 때는 gap이 최소 간격 */
   .rowBack{
-    display:flex;justify-content:center;align-items:flex-end;gap:18px;
-    transform:scale(.78);opacity:.92;
-    margin-bottom:-10px;
+    display:flex;justify-content:space-evenly;align-items:flex-end;gap:6px;
+    transform:scale(.68);opacity:.84;
+    margin-bottom:-6px; /* v0.13: 겹침 완화 — 게이지 가독성 */
   }
-  /* 전열: 크게, 아래쪽 */
+  .rowMid{
+    display:flex;justify-content:space-evenly;align-items:flex-end;gap:7px;
+    transform:scale(.84);opacity:.93;
+    margin-bottom:-8px; /* v0.13: 겹침 완화 */
+  }
   .rowFront{
-    display:flex;justify-content:center;align-items:flex-end;gap:16px;
+    display:flex;justify-content:space-evenly;align-items:flex-end;gap:8px;
+  }
+  /* 마법사 원형 파동 예고: 적 진영 중앙의 점선 원 */
+  .wavePre{
+    position:absolute;left:50%;top:50%;
+    width:128px;height:128px;transform:translate(-50%,-50%);
+    border:2px dashed rgba(255,154,74,.75);border-radius:50%;
+    animation:preePulse 1.3s ease-in-out infinite;
+    pointer-events:none;z-index:5;
+  }
+  @keyframes preePulse{
+    0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.75}
+    50%{transform:translate(-50%,-50%) scale(1.12);opacity:1}
   }
   .mob{
     position:relative;
     display:flex;flex-direction:column;align-items:center;gap:3px;
     transition:opacity .3s;
   }
+  /* v0.13: 같은 열 안 사선 층위 — 짝수 번째가 살짝 위로, 바끼리 겹치지 않음 */
+  .rowFront .mob:nth-child(even){margin-bottom:10px;}
+  .rowMid .mob:nth-child(even){margin-bottom:8px;}
+  .rowBack .mob:nth-child(even){margin-bottom:7px;}
+  /* HP바/게이지에 어두운 외곽선 — 뒤 몸체 위에서도 읽힘 */
+  .mob .mini,.mob .gauge{box-shadow:0 0 0 1.5px rgba(13,10,22,.75);}
   .mob.dead{opacity:.15;filter:grayscale(1);}
   .mob.hit{animation:shake .25s;}
   @keyframes shake{
@@ -98,80 +123,90 @@
     animation:pulse 1s infinite;z-index:6;
   }
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-  .mob .mini{width:38px;height:4px;background:#171425;border-radius:3px;overflow:hidden;}
+  .mob .mini{width:48px;height:5px;background:#171425;border-radius:3px;overflow:hidden;}
   .mob .mini i{display:block;height:100%;background:var(--enemy-hp);border-radius:3px;transition:width .3s;}
   .mAv{position:relative;}
+  /* 대량 쇼케이스(18체): HP바 간소화로 지저분함 방지 */
+  #enemyArea.showcase .mob .mini{width:28px;height:3px;}
+  #enemyArea.showcase .mob .gauge{display:none;}
+  /* 행동 게이지: HP바와 구분되는 청회색, 만충 임박 시 주황 + 떨림 */
+  .mob .gauge{width:48px;height:3px;background:#171425;border-radius:2px;overflow:hidden;margin-top:1px;}
+  .mob .gauge i{display:block;height:100%;width:0%;background:#7e8fc0;border-radius:2px;}
+  .kind-boss .gauge{width:152px;}
+  .mob.ready .gauge i{background:#e08a3a;}
+  .mob.ready{animation:tremble .16s linear infinite;}
+  @keyframes tremble{0%,100%{transform:translateX(0)}50%{transform:translateX(1.7px)}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
   /* 슬라임: 말랑한 덩어리 */
-  .kind-slime .mAv{width:40px;height:30px;}
+  .kind-slime .mAv{width:52px;height:38px;}
   .slBody{
-    width:40px;height:30px;position:relative;
+    width:52px;height:38px;position:relative;
     background:radial-gradient(circle at 32% 26%, #a8ecb8, #4aa862 72%);
     border-radius:46% 46% 42% 42% / 64% 64% 38% 38%;
     animation:squish 1.9s ease-in-out infinite;
   }
   .slBody::before{
-    content:'';position:absolute;top:10px;left:11px;
-    width:5px;height:6px;background:#173021;border-radius:50%;
-    box-shadow:12px 0 #173021;
+    content:'';position:absolute;top:13px;left:14px;
+    width:6px;height:8px;background:#173021;border-radius:50%;
+    box-shadow:16px 0 #173021;
   }
   @keyframes squish{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.86) scaleX(1.07)}}
 
   /* 고블린 일반 */
-  .kind-goblin .mAv{width:42px;height:50px;animation:bob 2.2s ease-in-out infinite;}
+  .kind-goblin .mAv{width:54px;height:64px;animation:bob 2.2s ease-in-out infinite;}
   .gHead{
     position:absolute;top:0;left:50%;transform:translateX(-50%);
-    width:20px;height:17px;background:#8fae5a;border-radius:6px;z-index:2;
+    width:26px;height:22px;background:#8fae5a;border-radius:8px;z-index:2;
   }
   .gHead::before,.gHead::after{
-    content:'';position:absolute;top:3px;width:7px;height:7px;
+    content:'';position:absolute;top:4px;width:9px;height:9px;
     background:#8fae5a;border-radius:1px 5px 1px 5px;
   }
-  .gHead::before{left:-6px;transform:rotate(-18deg);}
-  .gHead::after{right:-6px;transform:rotate(18deg) scaleX(-1);}
+  .gHead::before{left:-7px;transform:rotate(-18deg);}
+  .gHead::after{right:-7px;transform:rotate(18deg) scaleX(-1);}
   .gTorso{
-    position:absolute;top:15px;left:50%;transform:translateX(-50%);
-    width:26px;height:25px;background:#6d5234;border-radius:6px 6px 8px 8px;
+    position:absolute;top:19px;left:50%;transform:translateX(-50%);
+    width:34px;height:33px;background:#6d5234;border-radius:8px 8px 10px 10px;
   }
   .gClub{
-    position:absolute;right:0;top:8px;width:6px;height:22px;
-    background:#5a4226;border-radius:3px 3px 2px 2px;transform:rotate(14deg);
+    position:absolute;right:0;top:10px;width:8px;height:29px;
+    background:#5a4226;border-radius:4px 4px 3px 3px;transform:rotate(14deg);
   }
 
   /* 고블린 정예: 더 크고 무장 */
-  .kind-elite .mAv{width:54px;height:64px;animation:bob 2.6s ease-in-out infinite;}
-  .kind-elite .gHead{top:5px;}
+  .kind-elite .mAv{width:70px;height:84px;animation:bob 2.6s ease-in-out infinite;}
+  .kind-elite .gHead{top:7px;}
   .eHelm{
     position:absolute;top:0;left:50%;transform:translateX(-50%);
-    width:24px;height:9px;background:#aab4c8;border-radius:6px 6px 0 0;z-index:3;
+    width:31px;height:12px;background:#aab4c8;border-radius:8px 8px 0 0;z-index:3;
   }
   .eHelm::after{
-    content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
-    width:6px;height:10px;background:#c84a3a;border-radius:3px;
+    content:'';position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    width:8px;height:13px;background:#c84a3a;border-radius:4px;
   }
   .eTorso{
-    position:absolute;top:20px;left:50%;transform:translateX(-50%);
-    width:34px;height:31px;background:#52607a;
-    border:2px solid #2e3850;border-radius:7px;
+    position:absolute;top:26px;left:50%;transform:translateX(-50%);
+    width:45px;height:41px;background:#52607a;
+    border:2.5px solid #2e3850;border-radius:9px;
   }
   .eBlade{
-    position:absolute;right:-3px;top:6px;width:7px;height:36px;
-    background:linear-gradient(#eef2fa,#9fb0cc);border-radius:3px;transform:rotate(16deg);
+    position:absolute;right:-4px;top:8px;width:9px;height:47px;
+    background:linear-gradient(#eef2fa,#9fb0cc);border-radius:4px;transform:rotate(16deg);
   }
 
   /* 박쥐: 날갯짓 */
-  .kind-bat .mAv{width:48px;height:28px;animation:hover 1.6s ease-in-out infinite;}
+  .kind-bat .mAv{width:62px;height:36px;animation:hover 1.6s ease-in-out infinite;}
   .bBody{
-    position:absolute;left:50%;top:6px;transform:translateX(-50%);
-    width:14px;height:17px;background:#4a3a5e;border-radius:7px;z-index:2;
+    position:absolute;left:50%;top:7px;transform:translateX(-50%);
+    width:18px;height:22px;background:#4a3a5e;border-radius:9px;z-index:2;
   }
   .bBody::before{
-    content:'';position:absolute;top:4px;left:2.5px;
-    width:3px;height:3px;background:#ff8a7d;border-radius:50%;
-    box-shadow:5.5px 0 #ff8a7d;
+    content:'';position:absolute;top:5px;left:3.5px;
+    width:4px;height:4px;background:#ff8a7d;border-radius:50%;
+    box-shadow:7px 0 #ff8a7d;
   }
-  .wing{position:absolute;top:5px;width:19px;height:15px;background:#3a2c4a;}
+  .wing{position:absolute;top:6px;width:25px;height:19px;background:#3a2c4a;}
   .wl{left:0;clip-path:polygon(100% 15%,0 0,22% 100%,100% 85%);transform-origin:right center;animation:flapL .5s ease-in-out infinite alternate;}
   .wr{right:0;clip-path:polygon(0 15%,100% 0,78% 100%,0 85%);transform-origin:left center;animation:flapR .5s ease-in-out infinite alternate;}
   @keyframes flapL{from{transform:rotate(10deg)}to{transform:rotate(-20deg)}}
@@ -179,34 +214,34 @@
   @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
   /* 거대 보스: 상단 공간을 점유하는 단독 아바타 */
-  .kind-boss .mAv{width:160px;height:114px;animation:breath 3s ease-in-out infinite;}
+  .kind-boss .mAv{width:196px;height:142px;animation:breath 3s ease-in-out infinite;}
   .bossBody{
     position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-    width:136px;height:98px;
+    width:168px;height:122px;
     background:radial-gradient(circle at 50% 26%, #5e2c50, #2a1230 76%);
     border:2px solid #6e3a5e;
     border-radius:42% 42% 30% 30% / 55% 55% 24% 24%;
   }
   .hornL,.hornR{
     position:absolute;top:-6px;width:0;height:0;z-index:2;
-    border-left:11px solid transparent;border-right:11px solid transparent;
-    border-bottom:28px solid #d8b06a;
+    border-left:14px solid transparent;border-right:14px solid transparent;
+    border-bottom:34px solid #d8b06a;
   }
-  .hornL{left:22px;transform:rotate(-24deg);}
-  .hornR{right:22px;transform:rotate(24deg);}
+  .hornL{left:28px;transform:rotate(-24deg);}
+  .hornR{right:28px;transform:rotate(24deg);}
   .eye{
-    position:absolute;top:32px;width:14px;height:9px;
+    position:absolute;top:40px;width:17px;height:11px;
     background:#ffd24a;border-radius:50%;
     box-shadow:0 0 9px #ffae3a;animation:blink 4.2s infinite;
   }
-  .el{left:40px;} .er{right:40px;}
+  .el{left:50px;} .er{right:50px;}
   .maw{
-    position:absolute;top:56px;left:50%;transform:translateX(-50%);
-    width:48px;height:13px;background:#160a18;border-radius:0 0 17px 17px;
+    position:absolute;top:70px;left:50%;transform:translateX(-50%);
+    width:58px;height:16px;background:#160a18;border-radius:0 0 21px 21px;
   }
   @keyframes breath{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
   @keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.12)}}
-  .kind-boss .mini{width:124px;height:6px;}
+  .kind-boss .mini{width:152px;height:7px;}
 
   /* 플로팅 텍스트 (기존 유지) */
   .float{
@@ -262,7 +297,7 @@
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
-    padding:7px 9px;
+    padding:8px 9px 9px; /* 공유 HP바 제거분 — 아바타 진영이 전부 사용 */
     position:relative;
     transition:border-color .25s, box-shadow .25s;
   }
@@ -271,34 +306,30 @@
     border-color:var(--gold);
     box-shadow:0 0 10px rgba(232,179,75,.4), inset 0 0 14px rgba(232,179,75,.08);
   }
-  #partyBar i.healflash{animation:healGlow .6s;}
-  @keyframes healGlow{
-    0%{filter:brightness(1)}40%{filter:brightness(1.9)}100%{filter:brightness(1)}
-  }
-  /* 아군 5인: 카드가 아닌 "동료 무리" — 레고풍 아바타 */
+  /* 아군 5인: 확대된 레고풍 아바타 무리 (v0.8: ~1.75배 + 디테일 강화) */
   #heroes{
     display:flex;justify-content:center;align-items:flex-end;
-    min-height:78px;
+    min-height:122px;
   }
   .ally{
     position:relative;
-    display:flex;flex-direction:column;align-items:center;gap:3px;
-    margin:0 -4px; /* 살짝 겹쳐진 무리 느낌 */
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    margin:0 -7px;
     transition:transform .15s;
   }
   .ally:nth-child(1){z-index:1;}
   .ally:nth-child(2){z-index:2;}
-  .ally:nth-child(3){z-index:3;} /* 중앙이 가장 앞 */
+  .ally:nth-child(3){z-index:3;}
   .ally:nth-child(4){z-index:2;}
   .ally:nth-child(5){z-index:1;}
-  .ally:nth-child(even) .av{margin-top:4px;} /* 미세한 높이차로 자연스러운 군집 */
+  .ally:nth-child(even) .av{margin-top:6px;}
   .ally.act{z-index:9;}
   .ally.act .av{
-    filter:drop-shadow(0 0 8px var(--gold)) brightness(1.3);
-    transform:translateY(-6px);
+    filter:drop-shadow(0 0 10px var(--gold)) brightness(1.3);
+    transform:translateY(-8px);
   }
   .av{
-    position:relative;width:44px;height:56px;
+    position:relative;width:76px;height:98px;
     animation:bob 2.4s ease-in-out infinite;
     transition:transform .15s, filter .2s;
   }
@@ -308,104 +339,193 @@
   .ally:nth-child(4) .av{animation-delay:.25s;}
   .ally:nth-child(5) .av{animation-delay:.65s;}
   .head{
-    position:absolute;top:2px;left:50%;transform:translateX(-50%);
-    width:19px;height:17px;background:#ecd2ae;border-radius:6px;z-index:2;
+    position:absolute;top:4px;left:50%;transform:translateX(-50%);
+    width:32px;height:28px;background:#ecd2ae;border-radius:9px;z-index:2;
   }
   .torso{
-    position:absolute;top:17px;left:50%;transform:translateX(-50%);
-    width:27px;height:28px;border-radius:7px 7px 9px 9px;z-index:1;
+    position:absolute;top:29px;left:50%;transform:translateX(-50%);
+    width:46px;height:44px;border-radius:11px 11px 13px 13px;z-index:1;
   }
-  .prop{position:absolute;z-index:3;}
-  .ally .mini{width:34px;height:4px;background:#171425;border-radius:3px;overflow:hidden;}
+  .legs{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:38px;height:18px;
+  }
+  .legs::before,.legs::after{
+    content:'';position:absolute;bottom:0;
+    width:15px;height:18px;border-radius:5px 5px 6px 6px;
+    background:var(--leg,#41395c);
+  }
+  .legs::before{left:1px;} .legs::after{right:1px;}
+  .prop,.prop2{position:absolute;z-index:3;}
+  .ally .mini{width:56px;height:5px;background:#171425;border-radius:3px;overflow:hidden;}
   .ally .mini i{display:block;height:100%;background:var(--hp);border-radius:3px;transition:width .3s;}
 
-  /* 전사: 붉은 갑주 + 치켜든 검 */
-  .t0 .torso{background:linear-gradient(#c25a50,#9a3e38);}
-  .t0 .prop{
-    right:-2px;top:3px;width:5px;height:27px;
-    background:linear-gradient(#eef2fa,#9fb0cc);border-radius:2px;transform:rotate(16deg);
+  /* 전사: 검 + 양어깨 장갑 + 전진 자세 */
+  .t0{--leg:#6e2a25;}
+  .t0 .torso{background:linear-gradient(#c25a50,#9a3e38);transform:translateX(-46%);}
+  .t0 .head{transform:translateX(-44%);}
+  .t0 .prop{ /* 치켜든 검 */
+    right:-2px;top:4px;width:8px;height:48px;
+    background:linear-gradient(#f2f6fc,#9fb0cc);border-radius:3px;transform:rotate(15deg);
   }
-  .t0 .prop::after{
-    content:'';position:absolute;bottom:6px;left:-4px;
-    width:13px;height:3px;background:#caa54a;border-radius:2px;
+  .t0 .prop::after{ /* 십자 손잡이 */
+    content:'';position:absolute;bottom:9px;left:-6px;
+    width:20px;height:5px;background:#caa54a;border-radius:2px;
   }
-  /* 마법사: 보라 로브 + 뾰족 모자 */
+  .t0 .prop2{ /* 양어깨 장갑 */
+    top:27px;left:9px;width:18px;height:13px;
+    background:#7e2e29;border-radius:5px;border:2px solid #5c1f1b;
+    box-shadow:38px 0 0 0 #7e2e29, 38px 0 0 2px #5c1f1b;
+  }
+  /* 마법사: 큰 모자 + 로브 + 발광 지팡이 */
+  .t1{--leg:#3c2470;}
   .t1 .torso{
-    background:linear-gradient(#7e54d4,#5a36a8);width:31px;
-    clip-path:polygon(16% 0,84% 0,100% 100%,0 100%);border-radius:0;
+    background:linear-gradient(#7e54d4,#5a36a8);width:54px;
+    clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);border-radius:0;
   }
-  .t1 .head::after{
-    content:'';position:absolute;top:-2px;left:-5px;
-    width:29px;height:4px;background:#51309a;border-radius:2px;
+  .t1 .torso::after{ /* 로브 단 장식 */
+    content:'';position:absolute;bottom:4px;left:8%;width:84%;height:5px;
+    background:#caa54a;opacity:.85;
   }
-  .t1 .prop{
-    top:-9px;left:50%;transform:translateX(-50%);
+  .t1 .head::after{ /* 모자 챙 */
+    content:'';position:absolute;top:-3px;left:-9px;
+    width:50px;height:7px;background:#51309a;border-radius:4px;
+  }
+  .t1 .prop{ /* 뾰족 모자 */
+    top:-15px;left:50%;transform:translateX(-50%) rotate(-4deg);
     width:0;height:0;
-    border-left:11px solid transparent;border-right:11px solid transparent;
-    border-bottom:14px solid #51309a;
+    border-left:17px solid transparent;border-right:17px solid transparent;
+    border-bottom:21px solid #51309a;
   }
-  /* 사제: 흰 로브 + 빛나는 고리 + 십자 문장 */
-  .t2 .torso{background:linear-gradient(#f2ecdc,#d8cfba);}
-  .t2 .torso::before{
-    content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
-    width:4px;height:14px;background:#c89a3a;border-radius:1px;
+  .t1 .prop2{ /* 발광 보주 지팡이 */
+    left:-6px;top:14px;width:7px;height:64px;
+    background:#6e4a2d;border-radius:3px;
   }
-  .t2 .torso::after{
-    content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);
-    width:11px;height:4px;background:#c89a3a;border-radius:1px;
+  .t1 .prop2::after{
+    content:'';position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+    width:15px;height:15px;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #ffd9a0, #ff8a3a);
+    box-shadow:0 0 9px rgba(255,150,70,.9);
+    animation:orbGlow 1.8s ease-in-out infinite;
   }
-  .t2 .prop{
-    top:-6px;left:50%;transform:translateX(-50%);
-    width:20px;height:7px;border:2.5px solid #e8c860;border-radius:50%;
-    box-shadow:0 0 6px rgba(232,200,96,.7);
+  @keyframes orbGlow{0%,100%{box-shadow:0 0 6px rgba(255,150,70,.7)}50%{box-shadow:0 0 13px rgba(255,170,90,1)}}
+  /* 사제: 밝은 로브 + 후광 + 십자 + 어깨 망토 */
+  .t2{--leg:#b8ae96;}
+  .t2 .torso{background:linear-gradient(#f4eede,#dcd2bc);}
+  .t2 .torso::before{ /* 십자 세로 */
+    content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    width:7px;height:24px;background:#c89a3a;border-radius:2px;
+  }
+  .t2 .torso::after{ /* 십자 가로 */
+    content:'';position:absolute;top:14px;left:50%;transform:translateX(-50%);
+    width:19px;height:7px;background:#c89a3a;border-radius:2px;
+  }
+  .t2 .prop{ /* 후광 */
+    top:-9px;left:50%;transform:translateX(-50%);
+    width:34px;height:11px;border:3px solid #e8c860;border-radius:50%;
+    box-shadow:0 0 10px rgba(232,200,96,.8);
     animation:halo 2.4s ease-in-out infinite;
   }
+  .t2 .prop2{ /* 어깨 망토 */
+    top:27px;left:50%;transform:translateX(-50%);
+    width:52px;height:11px;background:#e6dcc4;
+    border-radius:7px 7px 3px 3px;border-bottom:2px solid #c8b890;
+  }
   @keyframes halo{0%,100%{opacity:.8}50%{opacity:1}}
-  /* 수호자: 황금 갑주 + 큰 방패 */
-  .t3 .torso{background:linear-gradient(#e0b44e,#b08428);}
-  .t3 .prop{
-    left:-8px;top:18px;width:19px;height:24px;
+  /* 수호자: 중량감 체형 + 대형 탑방패 + 투구 */
+  .t3{--leg:#8a6a1d;}
+  .t3 .torso{background:linear-gradient(#e0b44e,#b08428);width:54px;height:46px;}
+  .t3 .prop{ /* 대형 탑방패 */
+    left:-15px;top:28px;width:32px;height:44px;
     background:linear-gradient(#f0d27a,#c89a3a);
-    border:2px solid #8a6a1d;border-radius:7px 7px 12px 12px;
+    border:3px solid #8a6a1d;border-radius:10px 10px 16px 16px;z-index:4;
   }
-  .t3 .prop::after{
-    content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);
-    width:5px;height:5px;background:#8a6a1d;border-radius:50%;
+  .t3 .prop::after{ /* 방패 문장 */
+    content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:9px;height:9px;background:#8a6a1d;border-radius:50%;
+    box-shadow:0 12px 0 -2px #8a6a1d;
   }
-  /* 궁수: 초록 후드 + 활 */
-  .t4 .torso{background:linear-gradient(#5a9a64,#3f7448);}
-  .t4 .head{background:#3f6f4a;border-radius:8px 8px 6px 6px;}
-  .t4 .prop{
-    right:-7px;top:11px;width:14px;height:29px;
-    border:3px solid #8a5a2d;border-left:none;
-    border-radius:0 16px 16px 0;
+  .t3 .prop2{ /* 투구 + 면갑 */
+    top:1px;left:50%;transform:translateX(-50%);
+    width:36px;height:16px;background:linear-gradient(#cdd6e4,#9aa7bc);
+    border-radius:10px 10px 3px 3px;z-index:5;
   }
-  #partyHpRow{
-    display:flex;align-items:center;gap:8px;margin-top:7px;
+  .t3 .prop2::after{
+    content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+    width:26px;height:4px;background:#5a6478;border-radius:2px;
   }
-  #partyHpRow .label{font-size:11px;color:var(--dim);white-space:nowrap;}
-  #partyBar{
-    flex:1;height:11px;background:#171425;border-radius:6px;overflow:hidden;
+  /* 궁수: 후드 + 활 + 등 뒤 화살통 + 사선 자세 */
+  .t4{--leg:#2e5436;}
+  .t4 .torso{background:linear-gradient(#5a9a64,#3f7448);transform:translateX(-50%) skewX(-4deg);}
+  .t4 .head{background:#3f6f4a;border-radius:11px 11px 8px 8px;}
+  .t4 .head::after{ /* 후드 그늘 */
+    content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+    width:22px;height:9px;background:#27452e;border-radius:5px;
   }
-  #partyBar i{
-    display:block;height:100%;background:var(--hp);border-radius:6px;
-    transition:width .3s, background .3s;
+  .t4 .prop{ /* 활 */
+    right:-13px;top:18px;width:24px;height:52px;
+    border:4px solid #8a5a2d;border-left:none;
+    border-radius:0 26px 26px 0;
   }
-  #partyHpNum{font-size:12px;color:var(--ink);min-width:54px;text-align:right;}
+  .t4 .prop2{ /* 등 뒤 화살통 */
+    left:3px;top:20px;width:12px;height:30px;
+    background:#6e4a2d;border-radius:4px;transform:rotate(-16deg);z-index:0;
+  }
+  .t4 .prop2::after{ /* 화살 깃 */
+    content:'';position:absolute;top:-7px;left:2px;
+    width:3px;height:8px;background:#d8554a;
+    box-shadow:5px -1px 0 #e8b34b;
+  }
+  /* 마법사 집중 상태: 점선 회전 링 */
+  .ally.charged .av::after{
+    content:'';position:absolute;inset:-8px;
+    border:2.5px dashed #ff9a4a;border-radius:50%;
+    animation:spinRing 2.6s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes spinRing{to{transform:rotate(360deg)}}
+  /* 저체력(30% 이하): HP바 경고 펄스 */
+  .ally.warn .mini i{background:var(--hp-low);}
+  .ally.warn .mini{box-shadow:0 0 7px rgba(216,85,74,.75);animation:warnPulse 1s ease-in-out infinite;}
+  @keyframes warnPulse{0%,100%{box-shadow:0 0 4px rgba(216,85,74,.5)}50%{box-shadow:0 0 9px rgba(216,85,74,.95)}}
+  /* 피격 리액션: 뒤로 밀리며 흔들림 (대상 영웅만) */
+  .ally.hurt{animation:hurtKick .32s ease-out;}
+  @keyframes hurtKick{
+    0%{transform:translate(0,0)}
+    28%{transform:translate(-4px,6px)}
+    55%{transform:translate(3px,3px)}
+    100%{transform:translate(0,0)}
+  }
+  /* HP 0: 쓰러진 상태 (사망/봉인 시스템은 미도입 — 시각 표현만) */
+  .ally.down .av{
+    animation:none;
+    transform:rotate(74deg) translate(8px,10px);
+    filter:grayscale(1) brightness(.55) opacity(.6);
+  }
+  .ally.down .mini{opacity:.4;}
+  /* 방패 상태 배지: 진영 우상단 부유 (공간 점유 없음) */
   #shieldTag{
+    position:absolute;top:-9px;right:10px;z-index:8;
     font-size:10px;color:#ffd97a;background:#3d3214;border:1px solid #6e5a23;
     border-radius:7px;padding:1px 7px;display:none;
   }
-  /* ---------- 최근 사건 티커 (고정 로그 패널 대체, 최대 2줄) ---------- */
+  /* ---------- 최근 사건 토스트 (v0.14): 몬스터 영역 좌측 상단 — 보드를 가리지 않음 ---------- */
   #ticker{
-    min-height:38px;
-    padding:4px 10px;
-    font-size:11.5px;
-    line-height:1.5;
-    color:var(--dim);
-    text-align:center;
+    position:absolute;
+    top:42px;  /* 헤더 바로 아래 = 몬스터 패널 좌상단 (몬스터는 하단 정렬이라 빈 여백) */
+    left:12px;
+    max-width:62%; /* 우측 몬스터/HP바/게이지를 과도하게 가리지 않음 */
+    display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+    pointer-events:none;z-index:22;
+    font-size:11px;line-height:1.4;color:var(--dim);
+    text-align:left;
   }
-  #ticker .tk{animation:tkIn .25s;}
+  #ticker .tk{
+    background:rgba(16,12,28,.84);
+    border-radius:8px;padding:2px 10px;
+    animation:tkIn .2s, tkOut .45s 1.7s forwards;
+  }
+  @keyframes tkOut{to{opacity:0;transform:translateY(-3px)}}
   @keyframes tkIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
   .good{color:#8fe0a4;}
   .bad{color:#f09a92;}
@@ -437,11 +557,18 @@
     z-index:30;
     overflow:visible;
   }
+  /* 행동 대기 배지 (R&D): 보드 좌하단 소형, 공간 점유 없음 */
+  #queueBadge{
+    position:absolute;left:9px;bottom:9px;
+    background:rgba(18,14,30,.8);color:var(--gold);
+    font-size:10px;padding:1px 8px;border-radius:7px;
+    pointer-events:none;z-index:21;display:none;
+  }
   /* 보드 위 매치 결과 플로팅 */
   .boardFloat{
     position:absolute;left:50%;
     transform:translateX(-50%);
-    font-size:14px;font-weight:800;
+    font-size:12.5px;font-weight:800; /* v0.14: 축소 — 조작 시야 보호 */
     color:var(--ink);
     text-shadow:0 1px 4px rgba(0,0,0,.8);
     pointer-events:none;z-index:25;
@@ -473,14 +600,17 @@
   <header>
     <span class="title">EMBLEM QUEST LAB</span>
     <span class="stage" id="stageLabel">전투 1 / 3</span>
-    <button id="restartBtn">↻ 재시작</button>
+    <button id="showcaseBtn">👁 진형</button>
+    <button id="restartBtn">↻</button>
   </header>
 
   <div id="enemyArea"></div>
+  <div id="ticker"></div>
 
   <div id="boardWrap">
     <div id="board"></div>
     <div id="banner"></div>
+    <div id="queueBadge"></div>
     <div id="overlay">
       <h2 id="ovTitle"></h2>
       <p id="ovText"></p>
@@ -490,15 +620,9 @@
 
   <div id="partyArea">
     <div id="heroes"></div>
-    <div id="partyHpRow">
-      <span class="label">파티 HP</span>
-      <div id="partyBar"><i></i></div>
-      <span id="partyHpNum"></span>
-      <span id="shieldTag"></span>
-    </div>
+    <span id="shieldTag"></span>
   </div>
 
-  <div id="ticker"></div>
   <svg id="fxLayer"></svg>
 </div>
 
@@ -525,12 +649,12 @@ const ACTS = {
   4: {1:{dmg:8, label:'사격'},      2:{dmg:13, label:'연속 사격'},  3:{dmg:21, label:'필살·관통시'}},   // 최저 HP 적 저격
 };
 const BATTLES = [
-  // 샘플 A — 소형 다수전: 전열 3 / 후열 2 (수용력 테스트)
+  // 샘플 A — 소형 다수전: 3열 라이브 데모 (전열2/중간2/후열1)
   {label:'전투 1', note:'샘플 A · 소형 다수', enemies:[
     {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
     {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'back'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'mid'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'mid'},
     {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'back'},
   ]},
   // 샘플 B — 정예+일반: 전열 중앙 정예 + 양옆 일반, 후열 박쥐 2
@@ -550,20 +674,30 @@ const BATTLES = [
 // (이번 버전은 5인 고정 — 4인 모드 실제 구현은 금지 범위)
 const PARTY = [0, 1, 2, 3, 4];
 
-const PARTY_MAX_HP = 100;
+// 영웅별 최대 HP (v0.9: 공유 HP 폐지 — 역할별 차등)
+const HERO_MAX = {0:38, 1:28, 2:30, 3:46, 4:32}; // 전사/마법사/사제/수호자/궁수
 const CHAIN_BONUS = 0.3; // 연쇄 1단계당 +30%
-const BOSS_BIG = 32;     // 미니 마왕 강공 피해 (v0.3: 26→32 상향)
+const BOSS_BIG = 32;       // (구) 강공 총량 기준치 — 공유 HP 시절 수치, 참조용 유지
+const BOSS_BIG_EACH = 14;  // v0.9 임시: 강공은 "전원 각 14 피해"로 전환 (개별 HP 구조 대응)
 const VICTORY_HEAL = 15; // 전투 승리 시 회복량 (v0.4: HP 흐름 정책, 최대 100 초과 불가)
 
 /* ====================== 상태 ====================== */
 let board = [];          // length 36, 값 0~4
 let sel = null;          // 선택된 셀 index
-let state = 'idle';      // idle | busy | over
+let state = 'idle';      // idle | over (v0.13: busy는 boardBusy로 분리)
+let boardBusy = false;   // 보드가 변하는 중 (교환/삭제/낙하/연쇄) — 조작 잠금의 유일한 근거
+let heroQueueBusy = false; // 영웅 행동 연출 큐 실행 중 — 조작과 무관
+// 조작 허용 조건: 전투 진행 중 + 보드 안정 + 쇼케이스 아님
+function canPlay(){ return state!=='over' && !boardBusy && !showcase; }
 let battleIdx = 0;
 let enemies = [];
-let partyHp = PARTY_MAX_HP;
+let heroHp = {};         // 영웅별 현재 HP: {typeId: currentHp}
+function initHeroHp(){ PARTY.forEach(t=>{ heroHp[t] = HERO_MAX[t]; }); }
+function aliveHeroes(){ return PARTY.filter(t=>heroHp[t] > 0); }
 let shieldRed = 0;       // 이번 라운드 적 공격 감소율
 let shieldCounter = 0;   // 이번 라운드 반격 피해 (수호자 5매치)
+let mageCharge = null;   // 마법사 집중 상태: {dmg} — 다음 불꽃 매치에 원형 파동
+let showcase = false;    // 진형 쇼케이스 표시 중
 let actionQueue = [];
 let bossTurn = 0;
 
@@ -582,6 +716,7 @@ function addLog(msg, cls){
   el.textContent = msg;
   t.appendChild(el);
   while(t.children.length > 2) t.removeChild(t.firstChild);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 2200); // 자동 소멸 — 공간 점유 없음
 }
 
 // 중요 이벤트 배너: 마왕 예고, 방패 감소 등 (자동 소멸)
@@ -599,7 +734,7 @@ function floatBoard(text, cls, slot){
   const wrap = $('#boardWrap');
   const f = document.createElement('div');
   f.className = 'boardFloat ' + (cls||'');
-  f.style.top = (14 + (slot%4)*13) + '%';
+  f.style.top = (3 + (slot%3)*9) + '%'; // v0.14: 보드 최상단 가장자리만 사용
   f.textContent = text;
   wrap.appendChild(f);
   setTimeout(()=>f.remove(), 950);
@@ -668,6 +803,192 @@ function drawGuardRing(){
   fx.appendChild(rect);
   rect.animate([{opacity:1, strokeWidth:'2.5'},{opacity:0, strokeWidth:'5'}], {duration:550, fill:'forwards'});
   setTimeout(()=>rect.remove(), 580);
+}
+
+// 마법사 원형 파동: 적 진영 중앙에서 원형 충격파가 확산 (직선 행동선과 구별되는 연출)
+function drawWave(){
+  const fx = $('#fxLayer');
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const a = app.getBoundingClientRect();
+  const e = $('#enemyArea').getBoundingClientRect();
+  const cx = e.left - a.left + e.width/2;
+  const cy = e.top - a.top + e.height/2;
+  // 발사선: 마법사 → 적 진영 중앙 (짧게)
+  drawLine(heroChipEl(1), $('#enemyArea'), '#ff9a4a');
+  // 확산 원 2겹: 채움 + 테두리
+  for(let k=0; k<2; k++){
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', 18);
+    c.setAttribute('fill', k===0 ? 'rgba(255,130,60,.28)' : 'none');
+    c.setAttribute('stroke', '#ff9a4a');
+    c.setAttribute('stroke-width', k===0 ? 1.5 : 3.5);
+    c.style.transformBox = 'fill-box';
+    c.style.transformOrigin = 'center';
+    fx.appendChild(c);
+    c.animate(
+      [{transform:'scale(.25)', opacity:1},{transform:'scale('+(9+k*2)+')', opacity:0}], // v0.11: 확대된 진영 커버
+      {duration:520 + k*90, easing:'ease-out', fill:'forwards'}
+    );
+    setTimeout(()=>c.remove(), 650 + k*90);
+  }
+}
+
+/* ══ 행동선 문법 (v0.12) ══
+   기본 공격선  = drawStrikeLine : 직선/완만한 곡선 — 빠르고 명확
+   점선 행동선  = drawAimLine    : 예고/조준/집중 — 느린 맥동, 피해 없음
+   번개형      = drawBoltLine   : 특수 스킬 전용 (마왕의 균열 등) — 지그재그 ══ */
+
+/* ── 기본 공격선: 완만한 2차 곡선 (스킬처럼 보이지 않는 단순 타격) ── */
+function drawStrikeLine(fromEl, toEl, color, blocked){
+  const fx = $('#fxLayer');
+  if(!fromEl || !toEl) return;
+  while(fx.children.length >= 12) fx.removeChild(fx.firstChild);
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [x1,y1] = centerOf(fromEl);
+  const [x2,y2] = centerOf(toEl);
+  // 중점에서 수직 방향으로 살짝 휘는 고정 곡률 (지터 없음 — 기본기다움)
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const dx = x2-x1, dy = y2-y1;
+  const len0 = Math.hypot(dx,dy) || 1;
+  const bend = 14; // 완만한 곡률
+  const cx = mx + (-dy/len0)*bend;
+  const cy = my + (dx/len0)*bend;
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d', 'M'+x1.toFixed(1)+','+y1.toFixed(1)+' Q'+cx.toFixed(1)+','+cy.toFixed(1)+' '+x2.toFixed(1)+','+y2.toFixed(1));
+  p.setAttribute('fill','none');
+  p.setAttribute('stroke', blocked ? '#d87a8a' : (color || '#e0504a'));
+  p.setAttribute('stroke-width','3.5');
+  p.setAttribute('stroke-linecap','round');
+  p.setAttribute('opacity','0.95');
+  fx.appendChild(p);
+  const len = p.getTotalLength();
+  p.setAttribute('stroke-dasharray', len);
+  p.setAttribute('stroke-dashoffset', len);
+  p.animate([{strokeDashoffset:len},{strokeDashoffset:0}], {duration:150, fill:'forwards'});
+  p.animate([{opacity:.95},{opacity:0}], {duration:200, delay:200, fill:'forwards'});
+  setTimeout(()=>p.remove(), 430); // 빠르게 소멸 — 실시간 템포 보호
+}
+
+/* ── 점선 행동선: 예고/조준 (피해 미발생을 맥동으로 표현, 호출자가 제거 책임) ── */
+let aimLines = [];
+function drawAimLine(fromEl, toEl, color){
+  const fx = $('#fxLayer');
+  if(!fromEl || !toEl) return null;
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [x1,y1] = centerOf(fromEl);
+  const [x2,y2] = centerOf(toEl);
+  const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
+  ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+  ln.setAttribute('stroke', color || '#d8554a');
+  ln.setAttribute('stroke-width','2.5');
+  ln.setAttribute('stroke-dasharray','6 7');
+  ln.setAttribute('stroke-linecap','round');
+  fx.appendChild(ln);
+  ln.animate([{opacity:.85},{opacity:.3}], {duration:650, direction:'alternate', iterations:Infinity});
+  aimLines.push(ln);
+  return ln;
+}
+function clearAimLines(){
+  aimLines.forEach(l=>{ if(l.parentNode) l.remove(); });
+  aimLines = [];
+}
+
+/* ── 번개형 행동선: 특수 스킬 전용 (현재 사용처: 마왕의 균열 일격) ── */
+function drawBoltLine(fromEl, toEl, blocked){
+  const fx = $('#fxLayer');
+  if(!fromEl || !toEl) return;
+  while(fx.children.length >= 10) fx.removeChild(fx.firstChild);
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [x1,y1] = centerOf(fromEl);
+  const [x2,y2] = centerOf(toEl);
+  // 중간점 2개에 좌우 지터 → 찢는 듯한 번개 형태
+  const pts = [[x1,y1]];
+  for(let k=1; k<=2; k++){
+    const t = k/3;
+    pts.push([
+      x1 + (x2-x1)*t + (Math.random()*28 - 14),
+      y1 + (y2-y1)*t + (Math.random()*16 - 8)
+    ]);
+  }
+  pts.push([x2,y2]);
+  const pl = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  pl.setAttribute('points', pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '));
+  pl.setAttribute('fill','none');
+  pl.setAttribute('stroke', blocked ? '#d87a8a' : '#e0504a'); // 위협적 적색 계열
+  pl.setAttribute('stroke-width','3.5');
+  pl.setAttribute('stroke-linejoin','round');
+  pl.setAttribute('stroke-linecap','round');
+  pl.setAttribute('opacity','0.95');
+  fx.appendChild(pl);
+  const len = pl.getTotalLength();
+  pl.setAttribute('stroke-dasharray', len);
+  pl.setAttribute('stroke-dashoffset', len);
+  pl.animate([{strokeDashoffset:len},{strokeDashoffset:0}], {duration:170, fill:'forwards'});
+  pl.animate([{opacity:.95},{opacity:0}], {duration:220, delay:250, fill:'forwards'});
+  setTimeout(()=>pl.remove(), 500); // 0.5초 내 소멸 — 보드를 가리지 않음
+}
+
+/* ── 방패 임팩트: 공격선이 닿는 지점의 황금 보호막 파열 ── */
+function drawBlockFlash(toEl){
+  const fx = $('#fxLayer');
+  if(!toEl) return;
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [cx,cy] = centerOf(toEl);
+  const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',16);
+  c.setAttribute('fill','rgba(232,179,75,.18)');
+  c.setAttribute('stroke','#ffd97a');
+  c.setAttribute('stroke-width','3');
+  c.style.transformBox = 'fill-box';
+  c.style.transformOrigin = 'center';
+  fx.appendChild(c);
+  c.animate([{transform:'scale(.4)',opacity:1},{transform:'scale(1.7)',opacity:0}],
+    {duration:340, easing:'ease-out', fill:'forwards'});
+  setTimeout(()=>c.remove(), 380);
+}
+
+/* ── 마왕 강공 (C안: 암흑 파동 + 전원 타격선 혼합) ── */
+function drawDarkWave(fromEl){
+  const fx = $('#fxLayer');
+  if(!fromEl) return;
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [cx,cy] = centerOf(fromEl);
+  for(let k=0; k<2; k++){
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',cx); c.setAttribute('cy',cy); c.setAttribute('r',22);
+    c.setAttribute('fill', k===0 ? 'rgba(120,50,140,.30)' : 'none');
+    c.setAttribute('stroke', '#a04ad0');
+    c.setAttribute('stroke-width', k===0 ? 1.5 : 4);
+    c.style.transformBox = 'fill-box';
+    c.style.transformOrigin = 'center';
+    fx.appendChild(c);
+    c.animate(
+      [{transform:'scale(.25)', opacity:1},{transform:'scale('+(10+k*2)+')', opacity:0}], // v0.11: 강공 파동도 확대
+      {duration:560 + k*100, easing:'ease-out', fill:'forwards'}
+    );
+    setTimeout(()=>c.remove(), 700 + k*100);
+  }
+}
+
+/* ── 피격 영웅 리액션: 클래스 토글 (적용 후 자동 제거) ── */
+function hurtHero(typeId){
+  const el = heroChipEl(typeId);
+  if(!el) return;
+  el.classList.add('hurt');
+  setTimeout(()=>el.classList.remove('hurt'), 340);
 }
 
 // 플로팅 텍스트 연출: 대상 요소 위에 피해/회복/방어 수치를 띄운다
@@ -813,6 +1134,7 @@ function monsterAvatar(kind){
 function renderEnemies(hitIdx, hitAll){
   const area = $('#enemyArea');
   area.innerHTML = '';
+  area.classList.remove('showcase');
   const mk = (e,i)=>{
     const d = document.createElement('div');
     d.className = 'mob kind-'+e.kind
@@ -824,39 +1146,66 @@ function renderEnemies(hitIdx, hitAll){
     d.innerHTML =
       (e.charging ? '<div class="intent">⚡ 강공 준비</div>' : '') +
       monsterAvatar(e.kind) +
-      '<div class="mini"><i style="width:'+pct+'%"></i></div>';
+      '<div class="mini"><i style="width:'+pct+'%"></i></div>' +
+      '<div class="gauge"><i style="width:'+Math.min(100, e.gauge||0)+'%"></i></div>';
     return d;
   };
-  // 후열(위, 작게) → 전열(아래, 크게): 진영 거리감
+  // 3열: 후후열(위, 가장 작게) → 중간열 → 전열(아래, 크게)
   const back = document.createElement('div'); back.className = 'rowBack';
+  const mid = document.createElement('div'); mid.className = 'rowMid';
   const front = document.createElement('div'); front.className = 'rowFront';
-  enemies.forEach((e,i)=>{ (e.row==='back' ? back : front).appendChild(mk(e,i)); });
+  enemies.forEach((e,i)=>{
+    (e.row==='back' ? back : e.row==='mid' ? mid : front).appendChild(mk(e,i));
+  });
   if(back.children.length) area.appendChild(back);
+  if(mid.children.length) area.appendChild(mid);
   area.appendChild(front);
+  // 마법사 집중 중이면 원형 파동 예고 표시
+  if(mageCharge){
+    const pre = document.createElement('div');
+    pre.className = 'wavePre';
+    area.appendChild(pre);
+  }
+}
+
+/* ── 수용력 쇼케이스: 3열 × 6 = 18체 시각 테스트 (전투와 무관한 표시 전용) ── */
+function renderShowcase(){
+  const area = $('#enemyArea');
+  area.innerHTML = '';
+  area.classList.add('showcase'); // 대량 표시: HP바 간소화
+  ['rowBack','rowMid','rowFront'].forEach(cls=>{
+    const r = document.createElement('div'); r.className = cls;
+    for(let i=0;i<6;i++){
+      const d = document.createElement('div');
+      d.className = 'mob kind-slime';
+      d.innerHTML = monsterAvatar('slime') + '<div class="mini"><i style="width:100%"></i></div>';
+      r.appendChild(d);
+    }
+    area.appendChild(r);
+  });
 }
 
 function renderParty(actType){
   const h = $('#heroes');
   h.innerHTML = '';
-  // PARTY 배열 기반 아바타 렌더링: 직업명/역할 텍스트 없이 실루엣·소품·색으로 구분
-  // 아바타별 미니 HP바: 현재는 파티 공유 HP를 비추는 자리표시 — 향후 개별 HP 수납 공간 확인용
-  const pct0 = Math.max(0, partyHp/PARTY_MAX_HP*100);
+  // 영웅별 개별 HP 렌더링: 미니바가 실제 currentHp/maxHp 반영
   PARTY.forEach(typeId=>{
+    const cur = Math.max(0, heroHp[typeId]);
+    const max = HERO_MAX[typeId];
+    const ratio = cur / max;
     const d = document.createElement('div');
-    d.className = 'ally t'+typeId + (actType===typeId?' act':'');
+    d.className = 'ally t'+typeId
+      + (actType===typeId?' act':'')
+      + (mageCharge && typeId===1 ? ' charged':'')
+      + (cur<=0 ? ' down' : ratio<=0.3 ? ' warn' : ''); // 쓰러짐 / 저체력 경고
     d.dataset.type = typeId;
     d.innerHTML =
-      '<div class="av"><div class="prop"></div><div class="head"></div><div class="torso"></div></div>' +
-      '<div class="mini"><i style="width:'+pct0+'%"></i></div>';
+      '<div class="av"><div class="prop2"></div><div class="prop"></div><div class="head"></div><div class="torso"></div><div class="legs"></div></div>' +
+      '<div class="mini"><i style="width:'+(ratio*100)+'%"></i></div>';
     h.appendChild(d);
   });
-  const pct = Math.max(0, partyHp/PARTY_MAX_HP*100);
-  const bar = $('#partyBar i');
-  bar.style.width = pct+'%';
-  bar.style.background = pct<=30 ? 'var(--hp-low)' : 'var(--hp)';
-  $('#partyHpNum').textContent = Math.max(0,partyHp)+' / '+PARTY_MAX_HP;
   const tag = $('#shieldTag');
-  // 방패 효과 가시화: 활성 시 파티 영역 외곽선 + 상태 문구, 소모 시 자동 제거
+  // 방패 효과(임시 정책: 파티 전체 보호) 가시화
   $('#partyArea').classList.toggle('shielded', shieldRed>0);
   if(shieldRed>0){
     tag.style.display='inline-block';
@@ -881,9 +1230,17 @@ function queueAction(type, size, chain){
   actionQueue.push({type, tier, mult, chain});
 }
 
-async function executeActions(){
-  for(const a of actionQueue){
-    if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) continue;
+// 행동 대기 배지 갱신 (R&D 표시)
+function updateQueueBadge(){
+  const b = $('#queueBadge');
+  const n = actionQueue.length;
+  if(n>0){ b.style.display='block'; b.textContent='행동 대기 '+n; }
+  else b.style.display='none';
+}
+
+// 영웅 행동 1건 실행 (연출 포함) — 실행 시점에 대상 생존 재확인
+async function performHeroAction(a){
+    if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) return;
     renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
     const spec = ACTS[a.type][a.tier];
 
@@ -892,48 +1249,71 @@ async function executeActions(){
       if(tgt){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
-        addLog('전사가 '+tgt.name+'에게 '+dmg+' 피해. ('+spec.label+')', 'good');
-        renderEnemies(enemies.indexOf(tgt));
+        renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+행동선으로 전달
         drawLine(heroChipEl(0), enemyEl(enemies.indexOf(tgt)), '#aebcdc'); // 전사: 퍼즐판 관통 행동선
         floatText(enemyEl(enemies.indexOf(tgt)), '-'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
     }
-    else if(a.type===1){ // 마법사: 전체 공격 — 모든 적이 짧게 피해 반응
-      const dmg = Math.round(spec.dmg * a.mult);
+    else if(a.type===1){ // 마법사 v0.8: 집중 → 예고 → 원형 파동 (직업 개성 1차 프로토타입)
       const targets = aliveEnemies();
-      targets.forEach(e=>{ e.hp -= dmg; });
-      addLog('마법사가 모든 적에게 '+dmg+' 피해. ('+spec.label+')', 'good');
-      renderEnemies(null, true); // hitAll: 전 적 흔들림
-      targets.forEach(e=>{
-        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#e0633e'); // 마법사: 전 적으로 에너지선
-        floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
-        if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
-      });
+      if(mageCharge){
+        // 집중 해방: 비축 마력 + 현재 위력의 원형 파동
+        const dmg = mageCharge.dmg + Math.round(spec.dmg * a.mult);
+        mageCharge = null;
+        drawWave(); // 원형 확산 폭발 연출
+        targets.forEach(e=>{ e.hp -= dmg; });
+        banner('💥 원형 파동! 모든 적에게 '+dmg+' 피해', 'boss');
+        addLog('원형 파동! 모든 적에게 '+dmg+' 피해', 'gold');
+        renderEnemies(null, true);
+        targets.forEach(e=>{
+          floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
+          if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+        });
+      } else if(a.tier >= 2){
+        // 4매치 이상: 즉시 공격 대신 집중 (마력 비축)
+        mageCharge = { dmg: Math.round(spec.dmg * a.mult) };
+        banner('🔮 마법사 집중! 다음 불꽃 매치에 원형 파동', 'shield');
+        addLog('마법사가 마력을 모은다... ('+spec.label+' 비축 '+mageCharge.dmg+')', 'gold');
+        renderParty(a.type);   // 집중 링 표시
+        renderEnemies();       // 적 진영에 예고 원 표시
+        floatText(heroChipEl(1), '🔮 집중', 'guard');
+      } else {
+        // 3매치: 기존 즉시 광역
+        const dmg = Math.round(spec.dmg * a.mult);
+        targets.forEach(e=>{ e.hp -= dmg; });
+        renderEnemies(null, true); // 일반 광역: 플로팅으로 전달
+        targets.forEach(e=>{
+          drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#e0633e');
+          floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
+          if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+        });
+      }
     }
-    else if(a.type===2){ // 사제: 회복 — HP바 플래시 + 회복 수치 플로팅
+    else if(a.type===2){ // 사제 v0.9: HP 비율이 가장 낮은 아군 우선 회복
       const heal = Math.round(spec.heal * a.mult);
-      const before = partyHp;
-      partyHp = Math.min(PARTY_MAX_HP, partyHp + heal);
-      addLog('사제가 파티 HP '+(partyHp-before)+' 회복. ('+spec.label+')', 'good');
-      renderParty(a.type);
-      const bar = $('#partyBar i');
-      bar.classList.add('healflash');
-      drawLine(heroChipEl(2), $('#partyBar'), '#58b878'); // 사제: 회복 파동
-      setTimeout(()=>bar.classList.remove('healflash'), 650); // 연출 클래스 제거
-      floatText($('#partyArea'), '+'+(partyHp-before), 'heal');
+      const alive = aliveHeroes();
+      if(alive.length){
+        const tgt = alive.reduce((m,t)=>
+          (heroHp[t]/HERO_MAX[t]) < (heroHp[m]/HERO_MAX[m]) ? t : m, alive[0]);
+        const before = heroHp[tgt];
+        heroHp[tgt] = Math.min(HERO_MAX[tgt], heroHp[tgt] + heal);
+        const gained = heroHp[tgt] - before;
+        renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달
+        drawLine(heroChipEl(2), heroChipEl(tgt), '#58b878'); // 회복선: 사제 → 회복 대상 영웅
+        floatText(heroChipEl(tgt), '+'+gained, 'heal');      // 누가 회복되었는지 직접 표시
+      }
     }
-    else if(a.type===3){ // 수호자: 피해 감소 — 파티 영역 방어막 표시 (+5매치 반격)
+    else if(a.type===3){ // 수호자: 피해 감소 — v0.12: 6초 지속 창 (실시간 대응)
       shieldRed = Math.max(shieldRed, spec.red);
-      let msg = '수호자가 방어 태세! 피해 '+Math.round(spec.red*100)+'% 감소. ('+spec.label+')';
+      shieldUntil = Date.now() + SHIELD_MS;
       if(spec.counter){
         shieldCounter = Math.max(shieldCounter, Math.round(spec.counter * a.mult));
-        msg += ' 반격 '+shieldCounter+' 준비.';
       }
-      addLog(msg, 'shield');
+      // 방어 상태는 배지("방어 중 · N% 감소")+황금 링이 상시 전달 — 토스트 X
       renderParty(a.type); // shielded 외곽선 즉시 반영
-      drawGuardRing(); // 수호자: 파티를 감싸는 보호 링
-      floatText($('#partyArea'), '🛡 방어', 'guard');
+      drawGuardRing(); // 임시 정책: 보호는 "파티 전체" — 링이 진영을 감싼다
+      floatText(heroChipEl(3), '🛡 방어', 'guard');
     }
     else if(a.type===4){ // 궁수: 최저 HP 적 저격 — 표식 + 타격 반응
       const pool = aliveEnemies();
@@ -941,68 +1321,214 @@ async function executeActions(){
       if(tgt){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
-        addLog('궁수가 '+tgt.name+'에게 '+dmg+' 피해. ('+spec.label+')', 'good');
-        renderEnemies(enemies.indexOf(tgt));
+        renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+점선으로 전달
         drawLine(heroChipEl(4), enemyEl(enemies.indexOf(tgt)), '#b48ae0', true); // 궁수: 점선 관통선
         floatText(enemyEl(enemies.indexOf(tgt)), '🎯 -'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
     }
-    await delay(420);
+}
+
+/* ── 영웅 행동 큐 프로세서 (v0.13): 보드와 독립 — 조작을 막지 않는다 ──
+   매치가 만든 행동을 0.45초 간격으로 순차 재생. 큐 실행 중 새 매치 → 뒤에 이어 쌓임 */
+const HERO_ACTION_GAP = 450; // 0.4~0.55초 권장 범위
+async function processHeroActions(){
+  if(heroQueueBusy) return;
+  heroQueueBusy = true;
+  while(actionQueue.length){
+    if(state==='over'){ actionQueue = []; break; } // 승리/패배 후 결과 뒤집기 방지
+    const a = actionQueue.shift();
+    updateQueueBadge();
+    await performHeroAction(a);
+    if(aliveEnemies().length===0){
+      actionQueue = [];
+      updateQueueBadge();
+      heroQueueBusy = false;
+      await onBattleWon();
+      return;
+    }
+    await delay(HERO_ACTION_GAP);
   }
-  actionQueue = [];
+  heroQueueBusy = false;
+  updateQueueBadge();
   renderParty(); // act 강조 클래스 해제 (행동 종료)
 }
 
-async function enemyTurn(){
+// 적 공격 대상 선정 (임시 우선순위): 수호자 생존 → 전사 생존 → 최저 HP 생존 영웅
+// 향후 몬스터별 타겟팅으로 확장 가능하도록 단일 지점으로 분리
+function pickDefender(){
+  const alive = aliveHeroes();
+  if(!alive.length) return null;
+  if(heroHp[3] > 0) return 3; // 수호자
+  if(heroHp[0] > 0) return 0; // 전사
+  return alive.reduce((m,t)=> heroHp[t]<heroHp[m] ? t : m, alive[0]);
+}
+
+/* ══ 실시간 행동 게이지 엔진 (v0.12) ══
+   - 100ms 틱: 게이지 증가, 만충 시 공격 큐 투입
+   - 큐는 150ms 간격으로 순차 처리 (다수전 연출 폭주 방지)
+   - 게이지는 퍼즐 해소 중에도 계속 흐른다 (전장이 멈추지 않음)
+   - 정지 조건: 승리/패배/전환(state==='over'), 쇼케이스 표시 중 ══ */
+const TICK_MS = 100;
+const SHIELD_MS = 6000;     // v0.12 임시: 방패 효과는 6초 지속 (페이즈 개념 소멸로 시간제 전환)
+const BOSS_PREP_MS = 2600;  // 마왕 강공 준비 시간 — 방패 블록을 찾을 여유
+const SPEEDS = {slime:9, goblin:12, bat:17, elite:8, boss:11}; // %/초 (임시값)
+
+let shieldUntil = 0;
+let attackQueue = [];
+let attackBusy = false;
+
+function queueAttack(e, big){
+  attackQueue.push({e, big});
+  processAttacks();
+}
+
+async function processAttacks(){
+  if(attackBusy) return;
+  attackBusy = true;
+  while(attackQueue.length){
+    const job = attackQueue.shift();
+    if(state==='over') break;
+    if(job.e.hp<=0) continue;
+    if(aliveHeroes().length===0) break;
+    if(job.big) await bossBigAttack(job.e);
+    else await enemyAttack(job.e);
+    await delay(150); // 동시 만충 시 짧은 시차 처리
+  }
+  attackBusy = false;
+}
+
+// 일반 공격: 완만한 곡선 타격선 → 임팩트 → 개별 피해
+async function enemyAttack(e){
+  const ei = enemies.indexOf(e);
+  const tgt = pickDefender();
+  if(tgt===null) return;
+  const raw = e.atk;
+  const eff = Math.round(raw * (1 - shieldRed));
+  const blocked = shieldRed>0 && eff<raw;
+  drawStrikeLine(enemyEl(ei), heroChipEl(tgt), '#e0504a', blocked);
+  await delay(160);
+  if(blocked) drawBlockFlash(heroChipEl(tgt));
+  const prevHp = heroHp[tgt];
+  heroHp[tgt] -= eff;
+  if(prevHp > 0 && heroHp[tgt] <= 0) addLog('💔 '+TYPES[tgt].hero+'이(가) 쓰러졌다!', 'boss'); // 강한 정보
+  // 일반 피해/막힘: 대상 플로팅("-N" / "🛡 raw→eff")이 전달 — 토스트 X
+  renderParty();
+  hurtHero(tgt);
+  floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+  if(shieldCounter>0){
+    e.hp -= shieldCounter;
+    renderEnemies(enemies.indexOf(e));
+    floatText(enemyEl(enemies.indexOf(e)), '⚔ -'+shieldCounter, 'guard'); // 반격: 플로팅
+    if(e.hp<=0){
+      addLog(e.name+' 처치!', 'gold');
+      if(aliveEnemies().length===0){ await onBattleWon(); return; }
+    }
+  }
+  if(aliveHeroes().length===0){
+    clearAimLines();
+    onDefeat();
+  }
+}
+
+// 마왕 강공 준비: 점선 조준선(전원) + 붉은 펄스 — 보고 대응하는 공격
+function startBossPrep(e){
+  e.charging = true;
+  e.prepEnd = Date.now() + BOSS_PREP_MS;
+  banner('😈 미니 마왕이 어둠을 모은다!', 'boss');
+  addLog('미니 마왕이 어둠을 모은다. 강공이 온다 — 방패를!', 'boss');
+  renderEnemies();
+  const ei = enemies.indexOf(e);
+  aliveHeroes().forEach(t=>drawAimLine(enemyEl(ei), heroChipEl(t), '#d8554a'));
+}
+
+// 마왕 강공 (C안 유지): 암흑 파동 + 전원 균열 번개 — 번개형은 특수 스킬 전용 문법
+async function bossBigAttack(e){
+  clearAimLines();
+  const ei = enemies.indexOf(e);
+  const eff = Math.round(BOSS_BIG_EACH * (1 - shieldRed));
+  const blocked = shieldRed>0 && eff<BOSS_BIG_EACH;
+  banner(blocked
+    ? '🛡 수호자의 방패! 전원 '+BOSS_BIG_EACH+' → '+eff
+    : '💢 마왕의 균열 일격! 전원 '+eff+' 피해', blocked?'shield':'boss');
+  drawDarkWave(enemyEl(ei));
+  const hitList = aliveHeroes();
+  hitList.forEach((t,k)=>{
+    setTimeout(()=>drawBoltLine(enemyEl(ei), heroChipEl(t), blocked), k*45);
+  });
+  await delay(300);
+  hitList.forEach(t=>{
+    const prev = heroHp[t];
+    heroHp[t] -= eff;
+    if(prev > 0 && heroHp[t] <= 0) addLog('💔 '+TYPES[t].hero+'이(가) 쓰러졌다!', 'boss');
+  });
+  addLog(blocked
+    ? '수호자의 방패! 마왕의 일격, 전원 '+BOSS_BIG_EACH+' 피해가 '+eff+'로 감소.'
+    : '마왕의 일격! 생존 영웅 전원에게 '+eff+' 피해!', blocked?'shield':'boss');
+  renderParty();
+  hitList.forEach(t=>{
+    hurtHero(t);
+    if(blocked) drawBlockFlash(heroChipEl(t));
+    floatText(heroChipEl(t), blocked ? '🛡 '+BOSS_BIG_EACH+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+  });
+  if(shieldCounter>0){
+    e.hp -= shieldCounter;
+    renderEnemies(ei);
+    floatText(enemyEl(ei), '⚔ -'+shieldCounter, 'guard'); // 반격: 플로팅
+    if(e.hp<=0){
+      addLog(e.name+' 처치!', 'gold');
+      if(aliveEnemies().length===0){ await onBattleWon(); return; }
+    }
+  }
+  if(aliveHeroes().length===0){
+    clearAimLines();
+    onDefeat();
+  }
+}
+
+// 게이지 UI 증분 갱신 (재렌더 없이 width/클래스만 — idle 애니메이션 보존, 부하 최소)
+function updateGauges(){
+  enemies.forEach((e,i)=>{
+    const el = enemyEl(i);
+    if(!el) return;
+    const g = el.querySelector('.gauge i');
+    if(g) g.style.width = Math.min(100, e.gauge||0) + '%';
+    el.classList.toggle('ready', e.hp>0 && !e.charging && (e.gauge||0) >= 85);
+  });
+}
+
+// 메인 틱: 게이지 진행/방패 만료/공격 트리거
+function tick(){
+  if(state==='over' || showcase) return; // 승리/패배/전환·쇼케이스 중 정지
+  const now = Date.now();
+  if(shieldRed>0 && now >= shieldUntil){
+    shieldRed = 0; shieldCounter = 0;
+    renderParty();
+  }
   for(const e of enemies){
     if(e.hp<=0) continue;
-    let dmg = e.atk;
-    let label = '공격';
-    let isBig = false;
-    if(e.boss){
-      if(e.charging){
-        dmg = BOSS_BIG; label = '마왕의 일격'; isBig = true; e.charging = false;
-      }else{
-        bossTurn++;
-        if(bossTurn % 3 === 0){
-          e.charging = true;
-          banner('😈 미니 마왕이 어둠을 모은다!', 'boss');
-          addLog('미니 마왕이 어둠을 모은다. 다음 턴 강력한 공격!', 'boss');
-          renderEnemies(); // charge 클래스 + "강공 준비" 표시 반영
-          await delay(420);
-          continue; // 충전 턴은 공격하지 않음
-        }
+    if(e.boss && e.charging){
+      if(now >= e.prepEnd){
+        e.charging = false;
+        e.gauge = 0;
+        renderEnemies();
+        queueAttack(e, true);
       }
+      continue;
     }
-    const eff = Math.round(dmg * (1 - shieldRed));
-    partyHp -= eff;
-    if(shieldRed>0 && eff<dmg){
-      // 방패 감소: 원래/감소 후 피해를 배너 + 티커로 표시
-      banner('🛡 수호자의 방패! '+dmg+' → '+eff, 'shield');
-      addLog('수호자의 방패! '+e.name+'의 '+dmg+' 피해가 '+eff+' 피해로 감소.', 'shield');
-    }else if(isBig){
-      addLog(e.name+'의 일격! 파티에 '+eff+' 피해!', 'boss');
-    }else{
-      addLog(e.name+'의 '+label+'! 파티에 '+eff+' 피해', 'bad');
+    e.gauge = (e.gauge||0) + e.speed * (TICK_MS/1000); // speed = %/초 → 틱당 speed×0.1
+    if(e.gauge >= 100){
+      if(e.boss){
+        bossTurn++;
+        if(bossTurn % 3 === 0){ e.gauge = 100; startBossPrep(e); continue; }
+      }
+      e.gauge = 0;
+      queueAttack(e, false);
     }
-    floatText($('#partyArea'), '-'+eff, 'dmg');
-    // 수호자 5매치 반격: 공격해 온 적에게 소량 피해
-    if(shieldCounter>0){
-      e.hp -= shieldCounter;
-      addLog('수호자의 반격! '+e.name+'에게 '+shieldCounter+' 피해', 'good');
-      renderEnemies(enemies.indexOf(e));
-      if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
-    }
-    renderParty();
-    await delay(420);
-    if(partyHp<=0) break;
   }
-  shieldRed = 0;
-  shieldCounter = 0;
-  renderParty();
-  renderEnemies();
+  updateGauges();
 }
+setInterval(tick, TICK_MS);
 
 /* ====================== 진행 흐름 ====================== */
 async function resolveBoard(){
@@ -1015,15 +1541,13 @@ async function resolveBoard(){
     let slot = 0;
     if(chain>1){
       const txt = chain+'연쇄! 위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%';
-      floatBoard(txt, 'gold', slot++);
-      addLog(txt, 'gold');
+      floatBoard(txt, 'gold', slot++); // 연쇄: 플로팅만 (토스트 X)
     }
     for(const g of groups){
       queueAction(g.type, g.cells.length, chain);
       const t = TYPES[g.type];
       const txt = t.sym+' '+t.block+' 문장 '+g.cells.length+'개!';
-      floatBoard(txt, 'sys', slot++);
-      addLog(txt, 'sys');
+      floatBoard(txt, 'sys', slot++); // 매치 결과: 플로팅만 (토스트 X)
     }
 
     // 삭제 연출
@@ -1055,49 +1579,37 @@ async function resolveBoard(){
     await delay(260);
   }
 
-  await executeActions();
-
-  if(aliveEnemies().length===0){
-    await onBattleWon();
-    return;
-  }
-
-  await enemyTurn();
-
-  if(partyHp<=0){
-    onDefeat();
-    return;
-  }
-  // 수호자 반격으로 마지막 적이 쓰러졌을 수 있음
-  if(aliveEnemies().length===0){
-    await onBattleWon();
-    return;
-  }
-
+  // 보드 안정: 즉시 조작 해제 (v0.13 핵심 — 연출이 손을 막지 않는다)
+  boardBusy = false;
+  sel = null;
   ensurePlayable();
-  state = 'idle';
+  updateQueueBadge();
+  processHeroActions(); // 영웅 행동은 뒤에서 순차 재생 (비차단)
 }
 
 async function onBattleWon(){
+  if(state==='over') return; // 영웅 큐/몬스터 큐 동시 도달 시 중복 방지
+  state = 'over';            // 즉시 게이지/큐 정지
+  attackQueue = [];
+  actionQueue = [];
+  updateQueueBadge();
+  clearAimLines();
   addLog('── '+BATTLES[battleIdx].label+' 승리! ──', 'gold');
   await delay(500);
   if(battleIdx >= BATTLES.length-1){
-    // 3번째 전투 클리어 = 전체 클리어
     showOverlay('전체 클리어!', '마왕을 물리쳤다. 다섯 영웅의 모험은 계속된다...', '처음부터 다시', resetGame);
-    state = 'over';
     return;
   }
-  // 승리 회복 정책: 다음 전투 진입 전 +15, 최대 HP 100 초과 불가
-  const before = partyHp;
-  partyHp = Math.min(PARTY_MAX_HP, partyHp + VICTORY_HEAL);
-  const gained = partyHp - before;
-  addLog('전투 승리! 파티가 숨을 고르며 HP '+gained+' 회복. ('+before+' → '+partyHp+')', 'good');
+  // 승리 회복 (v0.9 임시): 영웅 전원 각자 +15, 각자 최대 HP 초과 불가
+  // 쓰러진 영웅도 회복 — 사망/봉인 시스템 미도입이므로 다음 전투 참여 보장
+  PARTY.forEach(t=>{
+    heroHp[t] = Math.min(HERO_MAX[t], Math.max(0, heroHp[t]) + VICTORY_HEAL);
+  });
+  addLog('전투 승리! 파티가 숨을 고르며 각자 HP '+VICTORY_HEAL+' 회복.', 'good');
   renderParty();
-  floatText($('#partyArea'), '+'+gained, 'heal');
-  state = 'over';
-  // 다음 전투 버튼을 누르기 전, 회복 결과를 오버레이에서 인지 가능
+  PARTY.forEach(t=>floatText(heroChipEl(t), '+', 'heal'));
   showOverlay('승리!',
-    BATTLES[battleIdx].label+'을(를) 돌파했다.\n파티가 숨을 고르며 HP '+gained+' 회복.\nHP '+before+' → '+partyHp,
+    BATTLES[battleIdx].label+'을(를) 돌파했다.\n파티가 숨을 고르며 각자 HP '+VICTORY_HEAL+' 회복.',
     '다음 전투 ▶', ()=>{
     battleIdx++;
     setupBattle();
@@ -1106,16 +1618,35 @@ async function onBattleWon(){
 }
 
 function onDefeat(){
+  if(state==='over') return;
+  state = 'over';
+  attackQueue = [];
+  actionQueue = [];
+  updateQueueBadge();
+  clearAimLines();
   addLog('파티가 쓰러졌다...', 'bad');
   showOverlay('패배', '파티의 HP가 0이 되었다.\n블록을 다시 모아 도전하자.', '다시 시작', resetGame);
-  state = 'over';
 }
 
 function setupBattle(){
-  enemies = BATTLES[battleIdx].enemies.map(e=>({...e, hp:e.maxHp, charging:false}));
+  // 실시간 게이지: 종별 속도 부여 + 0~35% 무작위 시차 (동시 만충 방지)
+  enemies = BATTLES[battleIdx].enemies.map(e=>({
+    ...e, hp:e.maxHp, charging:false,
+    speed: SPEEDS[e.kind] || 10,
+    gauge: Math.random()*35,
+  }));
+  attackQueue = [];
+  actionQueue = [];
+  boardBusy = false;
+  updateQueueBadge();
+  clearAimLines();
+  shieldUntil = 0;
   bossTurn = 0;
   shieldRed = 0;
   shieldCounter = 0;
+  mageCharge = null; // 전투 간 집중 미이월
+  showcase = false;
+  $('#showcaseBtn').textContent = '👁 진형';
   board = genBoard();
   if(!hasValidMove(board)) board = genBoard();
   sel = null;
@@ -1135,7 +1666,7 @@ function hideOverlay(){ $('#overlay').classList.remove('show'); }
 
 function resetGame(){
   battleIdx = 0;
-  partyHp = PARTY_MAX_HP;
+  initHeroHp(); // 영웅별 HP 초기화 (전투 간에는 이월)
   actionQueue = [];
   $('#ticker').innerHTML = '';
   $('#banner').className = '';
@@ -1152,7 +1683,8 @@ function adjacent(a,b){
 }
 
 async function trySwap(a,b){
-  state = 'busy';
+  if(showcase){ showcase = false; $('#showcaseBtn').textContent = '👁 진형'; renderEnemies(); }
+  boardBusy = true; // 보드 변형 시작 — 교환/삭제/낙하/연쇄 동안만 잠금
   [board[a],board[b]] = [board[b],board[a]];
   sel = null;
   renderBoard();
@@ -1161,7 +1693,7 @@ async function trySwap(a,b){
     [board[a],board[b]] = [board[b],board[a]];
     renderBoard();
     await delay(150);
-    state = 'idle';
+    boardBusy = false;
     return;
   }
   await resolveBoard();
@@ -1169,7 +1701,7 @@ async function trySwap(a,b){
 
 // 탭-탭 교환 (fallback): 블록 선택 → 인접 블록 선택
 function tapCell(i){
-  if(state!=='idle') return;
+  if(!canPlay()) return;
   if(sel===null){
     sel = i; renderBoard();
   }else if(sel===i){
@@ -1200,12 +1732,12 @@ const boardEl = $('#board');
 
 boardEl.addEventListener('pointerdown', e=>{
   const cell = e.target.closest('.cell');
-  if(!cell || state!=='idle') return;
+  if(!cell || !canPlay()) return;
   drag = { i:+cell.dataset.i, x:e.clientX, y:e.clientY, swiped:false };
 });
 
 boardEl.addEventListener('pointermove', e=>{
-  if(!drag || drag.swiped || state!=='idle') return;
+  if(!drag || drag.swiped || !canPlay()) return;
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   if(Math.hypot(dx,dy) < SWIPE_DIST) return;
   drag.swiped = true; // 한 번의 스와이프 = 한 번의 교환
@@ -1221,14 +1753,29 @@ boardEl.addEventListener('pointerup', e=>{
   const moved = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
   const i = drag.i;
   drag = null;
-  if(moved < 10) tapCell(i); // 거의 안 움직였으면 탭으로 처리
+  if(moved < 10 && canPlay()) tapCell(i); // 거의 안 움직였으면 탭으로 처리
 });
 
 boardEl.addEventListener('pointercancel', ()=>{ drag = null; });
 
+$('#showcaseBtn').addEventListener('click', ()=>{
+  if((boardBusy || state==='over') && !showcase) return;
+  showcase = !showcase;
+  if(showcase){
+    renderShowcase();
+    banner('👁 수용력 쇼케이스 — 3열 × 6 (18체)', '');
+    $('#showcaseBtn').textContent = '↩ 전투';
+  }else{
+    renderEnemies();
+    $('#showcaseBtn').textContent = '👁 진형';
+  }
+});
+
 $('#restartBtn').addEventListener('click', ()=>{
-  if(state==='busy') return;
+  if(boardBusy) return;
   hideOverlay();
+  attackQueue = [];
+  clearAimLines();
   resetGame();
 });
 
