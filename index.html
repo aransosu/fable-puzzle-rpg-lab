@@ -78,6 +78,33 @@
   }
   .enemy.dead{opacity:.25;filter:grayscale(1);}
   .enemy.hit{animation:shake .25s;}
+  /* 마왕 강공 준비 상태: 붉은 펄스 */
+  .enemy.charge{
+    border-color:#c84a3a;
+    animation:chargePulse .9s infinite;
+  }
+  @keyframes chargePulse{
+    0%,100%{box-shadow:0 0 5px rgba(216,85,74,.3)}
+    50%{box-shadow:0 0 16px rgba(216,85,74,.8)}
+  }
+  /* 플로팅 텍스트: 피해/회복/방어 수치 연출 */
+  .float{
+    position:absolute;left:50%;top:28%;
+    transform:translateX(-50%);
+    font-size:15px;font-weight:800;
+    pointer-events:none;z-index:5;
+    animation:floatUp .85s ease-out forwards;
+    text-shadow:0 1px 3px rgba(0,0,0,.7);
+    white-space:nowrap;
+  }
+  .float.dmg{color:#ff8a7d;}
+  .float.heal{color:#7df0a0;}
+  .float.guard{color:#ffd97a;}
+  @keyframes floatUp{
+    0%{opacity:0;transform:translate(-50%,6px) scale(.8)}
+    20%{opacity:1;transform:translate(-50%,0) scale(1.1)}
+    100%{opacity:0;transform:translate(-50%,-22px) scale(1)}
+  }
   @keyframes shake{
     0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
   }
@@ -103,8 +130,9 @@
   #board{
     display:grid;
     grid-template-columns:repeat(6,1fr);
+    touch-action:none; /* 스와이프 입력과 스크롤 충돌 방지 */
     gap:5px;
-    aspect-ratio:1/1;
+    aspect-ratio:6/8;
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:12px;
@@ -113,7 +141,7 @@
   .cell{
     border-radius:9px;
     display:flex;align-items:center;justify-content:center;
-    font-size:clamp(20px,7.2vw,32px);
+    font-size:clamp(17px,6vw,27px);
     cursor:pointer;
     border:2px solid transparent;
     transition:transform .15s, opacity .2s, border-color .1s;
@@ -134,6 +162,17 @@
     border:1px solid var(--line);
     border-radius:10px;
     padding:7px 9px;
+    position:relative;
+    transition:border-color .25s, box-shadow .25s;
+  }
+  /* 방패 효과 활성: 파티 전체에 방어막 표시 */
+  #partyArea.shielded{
+    border-color:var(--gold);
+    box-shadow:0 0 10px rgba(232,179,75,.4), inset 0 0 14px rgba(232,179,75,.08);
+  }
+  #partyBar i.healflash{animation:healGlow .6s;}
+  @keyframes healGlow{
+    0%{filter:brightness(1)}40%{filter:brightness(1.9)}100%{filter:brightness(1)}
   }
   #heroes{display:flex;gap:5px;}
   .hero{
@@ -167,22 +206,58 @@
     font-size:10px;color:#ffd97a;background:#3d3214;border:1px solid #6e5a23;
     border-radius:7px;padding:1px 7px;display:none;
   }
-  /* ---------- 로그 ---------- */
-  #log{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:7px 10px;
-    height:110px;
-    overflow-y:auto;
-    font-size:12px;
-    line-height:1.55;
+  /* ---------- 최근 사건 티커 (고정 로그 패널 대체, 최대 2줄) ---------- */
+  #ticker{
+    min-height:38px;
+    padding:4px 10px;
+    font-size:11.5px;
+    line-height:1.5;
     color:var(--dim);
+    text-align:center;
   }
-  #log .good{color:#8fe0a4;}
-  #log .bad{color:#f09a92;}
-  #log .gold{color:var(--gold);}
-  #log .sys{color:#7e76a0;}
+  #ticker .tk{animation:tkIn .25s;}
+  @keyframes tkIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .good{color:#8fe0a4;}
+  .bad{color:#f09a92;}
+  .gold{color:var(--gold);}
+  .sys{color:#7e76a0;}
+  .shield{color:#ffd97a;font-weight:700;}
+  .boss{color:#ff7a6b;font-weight:700;}
+  /* ---------- 중요 이벤트 배너 (마왕 예고, 방패 감소) ---------- */
+  #banner{
+    position:absolute;top:8%;left:50%;
+    transform:translateX(-50%) scale(.9);
+    background:rgba(20,16,34,.92);
+    border:1px solid var(--gold);
+    border-radius:10px;
+    padding:8px 16px;
+    font-size:13.5px;font-weight:700;
+    white-space:nowrap;
+    opacity:0;pointer-events:none;
+    transition:opacity .2s, transform .2s;
+    z-index:20;
+  }
+  #banner.show{opacity:1;transform:translateX(-50%) scale(1);}
+  #banner.boss{border-color:#c84a3a;}
+  /* ---------- 행동선 레이어: 영웅→적 연결, 조작 방해 금지 ---------- */
+  #fxLayer{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    pointer-events:none;  /* 필수: 퍼즐 터치를 막지 않는다 */
+    z-index:30;
+    overflow:visible;
+  }
+  /* 보드 위 매치 결과 플로팅 */
+  .boardFloat{
+    position:absolute;left:50%;
+    transform:translateX(-50%);
+    font-size:14px;font-weight:800;
+    color:var(--ink);
+    text-shadow:0 1px 4px rgba(0,0,0,.8);
+    pointer-events:none;z-index:25;
+    animation:floatUp .9s ease-out forwards;
+    white-space:nowrap;
+  }
   /* ---------- 오버레이 ---------- */
   #overlay{
     position:absolute;inset:0;
@@ -195,7 +270,7 @@
   }
   #overlay.show{display:flex;}
   #overlay h2{font-size:24px;color:var(--gold);letter-spacing:3px;}
-  #overlay p{font-size:13px;color:var(--dim);line-height:1.6;}
+  #overlay p{font-size:13px;color:var(--dim);line-height:1.6;white-space:pre-line;}
   #overlay button{
     background:var(--gold);color:#241c08;border:none;
     border-radius:10px;font-size:15px;font-weight:700;
@@ -215,6 +290,7 @@
 
   <div id="boardWrap">
     <div id="board"></div>
+    <div id="banner"></div>
     <div id="overlay">
       <h2 id="ovTitle"></h2>
       <p id="ovText"></p>
@@ -232,13 +308,15 @@
     </div>
   </div>
 
-  <div id="log"></div>
+  <div id="ticker"></div>
+  <svg id="fxLayer"></svg>
 </div>
 
 <script>
 'use strict';
 /* ====================== 데이터 정의 ====================== */
-const SIZE = 6;
+const COLS = 6;       // 가로 6칸
+const ROWS = 8;       // 세로 8칸 (v0.5: 세로형 보드 실험)
 // 블록 ↔ 영웅 1:1 대응 정의 (role은 화면의 대응표에 표시)
 const TYPES = [
   {sym:'⚔️', block:'검',     hero:'전사',   role:'단일 공격'},
@@ -271,6 +349,8 @@ const BATTLES = [
 ];
 const PARTY_MAX_HP = 100;
 const CHAIN_BONUS = 0.3; // 연쇄 1단계당 +30%
+const BOSS_BIG = 32;     // 미니 마왕 강공 피해 (v0.3: 26→32 상향)
+const VICTORY_HEAL = 15; // 전투 승리 시 회복량 (v0.4: HP 흐름 정책, 최대 100 초과 불가)
 
 /* ====================== 상태 ====================== */
 let board = [];          // length 36, 값 0~4
@@ -287,25 +367,119 @@ let bossTurn = 0;
 /* ====================== 유틸 ====================== */
 const $ = s => document.querySelector(s);
 const delay = ms => new Promise(r => setTimeout(r, ms));
-const rc = i => [Math.floor(i/SIZE), i%SIZE];
-const idx = (r,c) => r*SIZE+c;
+const rc = i => [Math.floor(i/COLS), i%COLS];
+const idx = (r,c) => r*COLS+c;
 const rand = n => Math.floor(Math.random()*n);
 
+// 최근 사건 티커: 고정 로그 패널 대신 최근 1~2개만 유지
 function addLog(msg, cls){
+  const t = $('#ticker');
   const el = document.createElement('div');
-  if(cls) el.className = cls;
+  el.className = 'tk ' + (cls||'');
   el.textContent = msg;
-  const log = $('#log');
-  log.appendChild(el);
-  while(log.children.length > 60) log.removeChild(log.firstChild);
-  log.scrollTop = log.scrollHeight;
+  t.appendChild(el);
+  while(t.children.length > 2) t.removeChild(t.firstChild);
 }
+
+// 중요 이벤트 배너: 마왕 예고, 방패 감소 등 (자동 소멸)
+let bannerTimer = null;
+function banner(msg, cls){
+  const b = $('#banner');
+  b.textContent = msg;
+  b.className = 'show ' + (cls||'');
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(()=>{ b.className=''; }, 1300);
+}
+
+// 보드 위 매치 결과 플로팅 (slot으로 세로 위치 분산, 겹침 방지)
+function floatBoard(text, cls, slot){
+  const wrap = $('#boardWrap');
+  const f = document.createElement('div');
+  f.className = 'boardFloat ' + (cls||'');
+  f.style.top = (14 + (slot%4)*13) + '%';
+  f.textContent = text;
+  wrap.appendChild(f);
+  setTimeout(()=>f.remove(), 950);
+}
+
+/* ── 행동선: 하단 영웅 → 퍼즐판 침범 → 상단 적 ── */
+function heroChipEl(i){ return $('#heroes').children[i] || null; }
+
+// 요소 중심 좌표 (#app 기준 px)
+function centerOf(el){
+  const a = $('#app').getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  return [r.left + r.width/2 - a.left, r.top + r.height/2 - a.top];
+}
+
+// SVG 행동선: 짧게 그려졌다 사라진다. 레이어는 pointer-events:none
+function drawLine(fromEl, toEl, color, dashed){
+  const fx = $('#fxLayer');
+  if(!fromEl || !toEl) return;
+  // 연쇄 폭주 시 행동선 과밀 방지: 최대 10개 유지
+  while(fx.children.length >= 10) fx.removeChild(fx.firstChild);
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const [x1,y1] = centerOf(fromEl);
+  const [x2,y2] = centerOf(toEl);
+  const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
+  ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+  ln.setAttribute('stroke',color);
+  ln.setAttribute('stroke-width','3');
+  ln.setAttribute('stroke-linecap','round');
+  ln.setAttribute('opacity','0.85');
+  const len = Math.hypot(x2-x1, y2-y1);
+  if(dashed){
+    ln.setAttribute('stroke-dasharray','7 6'); // 궁수: 점선 관통
+  }else{
+    ln.setAttribute('stroke-dasharray', len);
+    ln.setAttribute('stroke-dashoffset', len);
+    ln.animate([{strokeDashoffset:len},{strokeDashoffset:0}], {duration:200, fill:'forwards'});
+  }
+  fx.appendChild(ln);
+  ln.animate([{opacity:.85},{opacity:0}], {duration:250, delay:280, fill:'forwards'});
+  setTimeout(()=>ln.remove(), 560); // 짧게 사라짐 — 다음 조작 방해 금지
+}
+
+// 수호자: 파티를 감싸는 보호 링 펄스
+function drawGuardRing(){
+  const fx = $('#fxLayer');
+  const app = $('#app');
+  fx.setAttribute('width', app.clientWidth);
+  fx.setAttribute('height', app.clientHeight);
+  const a = app.getBoundingClientRect();
+  const p = $('#partyArea').getBoundingClientRect();
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x', p.left-a.left-3); rect.setAttribute('y', p.top-a.top-3);
+  rect.setAttribute('width', p.width+6); rect.setAttribute('height', p.height+6);
+  rect.setAttribute('rx','12');
+  rect.setAttribute('fill','none');
+  rect.setAttribute('stroke','#ffd97a');
+  rect.setAttribute('stroke-width','2.5');
+  fx.appendChild(rect);
+  rect.animate([{opacity:1, strokeWidth:'2.5'},{opacity:0, strokeWidth:'5'}], {duration:550, fill:'forwards'});
+  setTimeout(()=>rect.remove(), 580);
+}
+
+// 플로팅 텍스트 연출: 대상 요소 위에 피해/회복/방어 수치를 띄운다
+function floatText(el, text, cls){
+  if(!el) return;
+  const f = document.createElement('div');
+  f.className = 'float ' + cls;
+  f.textContent = text;
+  el.appendChild(f);
+  setTimeout(()=>f.remove(), 900); // 애니메이션 종료 후 클래스/노드 제거
+}
+// i번째 적 카드 DOM 요소
+function enemyEl(i){ return $('#enemyArea').children[i] || null; }
 
 /* ====================== 보드 생성/판정 ====================== */
 function genBoard(){
-  const b = new Array(SIZE*SIZE);
-  for(let r=0;r<SIZE;r++){
-    for(let c=0;c<SIZE;c++){
+  const b = new Array(ROWS*COLS);
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
       let t;
       do{
         t = rand(TYPES.length);
@@ -323,10 +497,10 @@ function genBoard(){
 function findMatchedCells(b){
   const matched = new Set();
   // 가로
-  for(let r=0;r<SIZE;r++){
+  for(let r=0;r<ROWS;r++){
     let run=1;
-    for(let c=1;c<=SIZE;c++){
-      if(c<SIZE && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r,c-1)]) run++;
+    for(let c=1;c<=COLS;c++){
+      if(c<COLS && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r,c-1)]) run++;
       else{
         if(run>=3 && b[idx(r,c-1)]!==null)
           for(let k=c-run;k<c;k++) matched.add(idx(r,k));
@@ -335,10 +509,10 @@ function findMatchedCells(b){
     }
   }
   // 세로
-  for(let c=0;c<SIZE;c++){
+  for(let c=0;c<COLS;c++){
     let run=1;
-    for(let r=1;r<=SIZE;r++){
-      if(r<SIZE && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r-1,c)]) run++;
+    for(let r=1;r<=ROWS;r++){
+      if(r<ROWS && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r-1,c)]) run++;
       else{
         if(run>=3 && b[idx(r-1,c)]!==null)
           for(let k=r-run;k<r;k++) matched.add(idx(k,c));
@@ -365,7 +539,7 @@ function findMatchGroups(b){
       cells.push(i);
       const [r,c] = rc(i);
       [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
-        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE) return;
+        if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
         const ni = idx(nr,nc);
         if(matched.has(ni) && !visited.has(ni) && b[ni]===type){
           visited.add(ni);
@@ -386,10 +560,10 @@ function hasValidMove(b){
     [test[a],test[bI]] = [test[bI],test[a]];
     return ok;
   };
-  for(let r=0;r<SIZE;r++){
-    for(let c=0;c<SIZE;c++){
-      if(c<SIZE-1 && trySwap(idx(r,c), idx(r,c+1))) return true;
-      if(r<SIZE-1 && trySwap(idx(r,c), idx(r+1,c))) return true;
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      if(c<COLS-1 && trySwap(idx(r,c), idx(r,c+1))) return true;
+      if(r<ROWS-1 && trySwap(idx(r,c), idx(r+1,c))) return true;
     }
   }
   return false;
@@ -407,7 +581,7 @@ function ensurePlayable(){
 function renderBoard(spawnSet){
   const el = $('#board');
   el.innerHTML = '';
-  for(let i=0;i<SIZE*SIZE;i++){
+  for(let i=0;i<ROWS*COLS;i++){
     const d = document.createElement('div');
     const t = board[i];
     d.className = 'cell' + (t===null ? '' : ' t'+t);
@@ -419,15 +593,18 @@ function renderBoard(spawnSet){
   }
 }
 
-function renderEnemies(hitIdx){
+function renderEnemies(hitIdx, hitAll){
   const area = $('#enemyArea');
   area.innerHTML = '';
   enemies.forEach((e,i)=>{
     const d = document.createElement('div');
-    d.className = 'enemy' + (e.hp<=0?' dead':'') + (hitIdx===i?' hit':'');
+    d.className = 'enemy'
+      + (e.hp<=0?' dead':'')
+      + ((hitIdx===i || (hitAll && e.hp>0))?' hit':'')
+      + (e.charging?' charge':'');   // 강공 준비: 붉은 펄스
     const pct = Math.max(0, e.hp/e.maxHp*100);
     d.innerHTML =
-      (e.charging ? '<div class="intent">⚡ 강공 예고!</div>' : '') +
+      (e.charging ? '<div class="intent">⚡ 강공 준비</div>' : '') +
       '<div class="sym">'+e.sym+'</div>' +
       '<div class="name">'+e.name+'</div>' +
       '<div class="bar"><i style="width:'+pct+'%"></i></div>' +
@@ -451,9 +628,11 @@ function renderParty(actType){
   bar.style.background = pct<=30 ? 'var(--hp-low)' : 'var(--hp)';
   $('#partyHpNum').textContent = Math.max(0,partyHp)+' / '+PARTY_MAX_HP;
   const tag = $('#shieldTag');
+  // 방패 효과 가시화: 활성 시 파티 영역 외곽선 + 상태 문구, 소모 시 자동 제거
+  $('#partyArea').classList.toggle('shielded', shieldRed>0);
   if(shieldRed>0){
     tag.style.display='inline-block';
-    tag.textContent = '보호 '+Math.round(shieldRed*100)+'%';
+    tag.textContent = '방어 중 · 피해 '+Math.round(shieldRed*100)+'% 감소';
   }else tag.style.display='none';
 }
 
@@ -477,59 +656,74 @@ function queueAction(type, size, chain){
 async function executeActions(){
   for(const a of actionQueue){
     if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) continue;
-    renderParty(a.type);
+    renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
     const spec = ACTS[a.type][a.tier];
-    const chainTxt = a.chain>1 ? ' (연쇄 x'+a.chain+')' : '';
 
-    if(a.type===0){ // 전사: 선두 단일
+    if(a.type===0){ // 전사: 선두 단일 공격 — 대상이 흔들리고 피해 수치가 뜬다
       const tgt = aliveEnemies()[0];
       if(tgt){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
-        addLog('전사의 '+spec.label+'! '+tgt.name+'에게 '+dmg+' 피해'+chainTxt, 'good');
+        addLog('전사가 '+tgt.name+'에게 '+dmg+' 피해. ('+spec.label+')', 'good');
         renderEnemies(enemies.indexOf(tgt));
+        drawLine(heroChipEl(0), enemyEl(enemies.indexOf(tgt)), '#aebcdc'); // 전사: 퍼즐판 관통 행동선
+        floatText(enemyEl(enemies.indexOf(tgt)), '-'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
     }
-    else if(a.type===1){ // 마법사: 전체
+    else if(a.type===1){ // 마법사: 전체 공격 — 모든 적이 짧게 피해 반응
       const dmg = Math.round(spec.dmg * a.mult);
       const targets = aliveEnemies();
       targets.forEach(e=>{ e.hp -= dmg; });
-      addLog('마법사의 '+spec.label+'! 모든 적에게 '+dmg+' 피해'+chainTxt, 'good');
-      renderEnemies();
-      targets.forEach(e=>{ if(e.hp<=0) addLog(e.name+' 처치!', 'gold'); });
+      addLog('마법사가 모든 적에게 '+dmg+' 피해. ('+spec.label+')', 'good');
+      renderEnemies(null, true); // hitAll: 전 적 흔들림
+      targets.forEach(e=>{
+        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#e0633e'); // 마법사: 전 적으로 에너지선
+        floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
+        if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+      });
     }
-    else if(a.type===2){ // 사제: 회복
+    else if(a.type===2){ // 사제: 회복 — HP바 플래시 + 회복 수치 플로팅
       const heal = Math.round(spec.heal * a.mult);
       const before = partyHp;
       partyHp = Math.min(PARTY_MAX_HP, partyHp + heal);
-      addLog('사제의 '+spec.label+'! HP '+(partyHp-before)+' 회복'+chainTxt, 'good');
+      addLog('사제가 파티 HP '+(partyHp-before)+' 회복. ('+spec.label+')', 'good');
+      renderParty(a.type);
+      const bar = $('#partyBar i');
+      bar.classList.add('healflash');
+      drawLine(heroChipEl(2), $('#partyBar'), '#58b878'); // 사제: 회복 파동
+      setTimeout(()=>bar.classList.remove('healflash'), 650); // 연출 클래스 제거
+      floatText($('#partyArea'), '+'+(partyHp-before), 'heal');
     }
-    else if(a.type===3){ // 수호자: 다음 적 공격 피해 감소 (+5매치 시 반격)
+    else if(a.type===3){ // 수호자: 피해 감소 — 파티 영역 방어막 표시 (+5매치 반격)
       shieldRed = Math.max(shieldRed, spec.red);
-      let msg = '수호자의 '+spec.label+'! 이번 적 공격 피해 '+Math.round(spec.red*100)+'% 감소';
+      let msg = '수호자가 방어 태세! 피해 '+Math.round(spec.red*100)+'% 감소. ('+spec.label+')';
       if(spec.counter){
         shieldCounter = Math.max(shieldCounter, Math.round(spec.counter * a.mult));
-        msg += ' + 반격 '+shieldCounter;
+        msg += ' 반격 '+shieldCounter+' 준비.';
       }
-      addLog(msg + chainTxt, 'good');
+      addLog(msg, 'shield');
+      renderParty(a.type); // shielded 외곽선 즉시 반영
+      drawGuardRing(); // 수호자: 파티를 감싸는 보호 링
+      floatText($('#partyArea'), '🛡 방어', 'guard');
     }
-    else if(a.type===4){ // 궁수: HP가 가장 낮은 적 저격
+    else if(a.type===4){ // 궁수: 최저 HP 적 저격 — 표식 + 타격 반응
       const pool = aliveEnemies();
       const tgt = pool.length ? pool.reduce((m,e)=> e.hp<m.hp ? e : m, pool[0]) : null;
       if(tgt){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
-        addLog('궁수의 '+spec.label+'! '+tgt.name+'에게 '+dmg+' 피해'+chainTxt, 'good');
+        addLog('궁수가 '+tgt.name+'에게 '+dmg+' 피해. ('+spec.label+')', 'good');
         renderEnemies(enemies.indexOf(tgt));
+        drawLine(heroChipEl(4), enemyEl(enemies.indexOf(tgt)), '#b48ae0', true); // 궁수: 점선 관통선
+        floatText(enemyEl(enemies.indexOf(tgt)), '🎯 -'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
     }
-    renderParty(a.type);
-    await delay(380);
+    await delay(420);
   }
   actionQueue = [];
-  renderParty();
+  renderParty(); // act 강조 클래스 해제 (행동 종료)
 }
 
 async function enemyTurn(){
@@ -537,15 +731,17 @@ async function enemyTurn(){
     if(e.hp<=0) continue;
     let dmg = e.atk;
     let label = '공격';
+    let isBig = false;
     if(e.boss){
       if(e.charging){
-        dmg = 26; label = '마왕의 일격'; e.charging = false;
+        dmg = BOSS_BIG; label = '마왕의 일격'; isBig = true; e.charging = false;
       }else{
         bossTurn++;
         if(bossTurn % 3 === 0){
           e.charging = true;
-          addLog('미니 마왕이 힘을 모은다... 다음 턴, 강력한 일격이 온다!', 'bad');
-          renderEnemies();
+          banner('😈 미니 마왕이 어둠을 모은다!', 'boss');
+          addLog('미니 마왕이 어둠을 모은다. 다음 턴 강력한 공격!', 'boss');
+          renderEnemies(); // charge 클래스 + "강공 준비" 표시 반영
           await delay(420);
           continue; // 충전 턴은 공격하지 않음
         }
@@ -554,10 +750,15 @@ async function enemyTurn(){
     const eff = Math.round(dmg * (1 - shieldRed));
     partyHp -= eff;
     if(shieldRed>0 && eff<dmg){
-      addLog(e.name+'의 '+label+'! 수호자가 막아내 '+eff+' 피해 ('+dmg+'→'+eff+')', 'bad');
+      // 방패 감소: 원래/감소 후 피해를 배너 + 티커로 표시
+      banner('🛡 수호자의 방패! '+dmg+' → '+eff, 'shield');
+      addLog('수호자의 방패! '+e.name+'의 '+dmg+' 피해가 '+eff+' 피해로 감소.', 'shield');
+    }else if(isBig){
+      addLog(e.name+'의 일격! 파티에 '+eff+' 피해!', 'boss');
     }else{
       addLog(e.name+'의 '+label+'! 파티에 '+eff+' 피해', 'bad');
     }
+    floatText($('#partyArea'), '-'+eff, 'dmg');
     // 수호자 5매치 반격: 공격해 온 적에게 소량 피해
     if(shieldCounter>0){
       e.hp -= shieldCounter;
@@ -582,12 +783,19 @@ async function resolveBoard(){
     const groups = findMatchGroups(board);
     if(groups.length===0) break;
     chain++;
-    if(chain>1) addLog('연쇄 '+chain+'단!', 'gold');
-
+    // 매치/연쇄 정보: 보드 위 플로팅 + 티커 (로그 패널 없음)
+    let slot = 0;
+    if(chain>1){
+      const txt = chain+'연쇄! 위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%';
+      floatBoard(txt, 'gold', slot++);
+      addLog(txt, 'gold');
+    }
     for(const g of groups){
       queueAction(g.type, g.cells.length, chain);
       const t = TYPES[g.type];
-      addLog(t.block+' 블록 '+g.cells.length+'개 삭제 → '+t.hero+' 발동 대기', 'sys');
+      const txt = t.sym+' '+t.block+' 문장 '+g.cells.length+'개!';
+      floatBoard(txt, 'sys', slot++);
+      addLog(txt, 'sys');
     }
 
     // 삭제 연출
@@ -601,9 +809,9 @@ async function resolveBoard(){
     // 삭제 → 낙하 → 생성
     removeSet.forEach(i=>{ board[i]=null; });
     const spawnSet = new Set();
-    for(let c=0;c<SIZE;c++){
-      let write = SIZE-1;
-      for(let r=SIZE-1;r>=0;r--){
+    for(let c=0;c<COLS;c++){
+      let write = ROWS-1;
+      for(let r=ROWS-1;r>=0;r--){
         if(board[idx(r,c)]!==null){
           board[idx(write,c)] = board[idx(r,c)];
           if(write!==r) board[idx(r,c)] = null;
@@ -651,8 +859,18 @@ async function onBattleWon(){
     state = 'over';
     return;
   }
+  // 승리 회복 정책: 다음 전투 진입 전 +15, 최대 HP 100 초과 불가
+  const before = partyHp;
+  partyHp = Math.min(PARTY_MAX_HP, partyHp + VICTORY_HEAL);
+  const gained = partyHp - before;
+  addLog('전투 승리! 파티가 숨을 고르며 HP '+gained+' 회복. ('+before+' → '+partyHp+')', 'good');
+  renderParty();
+  floatText($('#partyArea'), '+'+gained, 'heal');
   state = 'over';
-  showOverlay('승리!', BATTLES[battleIdx].label+'을(를) 돌파했다.', '다음 전투 ▶', ()=>{
+  // 다음 전투 버튼을 누르기 전, 회복 결과를 오버레이에서 인지 가능
+  showOverlay('승리!',
+    BATTLES[battleIdx].label+'을(를) 돌파했다.\n파티가 숨을 고르며 HP '+gained+' 회복.\nHP '+before+' → '+partyHp,
+    '다음 전투 ▶', ()=>{
     battleIdx++;
     setupBattle();
     state = 'idle';
@@ -691,7 +909,8 @@ function resetGame(){
   battleIdx = 0;
   partyHp = PARTY_MAX_HP;
   actionQueue = [];
-  $('#log').innerHTML = '';
+  $('#ticker').innerHTML = '';
+  $('#banner').className = '';
   addLog('Emblem Quest Lab — 블록을 맞춰 영웅을 움직여라!', 'gold');
   addLog('블록을 탭해 선택하고, 인접한 블록을 탭해 교환한다.', 'sys');
   setupBattle();
@@ -720,10 +939,9 @@ async function trySwap(a,b){
   await resolveBoard();
 }
 
-$('#board').addEventListener('click', e=>{
-  const cell = e.target.closest('.cell');
-  if(!cell || state!=='idle') return;
-  const i = +cell.dataset.i;
+// 탭-탭 교환 (fallback): 블록 선택 → 인접 블록 선택
+function tapCell(i){
+  if(state!=='idle') return;
   if(sel===null){
     sel = i; renderBoard();
   }else if(sel===i){
@@ -733,7 +951,52 @@ $('#board').addEventListener('click', e=>{
   }else{
     sel = i; renderBoard();
   }
+}
+
+/* ── 스와이프 교환: 누르고 → 밀면 → 가장 큰 방향으로 인접 교환 ── */
+const SWIPE_DIST = 18; // 판정 거리(px)
+
+// 스와이프 방향 판정: 큰 축 우선. 보드 밖이면 null (무시)
+function swipeTarget(i, dx, dy){
+  const dir = Math.abs(dx) > Math.abs(dy)
+    ? (dx > 0 ? [0,1] : [0,-1])
+    : (dy > 0 ? [1,0] : [-1,0]);
+  const [r,c] = rc(i);
+  const nr = r + dir[0], nc = c + dir[1];
+  if(nr<0 || nr>=ROWS || nc<0 || nc>=COLS) return null; // 보드 밖 스와이프 무시
+  return idx(nr,nc);
+}
+
+let drag = null;
+const boardEl = $('#board');
+
+boardEl.addEventListener('pointerdown', e=>{
+  const cell = e.target.closest('.cell');
+  if(!cell || state!=='idle') return;
+  drag = { i:+cell.dataset.i, x:e.clientX, y:e.clientY, swiped:false };
 });
+
+boardEl.addEventListener('pointermove', e=>{
+  if(!drag || drag.swiped || state!=='idle') return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if(Math.hypot(dx,dy) < SWIPE_DIST) return;
+  drag.swiped = true; // 한 번의 스와이프 = 한 번의 교환
+  const target = swipeTarget(drag.i, dx, dy);
+  if(target===null){ drag = null; return; }
+  sel = null;
+  trySwap(drag.i, target); // 매치 없으면 trySwap이 자동 복귀
+  drag = null;
+});
+
+boardEl.addEventListener('pointerup', e=>{
+  if(!drag) return;
+  const moved = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+  const i = drag.i;
+  drag = null;
+  if(moved < 10) tapCell(i); // 거의 안 움직였으면 탭으로 처리
+});
+
+boardEl.addEventListener('pointercancel', ()=>{ drag = null; });
 
 $('#restartBtn').addEventListener('click', ()=>{
   if(state==='busy') return;
