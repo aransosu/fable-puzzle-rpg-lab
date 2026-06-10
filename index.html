@@ -57,39 +57,160 @@
     border:1px solid var(--line);border-radius:8px;
     font-size:13px;padding:4px 10px;cursor:pointer;
   }
-  /* ---------- 적 영역 ---------- */
+  /* ---------- 적 진영: 아바타 전장 (전열/후열) ---------- */
   #enemyArea{
-    display:flex;gap:8px;justify-content:center;
-    min-height:96px;
-    padding:8px;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    min-height:138px;
+    padding:8px 8px 10px;
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
   }
-  .enemy{
-    flex:1;max-width:160px;
-    background:var(--panel2);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:6px 8px;
-    text-align:center;
+  /* 후열: 작게, 위쪽, 살짝 흐리게 — 거리감 */
+  .rowBack{
+    display:flex;justify-content:center;align-items:flex-end;gap:18px;
+    transform:scale(.78);opacity:.92;
+    margin-bottom:-10px;
+  }
+  /* 전열: 크게, 아래쪽 */
+  .rowFront{
+    display:flex;justify-content:center;align-items:flex-end;gap:16px;
+  }
+  .mob{
     position:relative;
-    transition:opacity .3s, transform .15s;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    transition:opacity .3s;
   }
-  .enemy.dead{opacity:.25;filter:grayscale(1);}
-  .enemy.hit{animation:shake .25s;}
-  /* 마왕 강공 준비 상태: 붉은 펄스 */
-  .enemy.charge{
-    border-color:#c84a3a;
-    animation:chargePulse .9s infinite;
+  .mob.dead{opacity:.15;filter:grayscale(1);}
+  .mob.hit{animation:shake .25s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
   }
-  @keyframes chargePulse{
-    0%,100%{box-shadow:0 0 5px rgba(216,85,74,.3)}
-    50%{box-shadow:0 0 16px rgba(216,85,74,.8)}
+  .mob.charge .mAv{animation:chargeGlow .9s infinite;}
+  @keyframes chargeGlow{
+    0%,100%{filter:drop-shadow(0 0 3px rgba(216,85,74,.4))}
+    50%{filter:drop-shadow(0 0 11px rgba(216,85,74,.95))}
   }
-  /* 플로팅 텍스트: 피해/회복/방어 수치 연출 */
+  .mob .intent{
+    position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+    background:#5b1f1f;color:#ffd28a;border:1px solid #a35b2c;
+    font-size:10px;padding:1px 7px;border-radius:8px;white-space:nowrap;
+    animation:pulse 1s infinite;z-index:6;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .mob .mini{width:38px;height:4px;background:#171425;border-radius:3px;overflow:hidden;}
+  .mob .mini i{display:block;height:100%;background:var(--enemy-hp);border-radius:3px;transition:width .3s;}
+  .mAv{position:relative;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+  /* 슬라임: 말랑한 덩어리 */
+  .kind-slime .mAv{width:40px;height:30px;}
+  .slBody{
+    width:40px;height:30px;position:relative;
+    background:radial-gradient(circle at 32% 26%, #a8ecb8, #4aa862 72%);
+    border-radius:46% 46% 42% 42% / 64% 64% 38% 38%;
+    animation:squish 1.9s ease-in-out infinite;
+  }
+  .slBody::before{
+    content:'';position:absolute;top:10px;left:11px;
+    width:5px;height:6px;background:#173021;border-radius:50%;
+    box-shadow:12px 0 #173021;
+  }
+  @keyframes squish{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.86) scaleX(1.07)}}
+
+  /* 고블린 일반 */
+  .kind-goblin .mAv{width:42px;height:50px;animation:bob 2.2s ease-in-out infinite;}
+  .gHead{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:20px;height:17px;background:#8fae5a;border-radius:6px;z-index:2;
+  }
+  .gHead::before,.gHead::after{
+    content:'';position:absolute;top:3px;width:7px;height:7px;
+    background:#8fae5a;border-radius:1px 5px 1px 5px;
+  }
+  .gHead::before{left:-6px;transform:rotate(-18deg);}
+  .gHead::after{right:-6px;transform:rotate(18deg) scaleX(-1);}
+  .gTorso{
+    position:absolute;top:15px;left:50%;transform:translateX(-50%);
+    width:26px;height:25px;background:#6d5234;border-radius:6px 6px 8px 8px;
+  }
+  .gClub{
+    position:absolute;right:0;top:8px;width:6px;height:22px;
+    background:#5a4226;border-radius:3px 3px 2px 2px;transform:rotate(14deg);
+  }
+
+  /* 고블린 정예: 더 크고 무장 */
+  .kind-elite .mAv{width:54px;height:64px;animation:bob 2.6s ease-in-out infinite;}
+  .kind-elite .gHead{top:5px;}
+  .eHelm{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:24px;height:9px;background:#aab4c8;border-radius:6px 6px 0 0;z-index:3;
+  }
+  .eHelm::after{
+    content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    width:6px;height:10px;background:#c84a3a;border-radius:3px;
+  }
+  .eTorso{
+    position:absolute;top:20px;left:50%;transform:translateX(-50%);
+    width:34px;height:31px;background:#52607a;
+    border:2px solid #2e3850;border-radius:7px;
+  }
+  .eBlade{
+    position:absolute;right:-3px;top:6px;width:7px;height:36px;
+    background:linear-gradient(#eef2fa,#9fb0cc);border-radius:3px;transform:rotate(16deg);
+  }
+
+  /* 박쥐: 날갯짓 */
+  .kind-bat .mAv{width:48px;height:28px;animation:hover 1.6s ease-in-out infinite;}
+  .bBody{
+    position:absolute;left:50%;top:6px;transform:translateX(-50%);
+    width:14px;height:17px;background:#4a3a5e;border-radius:7px;z-index:2;
+  }
+  .bBody::before{
+    content:'';position:absolute;top:4px;left:2.5px;
+    width:3px;height:3px;background:#ff8a7d;border-radius:50%;
+    box-shadow:5.5px 0 #ff8a7d;
+  }
+  .wing{position:absolute;top:5px;width:19px;height:15px;background:#3a2c4a;}
+  .wl{left:0;clip-path:polygon(100% 15%,0 0,22% 100%,100% 85%);transform-origin:right center;animation:flapL .5s ease-in-out infinite alternate;}
+  .wr{right:0;clip-path:polygon(0 15%,100% 0,78% 100%,0 85%);transform-origin:left center;animation:flapR .5s ease-in-out infinite alternate;}
+  @keyframes flapL{from{transform:rotate(10deg)}to{transform:rotate(-20deg)}}
+  @keyframes flapR{from{transform:rotate(-10deg)}to{transform:rotate(20deg)}}
+  @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+  /* 거대 보스: 상단 공간을 점유하는 단독 아바타 */
+  .kind-boss .mAv{width:160px;height:114px;animation:breath 3s ease-in-out infinite;}
+  .bossBody{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:136px;height:98px;
+    background:radial-gradient(circle at 50% 26%, #5e2c50, #2a1230 76%);
+    border:2px solid #6e3a5e;
+    border-radius:42% 42% 30% 30% / 55% 55% 24% 24%;
+  }
+  .hornL,.hornR{
+    position:absolute;top:-6px;width:0;height:0;z-index:2;
+    border-left:11px solid transparent;border-right:11px solid transparent;
+    border-bottom:28px solid #d8b06a;
+  }
+  .hornL{left:22px;transform:rotate(-24deg);}
+  .hornR{right:22px;transform:rotate(24deg);}
+  .eye{
+    position:absolute;top:32px;width:14px;height:9px;
+    background:#ffd24a;border-radius:50%;
+    box-shadow:0 0 9px #ffae3a;animation:blink 4.2s infinite;
+  }
+  .el{left:40px;} .er{right:40px;}
+  .maw{
+    position:absolute;top:56px;left:50%;transform:translateX(-50%);
+    width:48px;height:13px;background:#160a18;border-radius:0 0 17px 17px;
+  }
+  @keyframes breath{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+  @keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.12)}}
+  .kind-boss .mini{width:124px;height:6px;}
+
+  /* 플로팅 텍스트 (기존 유지) */
   .float{
-    position:absolute;left:50%;top:28%;
+    position:absolute;left:50%;top:18%;
     transform:translateX(-50%);
     font-size:15px;font-weight:800;
     pointer-events:none;z-index:5;
@@ -105,26 +226,6 @@
     20%{opacity:1;transform:translate(-50%,0) scale(1.1)}
     100%{opacity:0;transform:translate(-50%,-22px) scale(1)}
   }
-  @keyframes shake{
-    0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
-  }
-  .enemy .sym{font-size:30px;line-height:1.2;}
-  .enemy .name{font-size:12px;color:var(--dim);margin-top:2px;}
-  .enemy .bar{
-    height:7px;background:#171425;border-radius:4px;margin-top:5px;overflow:hidden;
-  }
-  .enemy .bar i{
-    display:block;height:100%;background:var(--enemy-hp);border-radius:4px;
-    transition:width .3s;
-  }
-  .enemy .hpnum{font-size:11px;color:var(--dim);margin-top:2px;}
-  .enemy .intent{
-    position:absolute;top:-8px;left:50%;transform:translateX(-50%);
-    background:#5b1f1f;color:#ffd28a;border:1px solid #a35b2c;
-    font-size:10px;padding:1px 7px;border-radius:8px;white-space:nowrap;
-    animation:pulse 1s infinite;
-  }
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
   /* ---------- 보드 ---------- */
   #boardWrap{position:relative;}
   #board{
@@ -174,22 +275,111 @@
   @keyframes healGlow{
     0%{filter:brightness(1)}40%{filter:brightness(1.9)}100%{filter:brightness(1)}
   }
-  #heroes{display:flex;gap:5px;}
-  .hero{
-    flex:1;text-align:center;
-    background:var(--panel2);
-    border:1px solid var(--line);
-    border-radius:8px;
-    padding:4px 0 3px;
-    transition:box-shadow .2s, transform .15s;
+  /* 아군 5인: 카드가 아닌 "동료 무리" — 레고풍 아바타 */
+  #heroes{
+    display:flex;justify-content:center;align-items:flex-end;
+    min-height:78px;
   }
-  .hero.act{
-    box-shadow:0 0 0 2px var(--gold);
-    transform:translateY(-3px);
+  .ally{
+    position:relative;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    margin:0 -4px; /* 살짝 겹쳐진 무리 느낌 */
+    transition:transform .15s;
   }
-  .hero .sym{font-size:18px;}
-  .hero .name{font-size:10px;color:var(--dim);margin-top:1px;}
-  .hero .role{font-size:8px;color:#6f6790;margin-top:1px;letter-spacing:-.3px;}
+  .ally:nth-child(1){z-index:1;}
+  .ally:nth-child(2){z-index:2;}
+  .ally:nth-child(3){z-index:3;} /* 중앙이 가장 앞 */
+  .ally:nth-child(4){z-index:2;}
+  .ally:nth-child(5){z-index:1;}
+  .ally:nth-child(even) .av{margin-top:4px;} /* 미세한 높이차로 자연스러운 군집 */
+  .ally.act{z-index:9;}
+  .ally.act .av{
+    filter:drop-shadow(0 0 8px var(--gold)) brightness(1.3);
+    transform:translateY(-6px);
+  }
+  .av{
+    position:relative;width:44px;height:56px;
+    animation:bob 2.4s ease-in-out infinite;
+    transition:transform .15s, filter .2s;
+  }
+  .ally:nth-child(1) .av{animation-delay:0s;}
+  .ally:nth-child(2) .av{animation-delay:.45s;}
+  .ally:nth-child(3) .av{animation-delay:.9s;}
+  .ally:nth-child(4) .av{animation-delay:.25s;}
+  .ally:nth-child(5) .av{animation-delay:.65s;}
+  .head{
+    position:absolute;top:2px;left:50%;transform:translateX(-50%);
+    width:19px;height:17px;background:#ecd2ae;border-radius:6px;z-index:2;
+  }
+  .torso{
+    position:absolute;top:17px;left:50%;transform:translateX(-50%);
+    width:27px;height:28px;border-radius:7px 7px 9px 9px;z-index:1;
+  }
+  .prop{position:absolute;z-index:3;}
+  .ally .mini{width:34px;height:4px;background:#171425;border-radius:3px;overflow:hidden;}
+  .ally .mini i{display:block;height:100%;background:var(--hp);border-radius:3px;transition:width .3s;}
+
+  /* 전사: 붉은 갑주 + 치켜든 검 */
+  .t0 .torso{background:linear-gradient(#c25a50,#9a3e38);}
+  .t0 .prop{
+    right:-2px;top:3px;width:5px;height:27px;
+    background:linear-gradient(#eef2fa,#9fb0cc);border-radius:2px;transform:rotate(16deg);
+  }
+  .t0 .prop::after{
+    content:'';position:absolute;bottom:6px;left:-4px;
+    width:13px;height:3px;background:#caa54a;border-radius:2px;
+  }
+  /* 마법사: 보라 로브 + 뾰족 모자 */
+  .t1 .torso{
+    background:linear-gradient(#7e54d4,#5a36a8);width:31px;
+    clip-path:polygon(16% 0,84% 0,100% 100%,0 100%);border-radius:0;
+  }
+  .t1 .head::after{
+    content:'';position:absolute;top:-2px;left:-5px;
+    width:29px;height:4px;background:#51309a;border-radius:2px;
+  }
+  .t1 .prop{
+    top:-9px;left:50%;transform:translateX(-50%);
+    width:0;height:0;
+    border-left:11px solid transparent;border-right:11px solid transparent;
+    border-bottom:14px solid #51309a;
+  }
+  /* 사제: 흰 로브 + 빛나는 고리 + 십자 문장 */
+  .t2 .torso{background:linear-gradient(#f2ecdc,#d8cfba);}
+  .t2 .torso::before{
+    content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
+    width:4px;height:14px;background:#c89a3a;border-radius:1px;
+  }
+  .t2 .torso::after{
+    content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:11px;height:4px;background:#c89a3a;border-radius:1px;
+  }
+  .t2 .prop{
+    top:-6px;left:50%;transform:translateX(-50%);
+    width:20px;height:7px;border:2.5px solid #e8c860;border-radius:50%;
+    box-shadow:0 0 6px rgba(232,200,96,.7);
+    animation:halo 2.4s ease-in-out infinite;
+  }
+  @keyframes halo{0%,100%{opacity:.8}50%{opacity:1}}
+  /* 수호자: 황금 갑주 + 큰 방패 */
+  .t3 .torso{background:linear-gradient(#e0b44e,#b08428);}
+  .t3 .prop{
+    left:-8px;top:18px;width:19px;height:24px;
+    background:linear-gradient(#f0d27a,#c89a3a);
+    border:2px solid #8a6a1d;border-radius:7px 7px 12px 12px;
+  }
+  .t3 .prop::after{
+    content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);
+    width:5px;height:5px;background:#8a6a1d;border-radius:50%;
+  }
+  /* 궁수: 초록 후드 + 활 */
+  .t4 .torso{background:linear-gradient(#5a9a64,#3f7448);}
+  .t4 .head{background:#3f6f4a;border-radius:8px 8px 6px 6px;}
+  .t4 .prop{
+    right:-7px;top:11px;width:14px;height:29px;
+    border:3px solid #8a5a2d;border-left:none;
+    border-radius:0 16px 16px 0;
+  }
   #partyHpRow{
     display:flex;align-items:center;gap:8px;margin-top:7px;
   }
@@ -335,16 +525,25 @@ const ACTS = {
   4: {1:{dmg:8, label:'사격'},      2:{dmg:13, label:'연속 사격'},  3:{dmg:21, label:'필살·관통시'}},   // 최저 HP 적 저격
 };
 const BATTLES = [
-  {label:'전투 1', enemies:[
-    {name:'슬라임', sym:'🟢', maxHp:30, atk:6},
-    {name:'슬라임', sym:'🟢', maxHp:30, atk:6},
+  // 샘플 A — 소형 다수전: 전열 3 / 후열 2 (수용력 테스트)
+  {label:'전투 1', note:'샘플 A · 소형 다수', enemies:[
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'back'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'back'},
   ]},
-  {label:'전투 2', enemies:[
-    {name:'고블린 전사', sym:'👺', maxHp:45, atk:9},
-    {name:'박쥐', sym:'🦇', maxHp:25, atk:5},
+  // 샘플 B — 정예+일반: 전열 중앙 정예 + 양옆 일반, 후열 박쥐 2
+  {label:'전투 2', note:'샘플 B · 정예+일반', enemies:[
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, row:'front'},
+    {name:'고블린 정예', kind:'elite',  maxHp:60, atk:10, row:'front'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, row:'front'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, row:'back'},
   ]},
-  {label:'전투 3', enemies:[
-    {name:'미니 마왕', sym:'😈', maxHp:130, atk:8, boss:true},
+  // 샘플 C — 단독 거대 보스: 상단 공간 점유
+  {label:'전투 3', note:'샘플 C · 거대 보스', enemies:[
+    {name:'미니 마왕', kind:'boss', maxHp:130, atk:8, boss:true, row:'front'},
   ]},
 ];
 // 파티 편성: TYPES 인덱스 배열. 항목을 빼면 4인 파티 표시도 같은 코드로 대응
@@ -481,7 +680,7 @@ function floatText(el, text, cls){
   setTimeout(()=>f.remove(), 900); // 애니메이션 종료 후 클래스/노드 제거
 }
 // i번째 적 카드 DOM 요소
-function enemyEl(i){ return $('#enemyArea').children[i] || null; }
+function enemyEl(i){ return $('#enemyArea').querySelector('[data-ei="'+i+'"]'); }
 
 /* ====================== 보드 생성/판정 ====================== */
 function genBoard(){
@@ -601,36 +800,54 @@ function renderBoard(spawnSet){
   }
 }
 
+// 몬스터 아바타 마크업 (외부 이미지 없이 CSS 조형)
+function monsterAvatar(kind){
+  if(kind==='slime')  return '<div class="mAv"><div class="slBody"></div></div>';
+  if(kind==='goblin') return '<div class="mAv"><div class="gHead"></div><div class="gTorso"></div><div class="gClub"></div></div>';
+  if(kind==='elite')  return '<div class="mAv"><div class="eHelm"></div><div class="gHead"></div><div class="eTorso"></div><div class="eBlade"></div></div>';
+  if(kind==='bat')    return '<div class="mAv"><span class="wing wl"></span><div class="bBody"></div><span class="wing wr"></span></div>';
+  if(kind==='boss')   return '<div class="mAv"><div class="hornL"></div><div class="hornR"></div><div class="bossBody"><div class="eye el"></div><div class="eye er"></div><div class="maw"></div></div></div>';
+  return '';
+}
+
 function renderEnemies(hitIdx, hitAll){
   const area = $('#enemyArea');
   area.innerHTML = '';
-  enemies.forEach((e,i)=>{
+  const mk = (e,i)=>{
     const d = document.createElement('div');
-    d.className = 'enemy'
+    d.className = 'mob kind-'+e.kind
       + (e.hp<=0?' dead':'')
       + ((hitIdx===i || (hitAll && e.hp>0))?' hit':'')
-      + (e.charging?' charge':'');   // 강공 준비: 붉은 펄스
+      + (e.charging?' charge':'');
+    d.dataset.ei = i; // 진영(전열/후열) 분리 후에도 인덱스로 추적
     const pct = Math.max(0, e.hp/e.maxHp*100);
     d.innerHTML =
       (e.charging ? '<div class="intent">⚡ 강공 준비</div>' : '') +
-      '<div class="sym">'+e.sym+'</div>' +
-      '<div class="name">'+e.name+'</div>' +
-      '<div class="bar"><i style="width:'+pct+'%"></i></div>' +
-      '<div class="hpnum">'+Math.max(0,e.hp)+' / '+e.maxHp+'</div>';
-    area.appendChild(d);
-  });
+      monsterAvatar(e.kind) +
+      '<div class="mini"><i style="width:'+pct+'%"></i></div>';
+    return d;
+  };
+  // 후열(위, 작게) → 전열(아래, 크게): 진영 거리감
+  const back = document.createElement('div'); back.className = 'rowBack';
+  const front = document.createElement('div'); front.className = 'rowFront';
+  enemies.forEach((e,i)=>{ (e.row==='back' ? back : front).appendChild(mk(e,i)); });
+  if(back.children.length) area.appendChild(back);
+  area.appendChild(front);
 }
 
 function renderParty(actType){
   const h = $('#heroes');
   h.innerHTML = '';
-  // PARTY 배열 기반 렌더링: 편성 인원이 4명이든 5명이든 동일 코드로 표시
+  // PARTY 배열 기반 아바타 렌더링: 직업명/역할 텍스트 없이 실루엣·소품·색으로 구분
+  // 아바타별 미니 HP바: 현재는 파티 공유 HP를 비추는 자리표시 — 향후 개별 HP 수납 공간 확인용
+  const pct0 = Math.max(0, partyHp/PARTY_MAX_HP*100);
   PARTY.forEach(typeId=>{
-    const t = TYPES[typeId];
     const d = document.createElement('div');
-    d.className = 'hero' + (actType===typeId?' act':'');
+    d.className = 'ally t'+typeId + (actType===typeId?' act':'');
     d.dataset.type = typeId;
-    d.innerHTML = '<div class="sym">'+t.sym+'</div><div class="name">'+t.hero+'</div><div class="role">'+t.role+'</div>';
+    d.innerHTML =
+      '<div class="av"><div class="prop"></div><div class="head"></div><div class="torso"></div></div>' +
+      '<div class="mini"><i style="width:'+pct0+'%"></i></div>';
     h.appendChild(d);
   });
   const pct = Math.max(0, partyHp/PARTY_MAX_HP*100);
@@ -648,7 +865,7 @@ function renderParty(actType){
 }
 
 function renderStage(){
-  $('#stageLabel').textContent = BATTLES[battleIdx].label + ' / 3';
+  $('#stageLabel').textContent = BATTLES[battleIdx].label + '/3 · ' + BATTLES[battleIdx].note;
 }
 
 function renderAll(){
