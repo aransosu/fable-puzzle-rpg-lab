@@ -129,10 +129,10 @@
   #boardWrap{position:relative;}
   #board{
     display:grid;
-    grid-template-columns:repeat(6,1fr);
+    grid-template-columns:repeat(7,1fr);
     touch-action:none; /* 스와이프 입력과 스크롤 충돌 방지 */
     gap:5px;
-    aspect-ratio:6/8;
+    aspect-ratio:1/1; /* 7×7 정사각 전장 */
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:12px;
@@ -141,7 +141,7 @@
   .cell{
     border-radius:9px;
     display:flex;align-items:center;justify-content:center;
-    font-size:clamp(17px,6vw,27px);
+    font-size:clamp(15px,5.4vw,24px);
     cursor:pointer;
     border:2px solid transparent;
     transition:transform .15s, opacity .2s, border-color .1s;
@@ -315,8 +315,8 @@
 <script>
 'use strict';
 /* ====================== 데이터 정의 ====================== */
-const COLS = 6;       // 가로 6칸
-const ROWS = 8;       // 세로 8칸 (v0.5: 세로형 보드 실험)
+const COLS = 7;       // 가로 7칸
+const ROWS = 7;       // 세로 7칸 (v0.6: 7×7 정사각 "전장" 보드 실험)
 // 블록 ↔ 영웅 1:1 대응 정의 (role은 화면의 대응표에 표시)
 const TYPES = [
   {sym:'⚔️', block:'검',     hero:'전사',   role:'단일 공격'},
@@ -347,6 +347,10 @@ const BATTLES = [
     {name:'미니 마왕', sym:'😈', maxHp:130, atk:8, boss:true},
   ]},
 ];
+// 파티 편성: TYPES 인덱스 배열. 항목을 빼면 4인 파티 표시도 같은 코드로 대응
+// (이번 버전은 5인 고정 — 4인 모드 실제 구현은 금지 범위)
+const PARTY = [0, 1, 2, 3, 4];
+
 const PARTY_MAX_HP = 100;
 const CHAIN_BONUS = 0.3; // 연쇄 1단계당 +30%
 const BOSS_BIG = 32;     // 미니 마왕 강공 피해 (v0.3: 26→32 상향)
@@ -403,7 +407,11 @@ function floatBoard(text, cls, slot){
 }
 
 /* ── 행동선: 하단 영웅 → 퍼즐판 침범 → 상단 적 ── */
-function heroChipEl(i){ return $('#heroes').children[i] || null; }
+// 영웅 칩 참조: 블록 타입 ID → PARTY 내 위치로 변환 (편성 유연화 대응)
+function heroChipEl(typeId){
+  const pos = PARTY.indexOf(typeId);
+  return pos >= 0 ? ($('#heroes').children[pos] || null) : null;
+}
 
 // 요소 중심 좌표 (#app 기준 px)
 function centerOf(el){
@@ -616,9 +624,12 @@ function renderEnemies(hitIdx, hitAll){
 function renderParty(actType){
   const h = $('#heroes');
   h.innerHTML = '';
-  TYPES.forEach((t,i)=>{
+  // PARTY 배열 기반 렌더링: 편성 인원이 4명이든 5명이든 동일 코드로 표시
+  PARTY.forEach(typeId=>{
+    const t = TYPES[typeId];
     const d = document.createElement('div');
-    d.className = 'hero' + (actType===i?' act':'');
+    d.className = 'hero' + (actType===typeId?' act':'');
+    d.dataset.type = typeId;
     d.innerHTML = '<div class="sym">'+t.sym+'</div><div class="name">'+t.hero+'</div><div class="role">'+t.role+'</div>';
     h.appendChild(d);
   });
