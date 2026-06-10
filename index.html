@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Emblem Quest Lab</title>
+<style>
+  :root{
+    --bg:#14121f;
+    --panel:#201c31;
+    --panel2:#2a2440;
+    --line:#3a3354;
+    --ink:#e8e4f2;
+    --dim:#9a93b5;
+    --gold:#e8b34b;
+    --hp:#5fc77a;
+    --hp-low:#d8554a;
+    --enemy-hp:#d8554a;
+    --c-sword:#8fa3c8;
+    --c-fire:#e0633e;
+    --c-staff:#58b878;
+    --c-shield:#d9a93f;
+    --c-bow:#9b6fd0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    display:flex;justify-content:center;
+    touch-action:manipulation;
+    user-select:none;-webkit-user-select:none;
+  }
+  #app{
+    width:100%;max-width:430px;
+    min-height:100dvh;
+    display:flex;flex-direction:column;
+    padding:8px 10px 10px;
+    gap:8px;
+    position:relative;
+  }
+  /* ---------- 상단 ---------- */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:6px 10px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+  }
+  header .title{
+    font-size:13px;letter-spacing:2px;color:var(--gold);font-weight:700;
+  }
+  header .stage{font-size:13px;color:var(--dim);}
+  header button{
+    background:var(--panel2);color:var(--ink);
+    border:1px solid var(--line);border-radius:8px;
+    font-size:13px;padding:4px 10px;cursor:pointer;
+  }
+  /* ---------- 적 영역 ---------- */
+  #enemyArea{
+    display:flex;gap:8px;justify-content:center;
+    min-height:96px;
+    padding:8px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+  }
+  .enemy{
+    flex:1;max-width:160px;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:6px 8px;
+    text-align:center;
+    position:relative;
+    transition:opacity .3s, transform .15s;
+  }
+  .enemy.dead{opacity:.25;filter:grayscale(1);}
+  .enemy.hit{animation:shake .25s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
+  }
+  .enemy .sym{font-size:30px;line-height:1.2;}
+  .enemy .name{font-size:12px;color:var(--dim);margin-top:2px;}
+  .enemy .bar{
+    height:7px;background:#171425;border-radius:4px;margin-top:5px;overflow:hidden;
+  }
+  .enemy .bar i{
+    display:block;height:100%;background:var(--enemy-hp);border-radius:4px;
+    transition:width .3s;
+  }
+  .enemy .hpnum{font-size:11px;color:var(--dim);margin-top:2px;}
+  .enemy .intent{
+    position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    background:#5b1f1f;color:#ffd28a;border:1px solid #a35b2c;
+    font-size:10px;padding:1px 7px;border-radius:8px;white-space:nowrap;
+    animation:pulse 1s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  /* ---------- 보드 ---------- */
+  #boardWrap{position:relative;}
+  #board{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:5px;
+    aspect-ratio:1/1;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:7px;
+  }
+  .cell{
+    border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:clamp(20px,7.2vw,32px);
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:transform .15s, opacity .2s, border-color .1s;
+    background:#171425;
+  }
+  .cell.t0{background:color-mix(in srgb,var(--c-sword) 22%,#171425);}
+  .cell.t1{background:color-mix(in srgb,var(--c-fire) 22%,#171425);}
+  .cell.t2{background:color-mix(in srgb,var(--c-staff) 22%,#171425);}
+  .cell.t3{background:color-mix(in srgb,var(--c-shield) 22%,#171425);}
+  .cell.t4{background:color-mix(in srgb,var(--c-bow) 22%,#171425);}
+  .cell.sel{border-color:var(--gold);transform:scale(1.08);}
+  .cell.removing{transform:scale(.2);opacity:0;}
+  .cell.spawn{animation:drop .25s;}
+  @keyframes drop{from{transform:translateY(-14px);opacity:.3}to{transform:translateY(0);opacity:1}}
+  /* ---------- 파티 ---------- */
+  #partyArea{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:7px 9px;
+  }
+  #heroes{display:flex;gap:5px;}
+  .hero{
+    flex:1;text-align:center;
+    background:var(--panel2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:4px 0 3px;
+    transition:box-shadow .2s, transform .15s;
+  }
+  .hero.act{
+    box-shadow:0 0 0 2px var(--gold);
+    transform:translateY(-3px);
+  }
+  .hero .sym{font-size:18px;}
+  .hero .name{font-size:10px;color:var(--dim);margin-top:1px;}
+  .hero .role{font-size:8px;color:#6f6790;margin-top:1px;letter-spacing:-.3px;}
+  #partyHpRow{
+    display:flex;align-items:center;gap:8px;margin-top:7px;
+  }
+  #partyHpRow .label{font-size:11px;color:var(--dim);white-space:nowrap;}
+  #partyBar{
+    flex:1;height:11px;background:#171425;border-radius:6px;overflow:hidden;
+  }
+  #partyBar i{
+    display:block;height:100%;background:var(--hp);border-radius:6px;
+    transition:width .3s, background .3s;
+  }
+  #partyHpNum{font-size:12px;color:var(--ink);min-width:54px;text-align:right;}
+  #shieldTag{
+    font-size:10px;color:#ffd97a;background:#3d3214;border:1px solid #6e5a23;
+    border-radius:7px;padding:1px 7px;display:none;
+  }
+  /* ---------- 로그 ---------- */
+  #log{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:7px 10px;
+    height:110px;
+    overflow-y:auto;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--dim);
+  }
+  #log .good{color:#8fe0a4;}
+  #log .bad{color:#f09a92;}
+  #log .gold{color:var(--gold);}
+  #log .sys{color:#7e76a0;}
+  /* ---------- 오버레이 ---------- */
+  #overlay{
+    position:absolute;inset:0;
+    background:rgba(12,10,22,.86);
+    display:none;
+    align-items:center;justify-content:center;
+    flex-direction:column;gap:14px;
+    border-radius:12px;
+    z-index:10;text-align:center;padding:20px;
+  }
+  #overlay.show{display:flex;}
+  #overlay h2{font-size:24px;color:var(--gold);letter-spacing:3px;}
+  #overlay p{font-size:13px;color:var(--dim);line-height:1.6;}
+  #overlay button{
+    background:var(--gold);color:#241c08;border:none;
+    border-radius:10px;font-size:15px;font-weight:700;
+    padding:10px 28px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="title">EMBLEM QUEST LAB</span>
+    <span class="stage" id="stageLabel">전투 1 / 3</span>
+    <button id="restartBtn">↻ 재시작</button>
+  </header>
+
+  <div id="enemyArea"></div>
+
+  <div id="boardWrap">
+    <div id="board"></div>
+    <div id="overlay">
+      <h2 id="ovTitle"></h2>
+      <p id="ovText"></p>
+      <button id="ovBtn"></button>
+    </div>
+  </div>
+
+  <div id="partyArea">
+    <div id="heroes"></div>
+    <div id="partyHpRow">
+      <span class="label">파티 HP</span>
+      <div id="partyBar"><i></i></div>
+      <span id="partyHpNum"></span>
+      <span id="shieldTag"></span>
+    </div>
+  </div>
+
+  <div id="log"></div>
+</div>
+
+<script>
+'use strict';
+/* ====================== 데이터 정의 ====================== */
+const SIZE = 6;
+// 블록 ↔ 영웅 1:1 대응 정의 (role은 화면의 대응표에 표시)
+const TYPES = [
+  {sym:'⚔️', block:'검',     hero:'전사',   role:'단일 공격'},
+  {sym:'🔥', block:'불꽃',   hero:'마법사', role:'전체 공격'},
+  {sym:'🪄', block:'지팡이', hero:'사제',   role:'회복'},
+  {sym:'🛡️', block:'방패',   hero:'수호자', role:'피해 감소'},
+  {sym:'🏹', block:'활',     hero:'궁수',   role:'최저HP 저격'},
+];
+// 행동 테이블: 티어 1(3개) / 2(4개) / 3(5개 이상)
+// dmg=피해, heal=회복, red=피해 감소율, counter=반격 피해
+const ACTS = {
+  0: {1:{dmg:9, label:'베기'},      2:{dmg:15, label:'강타'},       3:{dmg:24, label:'필살·일섬'}},
+  1: {1:{dmg:5, label:'화염탄'},    2:{dmg:9,  label:'화염폭풍'},   3:{dmg:14, label:'필살·메테오'}},   // 전체 공격
+  2: {1:{heal:8, label:'치유'},     2:{heal:14,label:'대치유'},     3:{heal:24,label:'필살·성광'}},
+  3: {1:{red:0.5, label:'방어 태세'},2:{red:0.75,label:'철벽'},     3:{red:0.75, counter:6, label:'필살·성역'}}, // 5매치: 크게 감소 + 반격
+  4: {1:{dmg:8, label:'사격'},      2:{dmg:13, label:'연속 사격'},  3:{dmg:21, label:'필살·관통시'}},   // 최저 HP 적 저격
+};
+const BATTLES = [
+  {label:'전투 1', enemies:[
+    {name:'슬라임', sym:'🟢', maxHp:30, atk:6},
+    {name:'슬라임', sym:'🟢', maxHp:30, atk:6},
+  ]},
+  {label:'전투 2', enemies:[
+    {name:'고블린 전사', sym:'👺', maxHp:45, atk:9},
+    {name:'박쥐', sym:'🦇', maxHp:25, atk:5},
+  ]},
+  {label:'전투 3', enemies:[
+    {name:'미니 마왕', sym:'😈', maxHp:130, atk:8, boss:true},
+  ]},
+];
+const PARTY_MAX_HP = 100;
+const CHAIN_BONUS = 0.3; // 연쇄 1단계당 +30%
+
+/* ====================== 상태 ====================== */
+let board = [];          // length 36, 값 0~4
+let sel = null;          // 선택된 셀 index
+let state = 'idle';      // idle | busy | over
+let battleIdx = 0;
+let enemies = [];
+let partyHp = PARTY_MAX_HP;
+let shieldRed = 0;       // 이번 라운드 적 공격 감소율
+let shieldCounter = 0;   // 이번 라운드 반격 피해 (수호자 5매치)
+let actionQueue = [];
+let bossTurn = 0;
+
+/* ====================== 유틸 ====================== */
+const $ = s => document.querySelector(s);
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const rc = i => [Math.floor(i/SIZE), i%SIZE];
+const idx = (r,c) => r*SIZE+c;
+const rand = n => Math.floor(Math.random()*n);
+
+function addLog(msg, cls){
+  const el = document.createElement('div');
+  if(cls) el.className = cls;
+  el.textContent = msg;
+  const log = $('#log');
+  log.appendChild(el);
+  while(log.children.length > 60) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ====================== 보드 생성/판정 ====================== */
+function genBoard(){
+  const b = new Array(SIZE*SIZE);
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      let t;
+      do{
+        t = rand(TYPES.length);
+      }while(
+        (c>=2 && b[idx(r,c-1)]===t && b[idx(r,c-2)]===t) ||
+        (r>=2 && b[idx(r-1,c)]===t && b[idx(r-2,c)]===t)
+      );
+      b[idx(r,c)] = t;
+    }
+  }
+  return b;
+}
+
+// 매치된 셀 집합 반환
+function findMatchedCells(b){
+  const matched = new Set();
+  // 가로
+  for(let r=0;r<SIZE;r++){
+    let run=1;
+    for(let c=1;c<=SIZE;c++){
+      if(c<SIZE && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r,c-1)]) run++;
+      else{
+        if(run>=3 && b[idx(r,c-1)]!==null)
+          for(let k=c-run;k<c;k++) matched.add(idx(r,k));
+        run=1;
+      }
+    }
+  }
+  // 세로
+  for(let c=0;c<SIZE;c++){
+    let run=1;
+    for(let r=1;r<=SIZE;r++){
+      if(r<SIZE && b[idx(r,c)]!==null && b[idx(r,c)]===b[idx(r-1,c)]) run++;
+      else{
+        if(run>=3 && b[idx(r-1,c)]!==null)
+          for(let k=r-run;k<r;k++) matched.add(idx(k,c));
+        run=1;
+      }
+    }
+  }
+  return matched;
+}
+
+// 매치 셀을 같은 타입 연결 그룹으로 묶기 (L/T 모양은 하나의 그룹 = 더 큰 행동)
+function findMatchGroups(b){
+  const matched = findMatchedCells(b);
+  const visited = new Set();
+  const groups = [];
+  for(const start of matched){
+    if(visited.has(start)) continue;
+    const type = b[start];
+    const cells = [];
+    const stack = [start];
+    visited.add(start);
+    while(stack.length){
+      const i = stack.pop();
+      cells.push(i);
+      const [r,c] = rc(i);
+      [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].forEach(([nr,nc])=>{
+        if(nr<0||nr>=SIZE||nc<0||nc>=SIZE) return;
+        const ni = idx(nr,nc);
+        if(matched.has(ni) && !visited.has(ni) && b[ni]===type){
+          visited.add(ni);
+          stack.push(ni);
+        }
+      });
+    }
+    groups.push({type, cells});
+  }
+  return groups;
+}
+
+function hasValidMove(b){
+  const test = b.slice();
+  const trySwap = (a,bI)=>{
+    [test[a],test[bI]] = [test[bI],test[a]];
+    const ok = findMatchedCells(test).size>0;
+    [test[a],test[bI]] = [test[bI],test[a]];
+    return ok;
+  };
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      if(c<SIZE-1 && trySwap(idx(r,c), idx(r,c+1))) return true;
+      if(r<SIZE-1 && trySwap(idx(r,c), idx(r+1,c))) return true;
+    }
+  }
+  return false;
+}
+
+function ensurePlayable(){
+  if(!hasValidMove(board)){
+    board = genBoard();
+    addLog('교환 가능한 블록이 없어 보드를 재배열했다.', 'sys');
+    renderBoard();
+  }
+}
+
+/* ====================== 렌더링 ====================== */
+function renderBoard(spawnSet){
+  const el = $('#board');
+  el.innerHTML = '';
+  for(let i=0;i<SIZE*SIZE;i++){
+    const d = document.createElement('div');
+    const t = board[i];
+    d.className = 'cell' + (t===null ? '' : ' t'+t);
+    if(t!==null) d.textContent = TYPES[t].sym;
+    if(sel===i) d.classList.add('sel');
+    if(spawnSet && spawnSet.has(i)) d.classList.add('spawn');
+    d.dataset.i = i;
+    el.appendChild(d);
+  }
+}
+
+function renderEnemies(hitIdx){
+  const area = $('#enemyArea');
+  area.innerHTML = '';
+  enemies.forEach((e,i)=>{
+    const d = document.createElement('div');
+    d.className = 'enemy' + (e.hp<=0?' dead':'') + (hitIdx===i?' hit':'');
+    const pct = Math.max(0, e.hp/e.maxHp*100);
+    d.innerHTML =
+      (e.charging ? '<div class="intent">⚡ 강공 예고!</div>' : '') +
+      '<div class="sym">'+e.sym+'</div>' +
+      '<div class="name">'+e.name+'</div>' +
+      '<div class="bar"><i style="width:'+pct+'%"></i></div>' +
+      '<div class="hpnum">'+Math.max(0,e.hp)+' / '+e.maxHp+'</div>';
+    area.appendChild(d);
+  });
+}
+
+function renderParty(actType){
+  const h = $('#heroes');
+  h.innerHTML = '';
+  TYPES.forEach((t,i)=>{
+    const d = document.createElement('div');
+    d.className = 'hero' + (actType===i?' act':'');
+    d.innerHTML = '<div class="sym">'+t.sym+'</div><div class="name">'+t.hero+'</div><div class="role">'+t.role+'</div>';
+    h.appendChild(d);
+  });
+  const pct = Math.max(0, partyHp/PARTY_MAX_HP*100);
+  const bar = $('#partyBar i');
+  bar.style.width = pct+'%';
+  bar.style.background = pct<=30 ? 'var(--hp-low)' : 'var(--hp)';
+  $('#partyHpNum').textContent = Math.max(0,partyHp)+' / '+PARTY_MAX_HP;
+  const tag = $('#shieldTag');
+  if(shieldRed>0){
+    tag.style.display='inline-block';
+    tag.textContent = '보호 '+Math.round(shieldRed*100)+'%';
+  }else tag.style.display='none';
+}
+
+function renderStage(){
+  $('#stageLabel').textContent = BATTLES[battleIdx].label + ' / 3';
+}
+
+function renderAll(){
+  renderStage(); renderEnemies(); renderBoard(); renderParty();
+}
+
+/* ====================== 전투 로직 ====================== */
+function aliveEnemies(){ return enemies.filter(e=>e.hp>0); }
+
+function queueAction(type, size, chain){
+  const tier = size>=5 ? 3 : size===4 ? 2 : 1;
+  const mult = 1 + CHAIN_BONUS*(chain-1);
+  actionQueue.push({type, tier, mult, chain});
+}
+
+async function executeActions(){
+  for(const a of actionQueue){
+    if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) continue;
+    renderParty(a.type);
+    const spec = ACTS[a.type][a.tier];
+    const chainTxt = a.chain>1 ? ' (연쇄 x'+a.chain+')' : '';
+
+    if(a.type===0){ // 전사: 선두 단일
+      const tgt = aliveEnemies()[0];
+      if(tgt){
+        const dmg = Math.round(spec.dmg * a.mult);
+        tgt.hp -= dmg;
+        addLog('전사의 '+spec.label+'! '+tgt.name+'에게 '+dmg+' 피해'+chainTxt, 'good');
+        renderEnemies(enemies.indexOf(tgt));
+        if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
+      }
+    }
+    else if(a.type===1){ // 마법사: 전체
+      const dmg = Math.round(spec.dmg * a.mult);
+      const targets = aliveEnemies();
+      targets.forEach(e=>{ e.hp -= dmg; });
+      addLog('마법사의 '+spec.label+'! 모든 적에게 '+dmg+' 피해'+chainTxt, 'good');
+      renderEnemies();
+      targets.forEach(e=>{ if(e.hp<=0) addLog(e.name+' 처치!', 'gold'); });
+    }
+    else if(a.type===2){ // 사제: 회복
+      const heal = Math.round(spec.heal * a.mult);
+      const before = partyHp;
+      partyHp = Math.min(PARTY_MAX_HP, partyHp + heal);
+      addLog('사제의 '+spec.label+'! HP '+(partyHp-before)+' 회복'+chainTxt, 'good');
+    }
+    else if(a.type===3){ // 수호자: 다음 적 공격 피해 감소 (+5매치 시 반격)
+      shieldRed = Math.max(shieldRed, spec.red);
+      let msg = '수호자의 '+spec.label+'! 이번 적 공격 피해 '+Math.round(spec.red*100)+'% 감소';
+      if(spec.counter){
+        shieldCounter = Math.max(shieldCounter, Math.round(spec.counter * a.mult));
+        msg += ' + 반격 '+shieldCounter;
+      }
+      addLog(msg + chainTxt, 'good');
+    }
+    else if(a.type===4){ // 궁수: HP가 가장 낮은 적 저격
+      const pool = aliveEnemies();
+      const tgt = pool.length ? pool.reduce((m,e)=> e.hp<m.hp ? e : m, pool[0]) : null;
+      if(tgt){
+        const dmg = Math.round(spec.dmg * a.mult);
+        tgt.hp -= dmg;
+        addLog('궁수의 '+spec.label+'! '+tgt.name+'에게 '+dmg+' 피해'+chainTxt, 'good');
+        renderEnemies(enemies.indexOf(tgt));
+        if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
+      }
+    }
+    renderParty(a.type);
+    await delay(380);
+  }
+  actionQueue = [];
+  renderParty();
+}
+
+async function enemyTurn(){
+  for(const e of enemies){
+    if(e.hp<=0) continue;
+    let dmg = e.atk;
+    let label = '공격';
+    if(e.boss){
+      if(e.charging){
+        dmg = 26; label = '마왕의 일격'; e.charging = false;
+      }else{
+        bossTurn++;
+        if(bossTurn % 3 === 0){
+          e.charging = true;
+          addLog('미니 마왕이 힘을 모은다... 다음 턴, 강력한 일격이 온다!', 'bad');
+          renderEnemies();
+          await delay(420);
+          continue; // 충전 턴은 공격하지 않음
+        }
+      }
+    }
+    const eff = Math.round(dmg * (1 - shieldRed));
+    partyHp -= eff;
+    if(shieldRed>0 && eff<dmg){
+      addLog(e.name+'의 '+label+'! 수호자가 막아내 '+eff+' 피해 ('+dmg+'→'+eff+')', 'bad');
+    }else{
+      addLog(e.name+'의 '+label+'! 파티에 '+eff+' 피해', 'bad');
+    }
+    // 수호자 5매치 반격: 공격해 온 적에게 소량 피해
+    if(shieldCounter>0){
+      e.hp -= shieldCounter;
+      addLog('수호자의 반격! '+e.name+'에게 '+shieldCounter+' 피해', 'good');
+      renderEnemies(enemies.indexOf(e));
+      if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+    }
+    renderParty();
+    await delay(420);
+    if(partyHp<=0) break;
+  }
+  shieldRed = 0;
+  shieldCounter = 0;
+  renderParty();
+  renderEnemies();
+}
+
+/* ====================== 진행 흐름 ====================== */
+async function resolveBoard(){
+  let chain = 0;
+  while(true){
+    const groups = findMatchGroups(board);
+    if(groups.length===0) break;
+    chain++;
+    if(chain>1) addLog('연쇄 '+chain+'단!', 'gold');
+
+    for(const g of groups){
+      queueAction(g.type, g.cells.length, chain);
+      const t = TYPES[g.type];
+      addLog(t.block+' 블록 '+g.cells.length+'개 삭제 → '+t.hero+' 발동 대기', 'sys');
+    }
+
+    // 삭제 연출
+    const removeSet = new Set();
+    groups.forEach(g=>g.cells.forEach(c=>removeSet.add(c)));
+    document.querySelectorAll('.cell').forEach(c=>{
+      if(removeSet.has(+c.dataset.i)) c.classList.add('removing');
+    });
+    await delay(300);
+
+    // 삭제 → 낙하 → 생성
+    removeSet.forEach(i=>{ board[i]=null; });
+    const spawnSet = new Set();
+    for(let c=0;c<SIZE;c++){
+      let write = SIZE-1;
+      for(let r=SIZE-1;r>=0;r--){
+        if(board[idx(r,c)]!==null){
+          board[idx(write,c)] = board[idx(r,c)];
+          if(write!==r) board[idx(r,c)] = null;
+          write--;
+        }
+      }
+      for(let r=write;r>=0;r--){
+        board[idx(r,c)] = rand(TYPES.length);
+        spawnSet.add(idx(r,c));
+      }
+    }
+    renderBoard(spawnSet);
+    await delay(260);
+  }
+
+  await executeActions();
+
+  if(aliveEnemies().length===0){
+    await onBattleWon();
+    return;
+  }
+
+  await enemyTurn();
+
+  if(partyHp<=0){
+    onDefeat();
+    return;
+  }
+  // 수호자 반격으로 마지막 적이 쓰러졌을 수 있음
+  if(aliveEnemies().length===0){
+    await onBattleWon();
+    return;
+  }
+
+  ensurePlayable();
+  state = 'idle';
+}
+
+async function onBattleWon(){
+  addLog('── '+BATTLES[battleIdx].label+' 승리! ──', 'gold');
+  await delay(500);
+  if(battleIdx >= BATTLES.length-1){
+    // 3번째 전투 클리어 = 전체 클리어
+    showOverlay('전체 클리어!', '마왕을 물리쳤다. 다섯 영웅의 모험은 계속된다...', '처음부터 다시', resetGame);
+    state = 'over';
+    return;
+  }
+  state = 'over';
+  showOverlay('승리!', BATTLES[battleIdx].label+'을(를) 돌파했다.', '다음 전투 ▶', ()=>{
+    battleIdx++;
+    setupBattle();
+    state = 'idle';
+  });
+}
+
+function onDefeat(){
+  addLog('파티가 쓰러졌다...', 'bad');
+  showOverlay('패배', '파티의 HP가 0이 되었다.\n블록을 다시 모아 도전하자.', '다시 시작', resetGame);
+  state = 'over';
+}
+
+function setupBattle(){
+  enemies = BATTLES[battleIdx].enemies.map(e=>({...e, hp:e.maxHp, charging:false}));
+  bossTurn = 0;
+  shieldRed = 0;
+  shieldCounter = 0;
+  board = genBoard();
+  if(!hasValidMove(board)) board = genBoard();
+  sel = null;
+  addLog('═══ '+BATTLES[battleIdx].label+' 시작 ═══', 'gold');
+  enemies.forEach(e=>addLog(e.name+' 등장! (HP '+e.maxHp+')', 'sys'));
+  renderAll();
+}
+
+function showOverlay(title, text, btnLabel, onClick){
+  $('#ovTitle').textContent = title;
+  $('#ovText').textContent = text;
+  $('#ovBtn').textContent = btnLabel;
+  $('#ovBtn').onclick = ()=>{ hideOverlay(); onClick(); };
+  $('#overlay').classList.add('show');
+}
+function hideOverlay(){ $('#overlay').classList.remove('show'); }
+
+function resetGame(){
+  battleIdx = 0;
+  partyHp = PARTY_MAX_HP;
+  actionQueue = [];
+  $('#log').innerHTML = '';
+  addLog('Emblem Quest Lab — 블록을 맞춰 영웅을 움직여라!', 'gold');
+  addLog('블록을 탭해 선택하고, 인접한 블록을 탭해 교환한다.', 'sys');
+  setupBattle();
+  state = 'idle';
+}
+
+/* ====================== 입력 ====================== */
+function adjacent(a,b){
+  const [r1,c1]=rc(a), [r2,c2]=rc(b);
+  return Math.abs(r1-r2)+Math.abs(c1-c2)===1;
+}
+
+async function trySwap(a,b){
+  state = 'busy';
+  [board[a],board[b]] = [board[b],board[a]];
+  sel = null;
+  renderBoard();
+  await delay(170);
+  if(findMatchedCells(board).size===0){
+    [board[a],board[b]] = [board[b],board[a]];
+    renderBoard();
+    await delay(150);
+    state = 'idle';
+    return;
+  }
+  await resolveBoard();
+}
+
+$('#board').addEventListener('click', e=>{
+  const cell = e.target.closest('.cell');
+  if(!cell || state!=='idle') return;
+  const i = +cell.dataset.i;
+  if(sel===null){
+    sel = i; renderBoard();
+  }else if(sel===i){
+    sel = null; renderBoard();
+  }else if(adjacent(sel,i)){
+    trySwap(sel,i);
+  }else{
+    sel = i; renderBoard();
+  }
+});
+
+$('#restartBtn').addEventListener('click', ()=>{
+  if(state==='busy') return;
+  hideOverlay();
+  resetGame();
+});
+
+/* ====================== 시작 ====================== */
+resetGame();
+</script>
+</body>
+</html>
