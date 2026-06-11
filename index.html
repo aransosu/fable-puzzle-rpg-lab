@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- Emblem Quest Lab v0.15 — FABLE_TASK_015: Puzzle Stone Impact & Burst FX R&D -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -274,24 +275,108 @@
     border-radius:12px;
     padding:7px;
   }
+  /* v0.15: 블록 = 2.5D 전투 스톤 — 상단 하이라이트 + 측면 베벨 + 하단 두께감.
+     그라데이션/inset 그림자만 사용. blur·상시 filter 없음 (모바일 성능). */
   .cell{
-    border-radius:9px;
+    --tc:#5a5470; /* 속성색: t0~t4가 덮어씀 */
+    position:relative;
+    border-radius:10px;
     display:flex;align-items:center;justify-content:center;
     font-size:clamp(15px,5.4vw,24px);
     cursor:pointer;
     border:2px solid transparent;
     transition:transform .15s, opacity .2s, border-color .1s;
-    background:#171425;
+    background:#171425; /* 빈 칸 (낙하 과도기) */
   }
-  .cell.t0{background:color-mix(in srgb,var(--c-sword) 22%,#171425);}
-  .cell.t1{background:color-mix(in srgb,var(--c-fire) 22%,#171425);}
-  .cell.t2{background:color-mix(in srgb,var(--c-staff) 22%,#171425);}
-  .cell.t3{background:color-mix(in srgb,var(--c-shield) 22%,#171425);}
-  .cell.t4{background:color-mix(in srgb,var(--c-bow) 22%,#171425);}
-  .cell.sel{border-color:var(--gold);transform:scale(1.08);}
-  .cell.removing{transform:scale(.2);opacity:0;}
+  .cell.t0,.cell.t1,.cell.t2,.cell.t3,.cell.t4{
+    border-color:color-mix(in srgb,var(--tc) 42%,#06040c);
+    background:
+      radial-gradient(circle at 32% 24%, rgba(255,255,255,.30), rgba(255,255,255,0) 46%),
+      linear-gradient(168deg,
+        color-mix(in srgb,var(--tc) 58%,#332b4d) 0%,
+        color-mix(in srgb,var(--tc) 34%,#191427) 56%,
+        color-mix(in srgb,var(--tc) 18%,#0d0a16) 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255,255,255,.20),   /* 상단 유리 하이라이트 */
+      inset 1px 0 1px rgba(255,255,255,.06),   /* 좌측 미세 베벨 */
+      inset 0 -3px 4px rgba(0,0,0,.50),        /* 하단 두께/음영 */
+      0 2px 3px rgba(0,0,0,.38);               /* 보드에서 살짝 뜬 느낌 */
+    text-shadow:0 2px 3px rgba(0,0,0,.55);     /* 심볼도 조각처럼 박힌 인상 */
+  }
+  .cell.t0{--tc:var(--c-sword);}
+  .cell.t1{--tc:var(--c-fire);}
+  .cell.t2{--tc:var(--c-staff);}
+  .cell.t3{--tc:var(--c-shield);}
+  .cell.t4{--tc:var(--c-bow);}
+  .cell:active{transform:scale(.94);} /* 누르는 손맛 */
+  .cell.sel{
+    border-color:var(--gold);transform:scale(1.08);
+    box-shadow:
+      inset 0 2px 2px rgba(255,255,255,.24),
+      inset 0 -3px 4px rgba(0,0,0,.50),
+      0 0 8px rgba(232,179,75,.55);
+  }
+  /* v0.15: 매치 직전 반응 — 힘이 응축되며 squash&stretch로 부르르 */
+  .cell.primed{
+    border-color:#fff;
+    filter:brightness(1.45); /* 200ms 한정 사용 — 상시 아님 */
+    animation:prime .2s ease-in forwards;
+    z-index:2;
+  }
+  @keyframes prime{
+    0%{transform:scale(1)}
+    30%{transform:scale(1.07,.92) rotate(-3deg)}
+    60%{transform:scale(.93,1.08) rotate(3deg)}
+    100%{transform:scale(1.12)}
+  }
+  /* v0.15: 팡! 터짐 — 한 번 부풀었다가 수축 소멸 (단순 fade 아님) */
+  .cell.removing{animation:popOut .17s ease-in forwards;}
+  @keyframes popOut{
+    0%{transform:scale(1.12);opacity:1}
+    45%{transform:scale(1.30);opacity:1}
+    100%{transform:scale(.15);opacity:0}
+  }
   .cell.spawn{animation:drop .25s;}
   @keyframes drop{from{transform:translateY(-14px);opacity:.3}to{transform:translateY(0);opacity:1}}
+  /* ---------- v0.15: 터짐 FX 레이어 (보드 위, 터치 통과, 연출 후 노드 즉시 제거) ---------- */
+  #burstLayer{position:absolute;inset:0;pointer-events:none;z-index:24;overflow:hidden;border-radius:12px;}
+  .fxFlash{ /* 셀 중심 속성색 섬광 */
+    position:absolute;width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,var(--fc,#fff) 40%,transparent 70%);
+    transform:translate(-50%,-50%) scale(.5);opacity:.9;
+    animation:flashOut .22s ease-out forwards;
+  }
+  @keyframes flashOut{
+    40%{transform:translate(-50%,-50%) scale(1.6);opacity:.85}
+    100%{transform:translate(-50%,-50%) scale(2.1);opacity:0}
+  }
+  .fxRing{ /* 매치 그룹 중심 확산 링 — 연쇄 단계로 반경 강화(--fs) */
+    position:absolute;width:14px;height:14px;border-radius:50%;
+    border:2px solid var(--fc,#fff);
+    transform:translate(-50%,-50%) scale(.4);opacity:.95;
+    animation:ringOut .34s ease-out forwards;
+  }
+  @keyframes ringOut{
+    to{transform:translate(-50%,-50%) scale(var(--fs,3));opacity:0}
+  }
+  .fxShard{ /* 스톤 파편 — transform만 사용 (GPU 합성) */
+    position:absolute;width:5px;height:5px;border-radius:2px;
+    background:var(--fc,#fff);
+    transform:translate(-50%,-50%);opacity:.95;
+    animation:shardFly .38s ease-out forwards;
+  }
+  @keyframes shardFly{
+    to{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px))) scale(.3) rotate(200deg);opacity:0}
+  }
+  .fxWisp{ /* 에너지 잔상 — 파티(아래) 방향으로 흘러내리는 속성 빛 = 행동 자원 확보감 */
+    position:absolute;width:9px;height:9px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,var(--fc,#fff) 55%,transparent 78%);
+    transform:translate(-50%,-50%);opacity:.9;
+    animation:wispDown .5s ease-in forwards;
+  }
+  @keyframes wispDown{
+    to{transform:translate(-50%,calc(-50% + var(--wy,70px))) scale(.45);opacity:0}
+  }
   /* ---------- 파티 ---------- */
   #partyArea{
     background:var(--panel);
@@ -575,6 +660,17 @@
     animation:floatUp .9s ease-out forwards;
     white-space:nowrap;
   }
+  /* v0.15: 연쇄 플로팅 — 더 경쾌한 바운스 팝 */
+  .boardFloat.chainPop{
+    font-size:14.5px;
+    animation:chainPop .9s ease-out forwards;
+  }
+  @keyframes chainPop{
+    0%{opacity:0;transform:translateX(-50%) scale(.5)}
+    18%{opacity:1;transform:translateX(-50%) scale(1.28)}
+    34%{transform:translateX(-50%) scale(1)}
+    100%{opacity:0;transform:translateX(-50%) translateY(-26px) scale(1)}
+  }
   /* ---------- 오버레이 ---------- */
   #overlay{
     position:absolute;inset:0;
@@ -609,6 +705,7 @@
 
   <div id="boardWrap">
     <div id="board"></div>
+    <div id="burstLayer"></div>
     <div id="banner"></div>
     <div id="queueBadge"></div>
     <div id="overlay">
@@ -639,6 +736,17 @@ const TYPES = [
   {sym:'🛡️', block:'방패',   hero:'수호자', role:'피해 감소'},
   {sym:'🏹', block:'활',     hero:'궁수',   role:'최저HP 저격'},
 ];
+// v0.15: FX용 속성색 — CSS 변수에서 1회 추출 (블록/플로팅/버스트 색 일원화)
+const TYPE_CVARS = ['--c-sword','--c-fire','--c-staff','--c-shield','--c-bow'];
+const TYPE_COLORS = TYPE_CVARS.map(v=>{
+  const c = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  return c || '#9a93b5';
+});
+// v0.15: 터짐 연출 타이밍/예산 (FABLE_TASK_015)
+const PRIME_MS = 200;      // 매치 직전 반응(응축) 시간
+const POP_MS   = 170;      // 팡 터짐 시간 (기존 일괄 300ms → 200+170으로 분리)
+const FX_MAX_SHARDS = 36;  // 한 번의 터짐에서 파편 총량 상한 — 모바일 보호
+const FX_LIFE_MS = 560;    // FX 노드 일괄 제거 시점 (최장 애니메이션 .5s + 여유)
 // 행동 테이블: 티어 1(3개) / 2(4개) / 3(5개 이상)
 // dmg=피해, heal=회복, red=피해 감소율, counter=반격 피해
 const ACTS = {
@@ -730,14 +838,83 @@ function banner(msg, cls){
 }
 
 // 보드 위 매치 결과 플로팅 (slot으로 세로 위치 분산, 겹침 방지)
-function floatBoard(text, cls, slot){
+// v0.15: color 지정 시 속성색 + 발광 — "이 속성의 힘을 확보했다"는 인상
+function floatBoard(text, cls, slot, color){
   const wrap = $('#boardWrap');
   const f = document.createElement('div');
   f.className = 'boardFloat ' + (cls||'');
   f.style.top = (3 + (slot%3)*9) + '%'; // v0.14: 보드 최상단 가장자리만 사용
+  if(color){
+    f.style.color = color;
+    f.style.textShadow = '0 1px 4px rgba(0,0,0,.85), 0 0 8px ' + color;
+  }
   f.textContent = text;
   wrap.appendChild(f);
   setTimeout(()=>f.remove(), 950);
+}
+
+/* ── v0.15: 매치 터짐 FX — 팡! (섬광+링+파편+에너지 잔상), 연쇄 단계 강화 ──
+   원칙: transform/opacity 애니메이션만 사용, 파편 총량 상한, 수명 후 노드 전부 제거 */
+function spawnBurstFX(groups, chain){
+  const layer = $('#burstLayer');
+  if(!layer) return;
+  const wrapR = $('#boardWrap').getBoundingClientRect();
+  const tier = Math.min(chain, 3); // 1연쇄/2연쇄/3연쇄+ 3단계
+  const cellCount = groups.reduce((s,g)=>s+g.cells.length, 0);
+  // 파편 수: 연쇄가 높을수록 +, 단 동시 터짐이 많으면 자동 감축 (총량 ≤ FX_MAX_SHARDS)
+  const perCell = Math.max(1, Math.min(2 + tier, Math.floor(FX_MAX_SHARDS / Math.max(1, cellCount))));
+  const nodes = [];
+  const frag = document.createDocumentFragment();
+  for(const g of groups){
+    const color = TYPE_COLORS[g.type] || '#fff';
+    let cx = 0, cy = 0, n = 0;
+    for(const i of g.cells){
+      const el = document.querySelector('.cell[data-i="'+i+'"]');
+      if(!el) continue;
+      const r = el.getBoundingClientRect();
+      const x = r.left + r.width/2 - wrapR.left;
+      const y = r.top + r.height/2 - wrapR.top;
+      cx += x; cy += y; n++;
+      // ① 셀 중심 속성색 섬광
+      const fl = document.createElement('div');
+      fl.className = 'fxFlash';
+      fl.style.left = x+'px'; fl.style.top = y+'px';
+      fl.style.setProperty('--fc', color);
+      frag.appendChild(fl); nodes.push(fl);
+      // ② 스톤 파편: 무작위 방향, 연쇄일수록 멀리
+      for(let s=0; s<perCell; s++){
+        const sh = document.createElement('div');
+        sh.className = 'fxShard';
+        const ang = Math.random()*Math.PI*2;
+        const dist = (16 + Math.random()*14) * (1 + tier*0.25);
+        sh.style.left = x+'px'; sh.style.top = y+'px';
+        sh.style.setProperty('--fc', color);
+        sh.style.setProperty('--dx', (Math.cos(ang)*dist)+'px');
+        sh.style.setProperty('--dy', (Math.sin(ang)*dist)+'px');
+        frag.appendChild(sh); nodes.push(sh);
+      }
+    }
+    if(n > 0){
+      cx /= n; cy /= n;
+      // ③ 그룹 중심 확산 링: 연쇄 단계로 반경 강화
+      const ring = document.createElement('div');
+      ring.className = 'fxRing';
+      ring.style.left = cx+'px'; ring.style.top = cy+'px';
+      ring.style.setProperty('--fc', color);
+      ring.style.setProperty('--fs', (2.6 + tier*1.1).toFixed(2));
+      frag.appendChild(ring); nodes.push(ring);
+      // ④ 에너지 잔상: 보드 하단(파티 방향)으로 흘러내림 — 행동 자원 확보감
+      const w = document.createElement('div');
+      w.className = 'fxWisp';
+      w.style.left = cx+'px'; w.style.top = cy+'px';
+      w.style.setProperty('--fc', color);
+      w.style.setProperty('--wy', Math.max(40, wrapR.height - cy - 8)+'px');
+      frag.appendChild(w); nodes.push(w);
+    }
+  }
+  layer.appendChild(frag);
+  // 이번 호출분만 제거 (다음 연쇄 FX와 간섭 없음) — DOM 누적 방지
+  setTimeout(()=>{ nodes.forEach(nd=>nd.remove()); }, FX_LIFE_MS);
 }
 
 /* ── 행동선: 하단 영웅 → 퍼즐판 침범 → 상단 적 ── */
@@ -1541,22 +1718,27 @@ async function resolveBoard(){
     let slot = 0;
     if(chain>1){
       const txt = chain+'연쇄! 위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%';
-      floatBoard(txt, 'gold', slot++); // 연쇄: 플로팅만 (토스트 X)
+      floatBoard(txt, 'gold chainPop', slot++); // v0.15: 연쇄는 바운스 팝
     }
     for(const g of groups){
       queueAction(g.type, g.cells.length, chain);
       const t = TYPES[g.type];
       const txt = t.sym+' '+t.block+' 문장 '+g.cells.length+'개!';
-      floatBoard(txt, 'sys', slot++); // 매치 결과: 플로팅만 (토스트 X)
+      floatBoard(txt, 'sys', slot++, TYPE_COLORS[g.type]); // v0.15: 속성색 발광 — 힘 확보감
     }
 
-    // 삭제 연출
+    // 삭제 연출 (v0.15): ① 응축 반응(primed) → ② 팡 터짐(removing + 버스트 FX)
     const removeSet = new Set();
     groups.forEach(g=>g.cells.forEach(c=>removeSet.add(c)));
+    const matchedEls = [];
     document.querySelectorAll('.cell').forEach(c=>{
-      if(removeSet.has(+c.dataset.i)) c.classList.add('removing');
+      if(removeSet.has(+c.dataset.i)) matchedEls.push(c);
     });
-    await delay(300);
+    matchedEls.forEach(c=>c.classList.add('primed'));
+    await delay(PRIME_MS);
+    spawnBurstFX(groups, chain);              // 좌표는 셀 삭제 전에 채취
+    matchedEls.forEach(c=>c.classList.add('removing'));
+    await delay(POP_MS);
 
     // 삭제 → 낙하 → 생성
     removeSet.forEach(i=>{ board[i]=null; });
