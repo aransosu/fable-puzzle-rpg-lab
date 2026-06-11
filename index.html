@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.23 — FABLE_TASK_023: Ironclad Boss Actor Reaction & Finale Tuning
+<!-- Emblem Quest Lab v0.27 — FABLE_TASK_027: Enemy Poison & Cleanse Counterplay Sample
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
-           v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run -->
+           v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run / v0.23: Boss Reaction /
+           v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -140,6 +141,8 @@
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
   }
   .mob.armored{border-color:#4a6090;} /* 강철톤 테두리 — 한눈에 "단단함" */
+  .mob.venom{border-color:#6c4a90;} /* v0.27: 독성 박쥐 — 보랏빛 테두리 (아바타 재작업 없이 구분) */
+  .mob.venom .mAv{filter:hue-rotate(40deg) saturate(1.3);} /* 박쥐 조형 재사용 + 독기 틴트 */
   .mob .stRow{ /* v0.21: 상태이상 미니 배지 (독/방어 감소) */
     position:absolute;top:-3px;left:-5px;display:flex;gap:2px;z-index:7;
   }
@@ -861,6 +864,18 @@
   .ally.down .face::before,.ally.down .face::after{height:2px;border-radius:1px;} /* 감긴 눈 */
   .ally.down .gear,.ally.down .gear2{opacity:.45;} /* 장비 생기 감소 */
   .ally.down .shadow{opacity:.5;}
+  .ally .poisonTag{ /* v0.27: 아군 중독 배지 — 정적, 칩 좌상단 (✦+와 겹침 회피) */
+    position:absolute;top:-7px;left:-4px;z-index:6;
+    font-size:9.5px;font-weight:900;color:#9fe07a;
+    text-shadow:0 0 6px rgba(110,200,80,.7), 0 1px 2px rgba(0,0,0,.6);
+    pointer-events:none;
+  }
+  .ally .buffTag{ /* v0.25: action 버프 대기 배지 — 정적, 칩 우상단 */
+    position:absolute;top:-7px;right:-4px;z-index:6;
+    font-size:10px;font-weight:900;color:#caa6ff;
+    text-shadow:0 0 6px rgba(184,138,255,.8), 0 1px 2px rgba(0,0,0,.6);
+    pointer-events:none;
+  }
   .ally.down::after{ /* 어지럼 표식 — 전투 불능이 한눈에 (애니메이션 없음: 무한 총량 동결) */
     content:'💫';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
     font-size:13px;opacity:.95;pointer-events:none;
@@ -1149,7 +1164,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.23 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.27 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1278,11 +1293,11 @@ const JOBS = {
       3:{type:'snipeWeak', label:'필살·관통시',   desc:'약한 적 매우 큰 피해'},
     }},
   mage: { slot:'support', blockType:1, name:'마법사', hp:28, power:5, defense:0,
-    summary:'마력을 집중한 뒤 광역 파동으로 전장을 터뜨리는 서포터', tags:['광역','집중','마나'],
-    actions:{
-      1:{type:'novaAll', label:'화염탄',     desc:'적 전체 피해'},
-      2:{type:'charge',  label:'집중',       desc:'위력 비축 → 원형 파동'},
-      3:{type:'charge',  label:'강한 집중',  desc:'큰 위력 비축 → 원형 파동'},
+    summary:'전장에 마력을 불어넣어 아군의 다음 일격을 키우는 서포터', tags:['광역','강화','마나'],
+    actions:{ // v0.25: 4/5매치 = action 버프 샘플 (마력 주입/전투 증폭) — 덫꾼(time 독)과의 역할 대비
+      1:{type:'novaAll', label:'화염탄', desc:'적 전체 피해'},
+      2:{type:'empower', targets:1, dmgMult:1.5, label:'마력 주입', desc:'아군 1명의 다음 피해 행동 강화'},
+      3:{type:'empower', targets:2, dmgMult:1.4, label:'전투 증폭', desc:'아군 2명의 다음 피해 행동 강화'},
     }},
   priest: { slot:'healer', blockType:2, name:'사제', hp:32, power:9, defense:1,
     summary:'가장 위험한 아군 하나를 크게 회복하는 기본 힐러', tags:['회복','단일','안정'],
@@ -1301,17 +1316,17 @@ const JOBS = {
     }},
   trapper: { slot:'support', blockType:1, name:'덫꾼', hp:32, power:6, defense:1,
     summary:'방어를 무시하는 독으로 철갑을 녹이는 서포터', tags:['독','지속피해','방어무시'],
-    actions:{
-      1:{type:'poison', target:'one', label:'독침',   desc:'적 1명에게 독 3회'},
-      2:{type:'poison', target:'one', label:'맹독침', desc:'적 1명에게 강한 독 3회'},
-      3:{type:'poison', target:'all', mult:1.0, label:'독안개', desc:'적 전체에게 독 3회'},
+    actions:{ // v0.24: 시간 기반 독 — tickDmg는 2초당 피해 (총량 = ×3틱, 연쇄 무관 고정)
+      1:{type:'poison', target:'one', tickDmg:4, label:'독침',   desc:'적 1명 중독 — 6초간 퍼짐'},
+      2:{type:'poison', target:'one', tickDmg:6, label:'맹독침', desc:'적 1명에게 강한 중독'},
+      3:{type:'poison', target:'all', tickDmg:4, label:'독안개', desc:'적 전체 중독'},
     }},
   crusher: { slot:'melee', blockType:0, name:'분쇄자', hp:44, power:8, defense:3,
-    summary:'장갑을 부수며 베는 철갑 대응 근접 딜러', tags:['전열','방어력 감소','장갑 대응'],
-    actions:{
-      1:{type:'strikeFront', armorBreak:2, label:'분쇄',      desc:'선두 적 피해 + 방어 감소'},
-      2:{type:'strikeFront', armorBreak:4, label:'장갑 분쇄', desc:'선두 적 피해 + 큰 방어 감소'},
-      3:{type:'strikeFront', armorBreak:6, label:'필살·파갑', desc:'선두 적 큰 피해 + 방어 대폭 감소'},
+    summary:'장갑에 균열을 내 후속타의 틈을 여는 철갑 대응 근접 딜러', tags:['전열','방어력 감소','장갑 대응'],
+    actions:{ // v0.26: 방깎 = hit 기반 — 다음 3회 피격까지 (피해/amount 수치는 불변)
+      1:{type:'strikeFront', armorBreak:2, label:'분쇄',      desc:'선두 적 피해 + 방어 균열'},
+      2:{type:'strikeFront', armorBreak:4, label:'장갑 분쇄', desc:'선두 적 피해 + 큰 방어 균열'},
+      3:{type:'strikeFront', armorBreak:6, label:'필살·파갑', desc:'선두 적 큰 피해 + 방어 대균열'},
     }},
 };
 // 슬롯별 직업 풀 (H항목): 근딜/서포터/힐러에 샘플 2번째 직업 — 나머지는 준비 중
@@ -1337,6 +1352,22 @@ function actionValue(job, tier, chainMult){
   const m = (act.mult != null) ? act.mult : MATCH_MULT[tier];
   return Math.round(job.power * m * (chainMult || 1));
 }
+/* ════════════════════════════════════════════════════════════════════
+   v0.24: 하이브리드 효과 시간 문법 (FABLE_TASK_024 — Emblem Quest Lab 효과 지속 원칙)
+   이 게임은 실시간 퍼즐 RPG — 효과 지속 규칙을 단일 턴제 문법으로 통일하지 않는다.
+   효과는 "누구에게 걸렸느냐"가 아니라 "그 효과가 어떤 성격이냐"로 문법을 정한다:
+   ① instant (즉시형)      : 발동 순간 확정 — 즉시 피해/회복/정화/방깎 부여/중독 부여
+   ② time (시간 흐름형)    : 대상 행동과 무관하게 시간으로 진행 — 중독/화상/재생/장판
+                             {timing:'time', tickMs, expiresAt, nextTickAt, damage, ignoreDefense}
+   ③ action (행동 소모형)  : 대상이 실제 행동할 때 의미 — 공격력 증가/다음 공격 강화
+                             {timing:'action', uses, maxDurationMs} — 영웅은 자동 턴이 없으므로
+                             순수 시간 버프는 블록 운에 증발(나쁜 운빨) → 행동 횟수 기반이 원칙
+   ④ hit (피격 소모형)     : 대상이 맞을 때 의미 — 방깎/취약/보호막/반격 준비
+                             {timing:'hit', hits} — armorDown의 장기 전환 후보 (이번 버전 보류)
+   ════════════════════════════════════════════════════════════════════ */
+const POISON_DURATION_MS = 6000; // 중독 지속 (time 기반)
+const POISON_TICK_MS     = 2000; // 중독 발동 주기 → 6초/2초 = 3틱
+
 /* ════ v0.21: 방어력 공식 + 상태이상 골격 (FABLE_TASK_021 D/F항목) ════
    - 물리 피해: 최종 피해 = max(1, 기본 피해 - 유효 Defense)
    - 독: Defense 무시, 대상 행동 시점마다 발동, 3회 (행동 횟수 기반)
@@ -1352,26 +1383,147 @@ function dealDamage(e, raw, opts){
   const def = pierce ? 0 : effDef(e);
   const eff = Math.max(1, raw - def);
   e.hp -= eff;
+  // v0.26: hit 기반 armorDown — 방어 계산을 사용한 피격에서만 uses 1 소모.
+  // poison tick(직접 감산)/pierce/회복/정화/버프는 dealDamage를 거치지 않거나 pierce라 비소모
+  if(!pierce && e.status && e.status.armorDown){
+    e.status.armorDown.uses--;
+    if(e.status.armorDown.uses <= 0) delete e.status.armorDown; // 틈이 닫힘 — 조용히 제거 (로그 없음)
+  }
   return { eff, reduced: def > 0 && eff < raw };
 }
-function applyPoison(e, power){
+function applyPoison(e, damage){ // v0.24: 시간 기반 중독 (instant 부여 → time 진행)
+  const now = Date.now();
   e.status = e.status || {};
   const prev = e.status.poison;
-  e.status.poison = { power: Math.max(power, prev ? prev.power : 0), stacks: 3 }; // 갱신형 (무한 중첩 방지)
+  if(prev && prev.damage > damage){
+    // 재부여 규칙: 같거나 약한 독은 지속시간만 갱신 (damage 누적 금지, nextTickAt 유지)
+    prev.expiresAt = now + POISON_DURATION_MS;
+    return;
+  }
+  // 신규 또는 더 강한 독으로 교체 — nextTickAt은 now+tickMs로 재설정 (구현 안정성 우선)
+  e.status.poison = {
+    timing:'time', damage, ignoreDefense:true,
+    tickMs: POISON_TICK_MS,
+    expiresAt: now + POISON_DURATION_MS,
+    nextTickAt: now + POISON_TICK_MS,
+  };
 }
+const ARMOR_DOWN_USES = 3; // v0.26: 방깎 유지 피격 횟수 — "다음 3회 피격까지"
 function applyArmorDown(e, amount){
+  // v0.26: hit 기반 전환 (FABLE_TASK_026 — 하이브리드 문법 ④ hit의 실전 사례)
+  // 방깎의 본질 = "방어가 깨진 틈" — 대상이 행동할 때도, 시간이 흘러도 아닌, 맞을 때 소모된다
   e.status = e.status || {};
-  const cur = e.status.armorDown ? e.status.armorDown.amount : 0;
-  e.status.armorDown = { amount: Math.min(cur + amount, e.defense || 0) }; // 방어 이하로 캡
+  const cap = Math.min(amount, e.defense || 0); // 기본 Defense 이하로 캡 (기존 규칙 유지)
+  if(cap <= 0) return; // 방어 0 — 깎을 장갑이 없음
+  const prev = e.status.armorDown;
+  if(prev && prev.amount >= cap){
+    prev.uses = ARMOR_DOWN_USES; // 같거나 약한 방깎: amount 유지(누적 절대 금지), uses만 갱신
+    return;
+  }
+  e.status.armorDown = { timing:'hit', amount: cap, uses: ARMOR_DOWN_USES }; // 신규/더 강한 방깎으로 교체
 }
-function tickPoison(e){ // 대상 행동 시점에 호출 — 입힌 피해량 반환 (0 = 독 없음)
-  if(!e.status || !e.status.poison) return 0;
-  const p = e.status.poison;
-  e.hp -= p.power; // 방어 무시
-  p.stacks--;
-  const dealt = p.power;
-  if(p.stacks <= 0) delete e.status.poison;
-  return dealt;
+/* v0.24: 시간 기반 상태이상 진행 — 게임 루프 tick()에서 매 프레임 호출 (단일 setInterval 재사용,
+   몬스터별 타이머/setInterval 다중 생성 금지). 틱→만료 순서: 마지막 틱(6초 시점)이 만료보다 먼저 처리됨 */
+function updateStatusEffects(now){
+  let someoneKilled = false;
+  enemies.forEach((e, i)=>{
+    if(e.hp <= 0 || !e.status || !e.status.poison) return; // 사망자에게 틱 금지
+    const p = e.status.poison;
+    if(p.nextTickAt <= p.expiresAt && now >= p.nextTickAt){
+      e.hp -= p.damage; // time 기반 발동 — 대상 행동과 무관, 방어 무시
+      p.nextTickAt += p.tickMs;
+      renderEnemies(i); // 틱마다 재렌더 → ☠ 남은 횟수 배지 자동 감소
+      floatText(enemyEl(i), '☠ -'+p.damage, 'dmg');
+      if(e.hp <= 0){
+        addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
+        delete e.status.poison;
+        someoneKilled = true;
+      } else {
+        checkBossReaction(e); // v0.23: 독 틱으로 50% 돌파 시에도 보스 반응
+      }
+    } else if(now >= p.expiresAt){
+      delete e.status.poison; // 만료 — 유령 틱 없음
+      renderEnemies(i);
+    }
+  });
+  if(someoneKilled){
+    renderEnemies();
+    if(aliveEnemies().length === 0) onBattleWon(); // async — 승리 판정은 기존 경로 그대로
+  }
+  // v0.27: 아군 poison — 영웅이 행동하지 않아도, 블록이 안 나와도 시간으로 진행 (방어 무시)
+  PARTY.forEach(t=>{
+    const st = heroStatus[t];
+    if(!st || !st.poison) return;
+    if(isFallen(t)){ delete heroStatus[t]; renderParty(); return; } // 쓰러진 영웅 — 독 제거, 틱 금지
+    const p = st.poison;
+    if(p.nextTickAt <= p.expiresAt && now >= p.nextTickAt){
+      heroHp[t] -= p.damage; // time 발동 — 영웅 Defense 무시
+      if(heroHp[t] < 0) heroHp[t] = 0;
+      p.nextTickAt += p.tickMs;
+      renderParty();
+      floatText(heroChipEl(t), '☠ -'+p.damage, 'dmg');
+      if(heroHp[t] <= 0){ // 독으로 영웅 쓰러짐 가능
+        addLog('💔 '+heroNameOf(t)+'이(가) 중독으로 쓰러졌다!', 'boss');
+        delete heroStatus[t]; // 쓰러진 영웅의 독 제거
+        if(t===1 && mageCharge){ mageCharge = null; addLog('마법사의 집중이 흩어졌다...', 'sys'); }
+        if(heroBuffs[t]) delete heroBuffs[t]; // v0.25 버프: 쓰러지면 무의미 — 제거
+        renderParty();
+        if(aliveHeroes().length===0){ clearAimLines(); onDefeat(); }
+      }
+    } else if(now >= p.expiresAt){
+      delete st.poison; // 만료 — 유령 틱 없음 (적측과 동일)
+      if(!Object.keys(st).length) delete heroStatus[t];
+      renderParty();
+    }
+  });
+  // v0.25: action 버프의 보조 시간 만료 (20초 무한 저장 방지) — 배지도 함께 소거
+  for(const t in heroBuffs){
+    if(now > heroBuffs[t].expiresAt){ delete heroBuffs[t]; renderParty(); }
+  }
+}
+// v0.27: 적 → 아군 중독 — 플레이어 poison과 같은 time 문법 공유 (수치만 다름)
+function applyHeroPoison(typeId, damage, source){
+  const now = Date.now();
+  heroStatus[typeId] = heroStatus[typeId] || {};
+  const prev = heroStatus[typeId].poison;
+  if(prev && prev.damage > damage){
+    prev.expiresAt = now + POISON_DURATION_MS; // 약한 독: 지속만 갱신 (누적 금지 — 적측과 동일 규칙)
+    return;
+  }
+  heroStatus[typeId].poison = {
+    timing:'time', damage, ignoreDefense:true,
+    tickMs: POISON_TICK_MS,
+    expiresAt: now + POISON_DURATION_MS,
+    nextTickAt: now + POISON_TICK_MS,
+    source,
+  };
+}
+
+/* ════ v0.25: action 기반 버프 실전 샘플 — Mage Empower (FABLE_TASK_025) ════
+   원칙(③ action): 버프는 대상이 행동하기 전까지 보존 — 블록 운으로 증발하지 않는다.
+   maxDurationMs(20초)는 무한 저장 방지용 보조 안전장치일 뿐, 주 문법은 "다음 1회 행동" */
+const EMPOWER_MAX_MS = 20000;
+let heroBuffs = {}; // typeId → {type:'empower', timing:'action', uses, expiresAt, damageMultiplier, source}
+function applyEmpower(typeId, mult, source){
+  heroBuffs[typeId] = { // 같은 대상 재부여 = 갱신 (중첩/누적 없음)
+    type:'empower', timing:'action', uses:1,
+    expiresAt: Date.now() + EMPOWER_MAX_MS,
+    damageMultiplier: mult, source,
+  };
+}
+// 피해 행동값 계산 시 호출 — 배율 반환(1=버프 없음). 행동 1회에 소비, 시간 만료는 보조 검사
+function consumeEmpower(typeId){
+  const b = heroBuffs[typeId];
+  if(!b) return 1;
+  if(Date.now() > b.expiresAt){ delete heroBuffs[typeId]; return 1; }
+  b.uses--;
+  const m = b.damageMultiplier;
+  if(b.uses <= 0) delete heroBuffs[typeId];
+  return m;
+}
+// 피해 행동 보유 직업만 버프 대상 (사제/정화사/방패/덫꾼 제외 — 회복/독/방깎은 비적용 범위)
+function canDealDamage(typeId){
+  return Object.values(jobOf(typeId).actions).some(x=>['strikeFront','snipeWeak','novaAll'].includes(x.type));
 }
 // v0.23: 보스 반응 — HP 50% 이하가 된 순간 전투당 1회 "장갑 강화" (FABLE_TASK_023)
 //   기본 Defense +1 (유키 기본안). armorDown은 유효 방어 계산(effDef)에서 그대로 차감되므로 무충돌:
@@ -1414,7 +1566,7 @@ function actionDesc(job, tier){
   const act = job.actions[tier];
   const v = actionValue(job, tier);
   switch(act.type){
-    case 'strikeFront': return act.label+' — 선두 적 '+v+(act.armorBreak ? ' + 방어 -'+act.armorBreak+' (전투 중 지속)' : '');
+    case 'strikeFront': return act.label+' — 선두 적 '+v+(act.armorBreak ? ' + 방어 -'+act.armorBreak+', 다음 '+ARMOR_DOWN_USES+'회 피격까지' : '');
     case 'snipeWeak':   return act.label+' — 약한 적 '+v;
     case 'novaAll':     return act.label+' — 적 전체 '+v;
     case 'charge':      return act.label+' — '+v+' 비축 → 다음 마나석 매치에 원형 파동';
@@ -1422,7 +1574,8 @@ function actionDesc(job, tier){
     case 'cleanseHeal': return act.label+' — 가장 위험한 아군 '+v+' 회복 + 해로운 효과 1개 해제';
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
-    case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+'에게 독 '+v+'×3회 (방어 무시)';
+    case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 6초간 2초마다 '+act.tickDmg+' (방어 무시)';
+    case 'empower':     return act.label+' — 공격 아군 '+act.targets+'명의 다음 피해 행동 ×'+act.dmgMult+' (행동까지 보존, 최대 20초)';
   }
   return act.label;
 }
@@ -1451,7 +1604,9 @@ const BATTLES = [
     {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
     {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
     {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'mid'},
-    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    // v0.27: 기존 박쥐 → 독성 박쥐 교체 (유키 추천안 A — 정화 필요성을 늦지 않게 소개)
+    // atk 3 = 권장 "즉시 피해 2~3" 충족 (영웅 방어 감산 전). Stage 5 보스전에는 추가 금지 준수
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
   ]},
   // Stage 4 — 조합의 보람: 철갑 2 + 정예 — 방깎/독/집중딜 중 하나 이상의 답 요구
   {label:'Stage 4', note:'이중 철갑+정예', enemies:[
@@ -2155,14 +2310,21 @@ function renderEnemies(hitIdx, hitAll){
       + ((hitIdx===i || (hitAll && e.hp>0))?' hit':'')
       + (e.charging?' charge':'')
       + (e.boss?' boss':'')
+      + (e.venom?' venom':'') // v0.27: 독성 표식
       + ((e.armorNote || (e.defense||0) >= 5)?' armored':''); // v0.22: 철갑 시인성
     d.dataset.ei = i; // 진영(전열/후열) 분리 후에도 인덱스로 추적
     const pct = Math.max(0, e.hp/e.maxHp*100);
     // v0.21: 상태이상 배지 — 렌더가 매번 새로 그림 (DOM 누적 원천 차단)
     let st = '';
     if(e.hp > 0 && e.status){
-      if(e.status.poison) st += '<i class="stP">☠'+e.status.poison.stacks+'</i>';
-      if(e.status.armorDown && e.status.armorDown.amount > 0) st += '<i class="stA">🛡-'+e.status.armorDown.amount+'</i>';
+      if(e.status.poison){ // v0.24: 남은 틱 수 표시 (☠3→☠2→☠1 — 시간으로 줄어듦)
+        const p = e.status.poison;
+        const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
+        st += '<i class="stP">☠'+left+'</i>';
+      }
+      if(e.status.armorDown && e.status.armorDown.amount > 0){ // v0.26: 남은 피격 횟수 표시
+        st += '<i class="stA">🛡-'+e.status.armorDown.amount+'×'+e.status.armorDown.uses+'</i>';
+      }
     }
     d.innerHTML =
       (e.charging ? '<div class="intent">⚡ 강공 준비</div>' : '') +
@@ -2229,6 +2391,12 @@ function renderParty(actType){
       +   '<div class="head"><div class="face"></div></div>'
       +   '<div class="gear"></div><div class="gear2"></div>'
       + '</div>'
+      + (heroBuffs[typeId] ? '<div class="buffTag">✦+</div>' : '') // v0.25: 강화 대기 배지
+      + ((heroStatus[typeId] && heroStatus[typeId].poison && cur>0) ? (()=>{ // v0.27: 아군 중독 배지
+          const p = heroStatus[typeId].poison;
+          const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
+          return '<div class="poisonTag">☠'+left+'</div>';
+        })() : '')
       + '<div class="mini"><i style="width:'+(ratio*100)+'%"></i></div>';
     h.appendChild(d);
   });
@@ -2280,12 +2448,23 @@ async function performHeroAction(a){
     if(aliveEnemies().length===0 && OFFENSIVE.includes(act.type)) return;
     renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
     // v0.21: 행동값 = Power × 매치계수 × 연쇄계수 (FABLE_TASK_021 — ACTS 폐지, JOBS 단일 소스)
-    const val = actionValue(job, a.tier, a.mult);
+    let val = actionValue(job, a.tier, a.mult);
+    // v0.25: action 버프 소비 — 피해 행동(베기/저격/파동)에만. 회복/독/방깎/보호막/반격 비적용
+    let empowered = false;
+    if(['strikeFront','snipeWeak','novaAll'].includes(act.type)){
+      const m = consumeEmpower(a.type);
+      if(m > 1){
+        val = Math.round(val * m); // 반올림 정책: 기존 전투 숫자와 동일 (Math.round)
+        empowered = true;
+        addLog('✦ '+heroNameOf(a.type)+'의 강화된 일격! (×'+m+')', 'gold');
+        renderParty(a.type); // 배지 소거 즉시 반영
+      }
+    }
 
     // 공통 피해 처리: 방어 공식 + 플로팅/로그 (reduced면 🛡 표기)
     const hitEnemy = (e, raw, opts)=>{
       const r = dealDamage(e, raw, opts);
-      floatText(enemyEl(enemies.indexOf(e)), '-'+r.eff+(r.reduced?' 🛡':''), 'dmg');
+      floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.reduced?' 🛡':''), 'dmg');
       if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
       else checkBossReaction(e); // v0.23: 피해 적용 후 보스 반응 검사
       return r;
@@ -2299,10 +2478,15 @@ async function performHeroAction(a){
         drawLine(heroChipEl(0), enemyEl(ti0), TYPE_COLORS[0], {width:6, bend:10, duration:120});
         spawnImpact(enemyEl(ti0), TYPE_COLORS[0], a.tier===3);
         hitEnemy(tgt, val);
-        if(act.armorBreak && tgt.hp > 0){ // v0.21 분쇄자: 방어 감소 (전투 중 지속)
+        if(act.armorBreak && tgt.hp > 0){
+          // v0.26: 피해(기존 방어 기준) → 부여 순서 — 자기 타격은 새 uses를 즉시 소모하지 않는다.
+          // "장갑을 깨는 타격"과 "깨진 장갑을 이용하는 후속타"의 분리 (태스크 추천안 그대로)
           applyArmorDown(tgt, act.armorBreak);
-          floatText(enemyEl(enemies.indexOf(tgt)), '🛡 -'+act.armorBreak, 'guard');
-          addLog(tgt.name+'의 방어가 '+act.armorBreak+' 깎였다! (유효 방어 '+effDef(tgt)+')', 'sys');
+          const ad = tgt.status.armorDown;
+          if(ad){
+            floatText(enemyEl(enemies.indexOf(tgt)), '🛡 장갑 균열! -'+ad.amount+'×'+ad.uses, 'guard');
+            addLog(tgt.name+'의 장갑에 균열! 🛡-'+ad.amount+' — 다음 '+ad.uses+'회 피격까지 (유효 방어 '+effDef(tgt)+')', 'sys');
+          }
         }
         renderEnemies(ti0);
       }
@@ -2352,12 +2536,12 @@ async function performHeroAction(a){
         targets = tgt ? [tgt] : [];
       }
       targets.forEach((e,k)=>{
-        applyPoison(e, val);
+        applyPoison(e, act.tickDmg); // v0.24: 시간 기반 — 연쇄 무관 고정 수치 (단독 승리 엔진 방지)
         drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
                  {width:2.6, bend:18 + k*5, alpha:.75, duration:200});
-        floatText(enemyEl(enemies.indexOf(e)), '☠ 독 '+val+'×3', 'guard');
+        floatText(enemyEl(enemies.indexOf(e)), '☠ 중독!', 'guard');
       });
-      if(targets.length) addLog(job.name+'의 '+act.label+'! 독은 방어를 무시한다 (대상 행동마다 '+val+'씩 3회)', 'sys');
+      if(targets.length) addLog(job.name+'의 '+act.label+'! 독이 시간에 따라 퍼진다 (2초마다 '+act.tickDmg+', 방어 무시)', 'sys');
       renderEnemies();
     }
     else if(act.type==='healSingle' || act.type==='cleanseHeal' || act.type==='cleanseAll'){ // 사제/정화사
@@ -2367,27 +2551,55 @@ async function performHeroAction(a){
         // v0.21 정화사 5매치: 아군 전체 정화 + 각 소량 회복
         let removed = 0;
         alive.forEach(t=>{
-          removed += cleanseHero(t);
+          const r = cleanseHero(t); removed += r;
           heroHp[t] = Math.min(heroMaxOf(t), heroHp[t] + val);
           floatText(heroChipEl(t), '+'+val+' ✨', 'heal');
+          if(r) floatText(heroChipEl(t), '✦ 정화!', 'guard'); // v0.27: 해제된 아군에게만
           spawnAbsorb(heroChipEl(t), TYPE_COLORS[2], 1.05);
         });
         renderParty(a.type);
-        addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?'('+removed+'개 해제)':'')+' + 각 '+val+' 회복', 'gold');
+        addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?' ('+removed+'개 해제 — 중독을 걷어냈다!)':'')+' + 각 '+val+' 회복', 'gold');
       } else {
-        const tgt = alive.reduce((m,t)=>
-          (heroHp[t]/heroMaxOf(t)) < (heroHp[m]/heroMaxOf(m)) ? t : m, alive[0]);
+        // v0.27 정화(4매치) 대상 선정: poison 보유 아군 우선 → 그중 HP 비율 최저 (태스크 추천안).
+        // poison이 없으면 기존 규칙(최저 HP 비율) 그대로 — 회복만 조용히 수행
+        const poisoned = alive.filter(t=>heroStatus[t] && heroStatus[t].poison);
+        const pool = (act.type==='cleanseHeal' && poisoned.length) ? poisoned : alive;
+        const tgt = pool.reduce((m,t)=>
+          (heroHp[t]/heroMaxOf(t)) < (heroHp[m]/heroMaxOf(m)) ? t : m, pool[0]);
         const before = heroHp[tgt];
         heroHp[tgt] = Math.min(heroMaxOf(tgt), heroHp[tgt] + val);
         const gained = heroHp[tgt] - before;
         let cleansed = 0;
         if(act.type==='cleanseHeal') cleansed = cleanseHero(tgt, 1); // 해로운 효과 1개 해제
-        renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달
+        renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달 (☠ 배지도 즉시 소거)
         // v0.17: 위로 부드럽게 감기는 회복 아치 + 도착 금빛 반짝임
         drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2],
                  {width:3.5, bend:-24, alpha:.9, duration:260});
         spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
         floatText(heroChipEl(tgt), '+'+gained+(cleansed?' ✨':''), 'heal');
+        if(cleansed){ // v0.27: 정화 성공은 반드시 읽혀야 한다
+          floatText(heroChipEl(tgt), '✦ 정화!', 'guard');
+          addLog(job.name+'이(가) '+heroNameOf(tgt)+'의 중독을 걷어냈다!', 'gold');
+        }
+      }
+    }
+    else if(act.type==='empower'){ // v0.25 마법사: 마력 주입/전투 증폭 — 공격 아군의 다음 일격 강화
+      // 대상 선정: 살아있는 "공격 가능" 아군 중 Power 최고 순 (본인 제외) — 구현 단순안 채택.
+      // 결과적으로 근딜(10) → 원딜/분쇄자(8) 순이 되어 태스크 권장 우선순위와 일치
+      const pool = aliveHeroes().filter(t=>t!==a.type && canDealDamage(t));
+      const targets = pool.slice().sort((x,y)=>jobOf(y).power - jobOf(x).power).slice(0, act.targets||1);
+      targets.forEach((t,k)=>{
+        applyEmpower(t, act.dmgMult, job.name);
+        drawLine(heroChipEl(a.type), heroChipEl(t), TYPE_COLORS[1],
+                 {width:3, bend:-20 - k*6, alpha:.85, duration:240});
+        spawnAbsorb(heroChipEl(t), '#b88aff', 1.1);
+        floatText(heroChipEl(t), '✦ 다음 행동 강화!', 'guard');
+      });
+      renderParty(a.type); // ✦+ 배지 즉시 표시
+      if(targets.length){
+        addLog(job.name+'이(가) 마력을 주입한다! '+targets.map(heroNameOf).join(', ')+'의 다음 피해 행동 ×'+act.dmgMult, 'gold');
+      } else {
+        floatText(heroChipEl(a.type), '대상 없음', 'guard'); // 공격 아군 전멸 등 — 헛발 안내
       }
     }
     else if(act.type==='guard'){ // 방패 병사: 피해 감소 — v0.12: 6초 지속 창
@@ -2413,7 +2625,7 @@ async function performHeroAction(a){
         }
         spawnImpact(enemyEl(ti), TYPE_COLORS[4], a.tier===3);
         const r = dealDamage(tgt, val);
-        floatText(enemyEl(ti), '🎯 -'+r.eff+(r.reduced?' 🛡':''), 'dmg');
+        floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.reduced?' 🛡':''), 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
         else checkBossReaction(tgt); // v0.23
         renderEnemies(ti);
@@ -2493,19 +2705,7 @@ async function processAttacks(){
 // 일반 공격: 완만한 곡선 타격선 → 임팩트 → 개별 피해
 async function enemyAttack(e){
   const ei = enemies.indexOf(e);
-  // v0.21: 독 발동 — 대상 행동 시점, 방어 무시 (F항목)
-  const pDmg = tickPoison(e);
-  if(pDmg > 0){
-    renderEnemies(ei);
-    floatText(enemyEl(ei), '☠ -'+pDmg, 'dmg');
-    if(e.hp <= 0){
-      addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
-      renderEnemies();
-      if(aliveEnemies().length===0){ await onBattleWon(); }
-      return; // 행동 전 사망 — 공격 불발
-    }
-    checkBossReaction(e); // v0.23: 독으로 50% 돌파 시에도 반응
-  }
+  if(e.hp <= 0) return; // v0.24: 큐 대기 중 독(시간 틱)으로 사망 — 공격 불발 (기존 안전 처리 승계)
   const tgt = pickDefender();
   if(tgt===null) return;
   const raw = e.atk;
@@ -2528,6 +2728,13 @@ async function enemyAttack(e){
   hurtHero(tgt);
   spawnImpact(heroChipEl(tgt), blocked ? '#ffd97a' : '#e0504a', false); // v0.17: 피격 스파크
   floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+  // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
+  if(e.venom && heroHp[tgt] > 0){
+    applyHeroPoison(tgt, 2, 'venomBat'); // 6초간 2초마다 2 — 총 6, 방어 무시
+    addLog(e.name+'이(가) '+heroNameOf(tgt)+'에게 독침을 쏜다!', 'boss');
+    floatText(heroChipEl(tgt), '☠ 중독!', 'dmg');
+    renderParty(); // ☠ 배지 즉시 표시
+  }
   if(shieldCounter>0){
     const cr = dealDamage(e, shieldCounter); // v0.21: 반격도 방어 공식 통과
     if(e.hp > 0) checkBossReaction(e); // v0.23
@@ -2560,19 +2767,7 @@ function startBossPrep(e){
 async function bossBigAttack(e){
   clearAimLines();
   const ei = enemies.indexOf(e);
-  // v0.21: 강공 직전에도 독 발동
-  const pDmg = tickPoison(e);
-  if(pDmg > 0){
-    renderEnemies(ei);
-    floatText(enemyEl(ei), '☠ -'+pDmg, 'dmg');
-    if(e.hp <= 0){
-      addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
-      renderEnemies();
-      if(aliveEnemies().length===0){ await onBattleWon(); }
-      return;
-    }
-    checkBossReaction(e); // v0.23: 독으로 50% 돌파 시에도 반응
-  }
+  if(e.hp <= 0) return; // v0.24: 강공 직전 독 사망 — 강공 불발
   const eff = Math.round(BOSS_BIG_EACH * (1 - shieldRed)); // 기준치 (배너용) — 개별 최종은 영웅 방어 감산
   const blocked = shieldRed>0 && eff<BOSS_BIG_EACH;
   banner(blocked
@@ -2642,6 +2837,7 @@ function tick(){
   if(screen!=='battle') return;          // v0.20: battle 화면 밖에서는 전투 진행 정지
   if(state==='over' || showcase) return; // 승리/패배/전환·쇼케이스 중 정지
   const now = Date.now();
+  updateStatusEffects(now); // v0.24: time 기반 상태이상 — 단일 루프에서 진행
   if(shieldRed>0 && now >= shieldUntil){
     shieldRed = 0; shieldCounter = 0;
     renderParty();
@@ -2830,7 +3026,9 @@ function setupBattle(){
   bossTurn = 0;
   shieldRed = 0;
   shieldCounter = 0;
-  mageCharge = null; // 전투 간 집중 미이월
+  mageCharge = null; // 전투 간 집중 미이월 (v0.25: 집중 발동 직업은 없으나 시스템 보존)
+  heroBuffs = {};    // v0.25: action 버프 전투 간 미이월 — 다시 도전 초기화 보장
+  heroStatus = {};   // v0.27: 아군 상태이상(중독) 전투 간 미이월 — 다시 도전 초기화 보장
   showcase = false;
   $('#showcaseBtn').textContent = '👁 진형';
   board = genBoard();
