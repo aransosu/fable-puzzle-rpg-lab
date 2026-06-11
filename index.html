@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.16 — FABLE_TASK_016: Front-Facing Lego Ally Avatar R&D
-     (v0.15: Stone Impact & Burst FX / v0.15.5: Five Role Stone Definition) -->
+<!-- Emblem Quest Lab v0.18 — FABLE_TASK_018: Actor Feedback, Mana Surge & 2.5D Stage Exaggeration R&D
+     (v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars / v0.17: Energy Trail & Impact) -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -110,9 +110,13 @@
   /* HP바/게이지에 어두운 외곽선 — 뒤 몸체 위에서도 읽힘 */
   .mob .mini,.mob .gauge{box-shadow:0 0 0 1.5px rgba(13,10,22,.75);}
   .mob.dead{opacity:.15;filter:grayscale(1);}
-  .mob.hit{animation:shake .25s;}
+  .mob.hit{animation:shake .28s;} /* v0.17: 진폭/회전 과장 + 짧은 명중 섬광 */
   @keyframes shake{
-    0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}
+    0%{transform:translateX(0);filter:brightness(1)}
+    18%{transform:translateX(-7px) rotate(-2deg);filter:brightness(1.55)}
+    45%{transform:translateX(6px) rotate(1.5deg);filter:brightness(1.15)}
+    72%{transform:translateX(-3px);filter:brightness(1)}
+    100%{transform:translateX(0);filter:brightness(1)}
   }
   .mob.charge .mAv{animation:chargeGlow .9s infinite;}
   @keyframes chargeGlow{
@@ -265,8 +269,15 @@
     100%{opacity:0;transform:translate(-50%,-22px) scale(1)}
   }
   /* ---------- 보드 ---------- */
-  #boardWrap{position:relative;}
+  #boardWrap{position:relative;perspective:700px;} /* v0.18: 2.5D 전장판 — #board rotateX 원근 (FAKE_3D_DEPTH) */
+  /* v0.18: 전장판 하단 두께 — 판이 살짝 떠 있는 받침 인상 */
+  #boardWrap::after{
+    content:'';position:absolute;left:5px;right:5px;bottom:-6px;height:8px;
+    background:linear-gradient(#1c1730,#0a0814);
+    border-radius:0 0 11px 11px;z-index:-1;
+  }
   #board{
+    transform-origin:50% 60%; /* v0.18: rotateX 기준점 — 하단 변형 최소화 (조작 시야 보호) */
     display:grid;
     grid-template-columns:repeat(7,1fr);
     touch-action:none; /* 스와이프 입력과 스크롤 충돌 방지 */
@@ -322,7 +333,9 @@
       inset 0 -3px 4px rgba(0,0,0,.50),
       0 0 8px rgba(232,179,75,.55);
   }
-  /* v0.15: 매치 직전 반응 — 힘이 응축되며 squash&stretch로 부르르 */
+  /* v0.15: 매치 직전 반응 — 힘이 응축되며 squash&stretch로 부르르
+     v0.18: 3단계 가중 (p2=4매치/2연쇄, p3=5매치/3연쇄+) + 위로 솟는 2.5D 높이감(--lift)
+     배율 상수: PRIME_INTENSITY(--prime-k), STONE_LIFT_STRENGTH(--lift) */
   .cell.primed{
     border-color:#fff;
     filter:brightness(1.45); /* 200ms 한정 사용 — 상시 아님 */
@@ -333,61 +346,151 @@
     0%{transform:scale(1)}
     30%{transform:scale(1.07,.92) rotate(-3deg)}
     60%{transform:scale(.93,1.08) rotate(3deg)}
-    100%{transform:scale(1.12)}
+    100%{transform:translateY(calc(var(--lift,7px)*-.45)) scale(calc(1 + .12*var(--prime-k,1)))}
   }
-  /* v0.15: 팡! 터짐 — 한 번 부풀었다가 수축 소멸 (단순 fade 아님) */
+  .cell.primed.p2{ /* 4매치/2연쇄: 더 강한 부풀음+발광 */
+    filter:brightness(1.6);
+    animation:prime2 .2s ease-in forwards;
+  }
+  @keyframes prime2{
+    0%{transform:scale(1)}
+    28%{transform:scale(1.1,.88) rotate(-5deg)}
+    58%{transform:scale(.9,1.12) rotate(5deg)}
+    100%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(calc(1 + .17*var(--prime-k,1)))}
+  }
+  .cell.primed.p3{ /* 5매치/3연쇄+: 내부 압력 — 명확한 압축 후 팡 직전까지 */
+    filter:brightness(1.8);
+    animation:prime3 .2s ease-in forwards;
+  }
+  @keyframes prime3{
+    0%{transform:scale(1)}
+    26%{transform:scale(1.12,.84) rotate(-6deg)}
+    52%{transform:scale(.84,1.14) rotate(6deg)}
+    74%{transform:scale(.8)} /* 압축: 안으로 응축 */
+    100%{transform:translateY(calc(var(--lift,7px)*-1)) scale(calc(1 + .24*var(--prime-k,1)))}
+  }
+  /* v0.15: 팡! 터짐 — 한 번 부풀었다가 수축 소멸 (단순 fade 아님). v0.18: 가중 변형 추가 */
   .cell.removing{animation:popOut .17s ease-in forwards;}
   @keyframes popOut{
     0%{transform:scale(1.12);opacity:1}
     45%{transform:scale(1.30);opacity:1}
     100%{transform:scale(.15);opacity:0}
   }
+  .cell.removing.p2{animation:popOut2 .17s ease-in forwards;}
+  @keyframes popOut2{
+    0%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.17);opacity:1}
+    45%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.4);opacity:1}
+    100%{transform:scale(.12);opacity:0}
+  }
+  .cell.removing.p3{animation:popOut3 .18s ease-in forwards;}
+  @keyframes popOut3{
+    0%{transform:translateY(calc(var(--lift,7px)*-1)) scale(.86);opacity:1} /* 압축에서 */
+    40%{transform:translateY(calc(var(--lift,7px)*-1)) scale(1.52);opacity:1} /* 시원하게 팡 */
+    100%{transform:scale(.1);opacity:0}
+  }
   .cell.spawn{animation:drop .25s;}
   @keyframes drop{from{transform:translateY(-14px);opacity:.3}to{transform:translateY(0);opacity:1}}
   /* ---------- v0.15: 터짐 FX 레이어 (보드 위, 터치 통과, 연출 후 노드 즉시 제거) ---------- */
   #burstLayer{position:absolute;inset:0;pointer-events:none;z-index:24;overflow:hidden;border-radius:12px;}
-  .fxFlash{ /* 셀 중심 속성색 섬광 */
+  .fxFlash{ /* 셀 중심 속성색 섬광 — v0.17: 더 짧고 강한 코어 플래시 */
     position:absolute;width:18px;height:18px;border-radius:50%;
-    background:radial-gradient(circle,#fff 0%,var(--fc,#fff) 40%,transparent 70%);
-    transform:translate(-50%,-50%) scale(.5);opacity:.9;
-    animation:flashOut .22s ease-out forwards;
+    background:radial-gradient(circle,#fff 0%,#fff 22%,var(--fc,#fff) 46%,transparent 70%);
+    transform:translate(-50%,-50%) scale(.4);opacity:1;
+    animation:flashOut .18s ease-out forwards;
   }
   @keyframes flashOut{
-    40%{transform:translate(-50%,-50%) scale(1.6);opacity:.85}
-    100%{transform:translate(-50%,-50%) scale(2.1);opacity:0}
+    35%{transform:translate(-50%,-50%) scale(1.9);opacity:.95}
+    100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}
   }
-  .fxRing{ /* 매치 그룹 중심 확산 링 — 연쇄 단계로 반경 강화(--fs) */
-    position:absolute;width:14px;height:14px;border-radius:50%;
-    border:2px solid var(--fc,#fff);
-    transform:translate(-50%,-50%) scale(.4);opacity:.95;
-    animation:ringOut .34s ease-out forwards;
+  .fxRing{ /* v0.17: 평면 테두리 링 → 에너지 충격파 밴드 (radial 연성 + 살짝 눌린 타원) */
+    position:absolute;width:16px;height:16px;border-radius:50%;
+    background:radial-gradient(circle,
+      rgba(255,255,255,0) 42%, var(--fc,#fff) 56%, rgba(255,255,255,.85) 63%, transparent 72%);
+    transform:translate(-50%,-50%) scale(.4,.34);opacity:.95;
+    animation:ringOut .36s ease-out forwards;
   }
   @keyframes ringOut{
-    to{transform:translate(-50%,-50%) scale(var(--fs,3));opacity:0}
+    to{transform:translate(-50%,-50%) scale(var(--fs,3),calc(var(--fs,3)*.84));opacity:0}
   }
-  .fxShard{ /* 스톤 파편 — transform만 사용 (GPU 합성) */
-    position:absolute;width:5px;height:5px;border-radius:2px;
-    background:var(--fc,#fff);
-    transform:translate(-50%,-50%);opacity:.95;
-    animation:shardFly .38s ease-out forwards;
+  .fxShard{ /* v0.17: 보석 파편 — 흰 하이라이트 단면 + 무작위 크기/초기각 (transform만) */
+    position:absolute;width:5px;height:5px;border-radius:1.5px;
+    background:linear-gradient(145deg,#fff 10%,var(--fc,#fff) 48%,
+      color-mix(in srgb,var(--fc,#fff) 50%,#000) 100%);
+    transform:translate(-50%,-50%) rotate(var(--r0,0deg));opacity:.97;
+    animation:shardFly .4s ease-out forwards;
   }
-  @keyframes shardFly{
-    to{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px))) scale(.3) rotate(200deg);opacity:0}
+  @keyframes shardFly{ /* v0.18: 위로 튀었다가 흩어지며 낙하 — 평면이 아닌 높이감 */
+    0%{transform:translate(-50%,-50%) rotate(var(--r0,0deg)) scale(1);opacity:.97}
+    32%{transform:translate(calc(-50% + var(--dx,0px)*.4),calc(-50% + var(--dy,0px)*.3 - var(--hop,12px)))
+        rotate(calc(var(--r0,0deg) + 90deg)) scale(1.06);opacity:1}
+    100%{transform:translate(calc(-50% + var(--dx,0px)),calc(-50% + var(--dy,0px) + var(--hop,12px)*.55))
+       rotate(calc(var(--r0,0deg) + 230deg)) scale(.25);opacity:0}
   }
-  .fxWisp{ /* 에너지 잔상 — 해당 영웅 방향으로 빨려 내려가는 속성 빛 = 행동 에너지 전달 (v0.15.5) */
-    position:absolute;width:9px;height:9px;border-radius:50%;
-    background:radial-gradient(circle,#fff 0%,var(--fc,#fff) 55%,transparent 78%);
-    transform:translate(-50%,-50%) scale(var(--ws,1));opacity:.95;
-    animation:wispDown .52s ease-in forwards;
+  /* ════ v0.17: 전역 발자취/임팩트 레이어 (#app 전체 — 보드 경계를 넘어 영웅 아바타까지) ════ */
+  #trailLayer{position:absolute;inset:0;pointer-events:none;z-index:29;overflow:hidden;}
+  .fxDust{ /* 요정가루: 터진 그룹 → 해당 영웅으로 휘어 흐르는 마력 입자 (fxWisp의 후계, v0.15.5→v0.17) */
+    position:absolute;width:6px;height:6px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,var(--fc,#fff) 52%,transparent 78%);
+    transform:translate(-50%,-50%) scale(.5);opacity:0;
+    animation:dustFly .56s ease-in forwards;
   }
-  @keyframes wispDown{
-    0%{transform:translate(-50%,-50%) scale(var(--ws,1));opacity:.95}
-    70%{ /* 가속 구간: 세로로 늘어나며 빨려 내려가는 흡인감 */
-      transform:translate(calc(-50% + var(--wx,0px)*.62),calc(-50% + var(--wy,70px)*.58))
-                scale(calc(var(--ws,1)*.7),calc(var(--ws,1)*1.55));
-      opacity:.85;
+  @keyframes dustFly{
+    0%{transform:translate(-50%,-50%) scale(.5);opacity:0}
+    12%{transform:translate(-50%,-50%) scale(1.05);opacity:.95}
+    45%{ /* 경유점: 수직 흔들림 경유 — 스르륵 휘어 넘어가는 곡선 + 반짝 팽창 */
+      transform:translate(calc(-50% + var(--mx,0px)),calc(-50% + var(--my,0px))) scale(1.3);
+      opacity:.95;
     }
-    100%{transform:translate(calc(-50% + var(--wx,0px)),calc(-50% + var(--wy,70px))) scale(.3,.9);opacity:0}
+    66%{ /* 두 번째 깜빡임 — 별가루 호흡 */
+      transform:translate(calc(-50% + var(--tx,0px)*.72 + var(--mx,0px)*.18),calc(-50% + var(--ty,0px)*.72)) scale(.85);
+      opacity:.8;
+    }
+    84%{ /* v0.18: 도착 직전 — 영웅 쪽으로 모여드는 흡인감 */
+      transform:translate(calc(-50% + var(--tx,0px)*.95),calc(-50% + var(--ty,0px)*.95)) scale(1.1);
+      opacity:.95;
+    }
+    100%{transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(.25);opacity:0}
+  }
+  .fxAbsorb{ /* 도착 반짝임: 에너지가 영웅에게 닿는 4방 별 십자 */
+    position:absolute;width:26px;height:26px;
+    transform:translate(-50%,-50%) scale(.3);opacity:0;
+    animation:absorbPop .3s ease-out forwards;
+  }
+  .fxAbsorb::before,.fxAbsorb::after{
+    content:'';position:absolute;left:50%;top:50%;
+    background:linear-gradient(90deg,transparent,#fff 30%,var(--fc,#fff) 50%,#fff 70%,transparent);
+    border-radius:2px;transform:translate(-50%,-50%);
+  }
+  .fxAbsorb::before{width:100%;height:4px;}
+  .fxAbsorb::after{width:4px;height:100%;background:linear-gradient(180deg,transparent,#fff 30%,var(--fc,#fff) 50%,#fff 70%,transparent);}
+  @keyframes absorbPop{
+    0%{transform:translate(-50%,-50%) scale(.3) rotate(0deg);opacity:0}
+    30%{opacity:1}
+    100%{transform:translate(-50%,-50%) scale(var(--as,1)) rotate(45deg);opacity:0}
+  }
+  .fxImpact{ /* 타격 스파크: 명중 지점의 짧은 십자 섬광 (D항목) */
+    position:absolute;width:22px;height:22px;
+    transform:translate(-50%,-50%) scale(.4);opacity:0;
+    animation:impactPop .2s ease-out forwards;
+  }
+  .fxImpact::before,.fxImpact::after{
+    content:'';position:absolute;left:50%;top:50%;
+    background:linear-gradient(90deg,transparent,var(--fc,#fff) 35%,#fff 50%,var(--fc,#fff) 65%,transparent);
+    border-radius:2px;transform:translate(-50%,-50%);
+  }
+  .fxImpact::before{width:100%;height:5px;}
+  .fxImpact::after{width:5px;height:100%;background:linear-gradient(180deg,transparent,var(--fc,#fff) 35%,#fff 50%,var(--fc,#fff) 65%,transparent);}
+  @keyframes impactPop{
+    0%{transform:translate(-50%,-50%) scale(.4) rotate(0deg);opacity:0}
+    35%{opacity:1}
+    100%{transform:translate(-50%,-50%) scale(var(--is,1)) rotate(-20deg);opacity:0}
+  }
+  /* 묵직한 pop: 큰 매치/높은 연쇄의 미세 진동 — 아주 약하게, 컨테이너 한정 (화면 전체 X) */
+  .thump{animation:thumpShake .18s;}
+  @keyframes thumpShake{ /* v0.18: 강도 배율 --shake-k (0이면 끔) */
+    0%,100%{transform:translate(0,0)}
+    30%{transform:translate(0,calc(3px*var(--shake-k,1)))}
+    60%{transform:translate(calc(-2px*var(--shake-k,1)),calc(-1px*var(--shake-k,1)))}
   }
   /* ---------- 파티 ---------- */
   #partyArea{
@@ -421,9 +524,15 @@
   .ally:nth-child(5){z-index:1;}
   .ally:nth-child(even) .av{margin-top:6px;}
   .ally.act{z-index:9;}
-  .ally.act .av{
+  .ally.act .av{ /* v0.17: 행동 시 앞으로(위로) 튀어나가는 런지 후 정착 */
     filter:drop-shadow(0 0 10px var(--gold)) brightness(1.3);
     transform:translateY(-8px);
+    animation:actLunge .3s ease-out;
+  }
+  @keyframes actLunge{
+    0%{transform:translateY(0) scale(1)}
+    40%{transform:translateY(-15px) scale(1.08)}
+    100%{transform:translateY(-8px) scale(1)}
   }
   .av{
     position:relative;width:76px;height:98px;
@@ -639,13 +748,48 @@
   .ally.warn .mini{box-shadow:0 0 7px rgba(216,85,74,.75);animation:warnPulse 1s ease-in-out infinite;}
   @keyframes warnPulse{0%,100%{box-shadow:0 0 4px rgba(216,85,74,.5)}50%{box-shadow:0 0 9px rgba(216,85,74,.95)}}
   /* 피격 리액션: 뒤로 밀리며 흔들림 (대상 영웅만) */
-  .ally.hurt{animation:hurtKick .32s ease-out;}
+  .ally.hurt{animation:hurtKick .32s ease-out;} /* v0.17: 밀림 과장 + 기울어짐 */
   @keyframes hurtKick{
     0%{transform:translate(0,0)}
-    28%{transform:translate(-4px,6px)}
-    55%{transform:translate(3px,3px)}
+    28%{transform:translate(-6px,8px) rotate(-3deg)}
+    55%{transform:translate(4px,4px) rotate(1.5deg)}
     100%{transform:translate(0,0)}
   }
+  /* v0.18 C항목: 에너지 흡수 — 통통 튀어오름 + 속성 오라 숨결 + 직업별 액센트 (.down이 항상 우선)
+     배율 상수: ABSORB_POP_STRENGTH(--absorb-k) */
+  .ally.gain .av{animation:gainPop .3s ease-out;}
+  @keyframes gainPop{
+    0%{transform:scale(1)}
+    38%{transform:translateY(calc(-5px*var(--absorb-k,1))) scale(calc(1 + .09*var(--absorb-k,1)))}
+    70%{transform:translateY(0) scale(.98)}
+    100%{transform:scale(1)}
+  }
+  .ally.gain .av::before{ /* 짧은 속성색 오라 숨결 (0.32s — 행동 직전 신호) */
+    content:'';position:absolute;inset:-7px;border-radius:50%;
+    background:radial-gradient(circle, transparent 52%, var(--aura,rgba(255,255,255,.4)) 74%, transparent 92%);
+    animation:auraPop .32s ease-out forwards;pointer-events:none;
+  }
+  @keyframes auraPop{
+    0%{transform:scale(.6);opacity:0}
+    35%{opacity:.95}
+    100%{transform:scale(calc(1.12*var(--absorb-k,1)));opacity:0}
+  }
+  .ally.t0{--aura:rgba(207,91,69,.55);}
+  .ally.t1{--aura:rgba(155,111,208,.6);}
+  .ally.t2{--aura:rgba(226,200,120,.6);}
+  .ally.t3{--aura:rgba(93,131,196,.6);}
+  .ally.t4{--aura:rgba(79,174,142,.55);}
+  /* 직업별 흡수 액센트 (CSS class 기반 — 로직 없음, 전부 0.3s 단발) */
+  .ally.gain.t0 .torso{animation:leanFwd .3s ease-out;}      /* 대검 전사: 붉은 힘 — 앞으로 기울었다 복귀 */
+  @keyframes leanFwd{40%{transform:translateX(-50%) rotate(-4deg) translateY(-2px)}100%{transform:translateX(-50%)}}
+  .ally.gain.t1 .gear::after{animation:orbSurge .3s ease-out;} /* 마법사: 별빛이 보주에 모임 */
+  @keyframes orbSurge{45%{box-shadow:0 0 17px rgba(205,165,255,1);transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1)}}
+  .ally.gain.t2 .gear{animation:haloSurge .3s ease-out;}      /* 사제: 금빛이 후광에 스며듦 */
+  @keyframes haloSurge{45%{box-shadow:0 0 16px rgba(240,210,110,1);opacity:1}}
+  .ally.gain.t3 .gear{animation:shieldGlint .3s ease-out;}    /* 방패 병사: 남청 막이 방패에 번쩍 */
+  @keyframes shieldGlint{45%{filter:brightness(1.6);box-shadow:0 0 12px rgba(120,165,230,.95)}100%{filter:brightness(1)}}
+  .ally.gain.t4 .gear::after{animation:stringFlash .3s ease-out;} /* 궁수: 청록 빛이 시위를 스침 */
+  @keyframes stringFlash{45%{opacity:1;box-shadow:0 0 8px rgba(120,230,195,.95)}100%{opacity:.65}}
   /* HP 0: 쓰러진 상태 (사망/봉인 시스템은 미도입 — 시각 표현만) */
   .ally.down .av{
     animation:none;
@@ -725,10 +869,22 @@
     animation:floatUp .9s ease-out forwards;
     white-space:nowrap;
   }
-  /* v0.15: 연쇄 플로팅 — 더 경쾌한 바운스 팝 */
+  /* v0.15: 연쇄 플로팅 — 더 경쾌한 바운스 팝. v0.18: 3연쇄+ 메가 변형 */
   .boardFloat.chainPop{
     font-size:14.5px;
     animation:chainPop .9s ease-out forwards;
+  }
+  .boardFloat.chainPop.mega{
+    font-size:17px;
+    animation:chainMega .95s ease-out forwards;
+  }
+  @keyframes chainMega{
+    0%{opacity:0;transform:translateX(-50%) scale(.4) rotate(-4deg)}
+    16%{opacity:1;transform:translateX(-50%) scale(1.45) rotate(2deg)}
+    30%{transform:translateX(-50%) scale(1.05) rotate(0deg)}
+    44%{transform:translateX(-50%) scale(1.18)} /* 더! 더! — 2차 박동 */
+    58%{transform:translateX(-50%) scale(1.05)}
+    100%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(1.05)}
   }
   @keyframes chainPop{
     0%{opacity:0;transform:translateX(-50%) scale(.5)}
@@ -785,6 +941,7 @@
     <span id="shieldTag"></span>
   </div>
 
+  <div id="trailLayer"></div>
   <svg id="fxLayer"></svg>
 </div>
 
@@ -813,6 +970,27 @@ const PRIME_MS = 200;      // 매치 직전 반응(응축) 시간
 const POP_MS   = 170;      // 팡 터짐 시간 (기존 일괄 300ms → 200+170으로 분리)
 const FX_MAX_SHARDS = 36;  // 한 번의 터짐에서 파편 총량 상한 — 모바일 보호
 const FX_LIFE_MS = 560;    // FX 노드 일괄 제거 시점 (최장 애니메이션 .5s + 여유)
+
+/* ══ v0.18 연출 튜닝 상수 (FABLE_TASK_018) — 나라님 실기기 판정 후 여기만 조정 ══ */
+const PRIME_INTENSITY      = 1.0;  // 매치 직전 응축 배율 (부풀음 크기, 0.5~1.5 권장)
+const STONE_LIFT_STRENGTH  = 7;    // 터지기 전 스톤이 위로 솟는 px — 2.5D 높이감 (0=평면)
+const BOARD_SHAKE_STRENGTH = 1.0;  // 보드 미세 진동 배율 (0=끔)
+const ABSORB_POP_STRENGTH  = 1.0;  // 영웅 흡수 반응 배율 (바운스/오라)
+const FAKE_3D_DEPTH        = 1.0;  // 전장판 원근 배율 (#board rotateX 5deg×배율, 0=완전 평면)
+const DUST_MAX             = 24;   // 매치 스텝당 마나 가루 총량 상한 (구 TRAIL 18 → 24)
+const DUST_PER_CHAIN       = 1.5;  // 연쇄 단계당 가루 증가량 (그룹당 3 + tier×이값)
+const SHARD_HOP            = 12;   // 파편이 위로 튀는 기준 px (×FAKE_3D_DEPTH)
+
+// 상수 → CSS 변수 주입 + 전장판 원근 적용 (조작 좌표는 브라우저 히트테스트가 변환을 따라가므로 불일치 없음)
+function applyFxTune(){
+  const r = document.documentElement.style;
+  r.setProperty('--prime-k',  PRIME_INTENSITY);
+  r.setProperty('--lift',     STONE_LIFT_STRENGTH+'px');
+  r.setProperty('--shake-k',  BOARD_SHAKE_STRENGTH);
+  r.setProperty('--absorb-k', ABSORB_POP_STRENGTH);
+  const b = $('#board');
+  if(b) b.style.transform = FAKE_3D_DEPTH > 0 ? 'rotateX('+(5*FAKE_3D_DEPTH).toFixed(1)+'deg)' : '';
+}
 // 행동 테이블: 티어 1(3개) / 2(4개) / 3(5개 이상)
 // dmg=피해, heal=회복, red=피해 감소율, counter=반격 피해
 const ACTS = {
@@ -947,14 +1125,18 @@ function spawnBurstFX(groups, chain){
       fl.style.left = x+'px'; fl.style.top = y+'px';
       fl.style.setProperty('--fc', color);
       frag.appendChild(fl); nodes.push(fl);
-      // ② 스톤 파편: 무작위 방향, 연쇄일수록 멀리
+      // ② 보석 파편: 무작위 방향/크기/초기각 — 연쇄일수록 멀리 (v0.17: 단면 하이라이트)
       for(let s=0; s<perCell; s++){
         const sh = document.createElement('div');
         sh.className = 'fxShard';
         const ang = Math.random()*Math.PI*2;
         const dist = (16 + Math.random()*14) * (1 + tier*0.25);
+        const sz = (4 + Math.random()*3.5).toFixed(1); // v0.18: 4~7.5px — 마나석 조각감 강화
         sh.style.left = x+'px'; sh.style.top = y+'px';
+        sh.style.width = sz+'px'; sh.style.height = sz+'px';
         sh.style.setProperty('--fc', color);
+        sh.style.setProperty('--r0', Math.floor(Math.random()*90)+'deg');
+        sh.style.setProperty('--hop', ((SHARD_HOP*0.7 + Math.random()*SHARD_HOP*0.7)*FAKE_3D_DEPTH).toFixed(1)+'px'); // 위로 튀는 높이
         sh.style.setProperty('--dx', (Math.cos(ang)*dist)+'px');
         sh.style.setProperty('--dy', (Math.sin(ang)*dist)+'px');
         frag.appendChild(sh); nodes.push(sh);
@@ -969,27 +1151,110 @@ function spawnBurstFX(groups, chain){
       ring.style.setProperty('--fc', color);
       ring.style.setProperty('--fs', (2.6 + tier*1.1).toFixed(2));
       frag.appendChild(ring); nodes.push(ring);
-      // ④ 에너지 잔상 (v0.15.5 폴리시): 해당 계열 영웅의 가로 위치로 정렬하며
-      //    보드 하단 밖(+14px, overflow:hidden이 잘라냄)으로 빨려 내려감 = 행동 에너지 전달
-      const w = document.createElement('div');
-      w.className = 'fxWisp';
-      w.style.left = cx+'px'; w.style.top = cy+'px';
-      w.style.setProperty('--fc', color);
-      const heroEl = heroChipEl(g.type);
-      let wx = 0;
-      if(heroEl){
-        const hr = heroEl.getBoundingClientRect();
-        wx = (hr.left + hr.width/2 - wrapR.left) - cx; // 영웅 칩 중심으로의 가로 편차
-      }
-      w.style.setProperty('--wx', wx.toFixed(1)+'px');
-      w.style.setProperty('--ws', (1 + tier*0.18).toFixed(2)); // 연쇄 단계만큼 잔상 강화
-      w.style.setProperty('--wy', Math.max(40, wrapR.height - cy + 14)+'px');
-      frag.appendChild(w); nodes.push(w);
+      // ④ 에너지 발자취는 spawnTrailFX(전역 레이어)가 담당 (v0.17: 보드 경계를 넘어 영웅까지)
     }
   }
   layer.appendChild(frag);
   // 이번 호출분만 제거 (다음 연쇄 FX와 간섭 없음) — DOM 누적 방지
   setTimeout(()=>{ nodes.forEach(nd=>nd.remove()); }, FX_LIFE_MS);
+}
+
+/* ── v0.17: 에너지 발자취 — "요정가루가 해당 영웅에게 스르륵" (FABLE_TASK_017 B항목)
+   fxWisp(v0.15.5)의 후계: 보드 안에서 잘리던 잔상을 #trailLayer(앱 전역)로 옮겨
+   터진 그룹 중심에서 해당 계열 영웅 아바타까지 실제로 도달시킨다.
+   원칙: 입자 총량 상한 / transform·opacity만 / 수명 후 전부 제거 / 큐·수치 무관 */
+const TRAIL_FLY_MS   = 560; // 가루 비행 시간 (도착 반짝임 타이밍 기준) — 총량/증가량은 DUST_MAX/DUST_PER_CHAIN
+
+function spawnTrailFX(groups, chain){
+  const layer = $('#trailLayer');
+  if(!layer) return;
+  const appR = $('#app').getBoundingClientRect();
+  const tier = Math.min(chain, 3);
+  // 그룹당 가루 수: 연쇄가 높을수록 풍성(DUST_PER_CHAIN), 다중 그룹이면 자동 감축 (총량 ≤ DUST_MAX)
+  const per = Math.max(2, Math.min(Math.round(3 + tier*DUST_PER_CHAIN), Math.floor(DUST_MAX / Math.max(1, groups.length))));
+  const nodes = [];
+  const frag = document.createDocumentFragment();
+  for(const g of groups){
+    const gType = g.type;
+    const color = TYPE_COLORS[gType] || '#fff';
+    const hero = heroChipEl(gType);
+    if(!hero) continue;
+    // 출발점: 그룹 중심 (#app 좌표 — 셀 삭제 전 호출이 전제)
+    let sx = 0, sy = 0, n = 0;
+    for(const i of g.cells){
+      const el = document.querySelector('.cell[data-i="'+i+'"]');
+      if(!el) continue;
+      const r = el.getBoundingClientRect();
+      sx += r.left + r.width/2 - appR.left;
+      sy += r.top + r.height/2 - appR.top;
+      n++;
+    }
+    if(!n) continue;
+    sx /= n; sy /= n;
+    const [hx, hy0] = centerOf(hero);
+    const hy = hy0 - 14; // 도착점: 영웅 머리께
+    for(let k=0; k<per; k++){
+      const d = document.createElement('div');
+      d.className = 'fxDust';
+      // v0.18: 종점은 영웅 정중앙 정밀 — 흩어진 가루가 도착 직전 한 점으로 모여드는 흡인 (산포는 경유점이 담당)
+      const tx = hx - sx;
+      const ty = hy - sy;
+      const L = Math.hypot(tx, ty) || 1;
+      // 경유점: 직선 절반 + 수직 흔들림 — 가루마다 다른 곡선으로 "스르륵"
+      const sway = (Math.random()*30 - 15) * (1 + tier*0.12);
+      d.style.left = (sx + Math.random()*16 - 8) + 'px';
+      d.style.top  = (sy + Math.random()*10 - 5) + 'px';
+      d.style.setProperty('--fc', color);
+      d.style.setProperty('--mx', (tx*0.5 + (-ty/L)*sway).toFixed(1)+'px');
+      d.style.setProperty('--my', (ty*0.5 + ( tx/L)*sway).toFixed(1)+'px');
+      d.style.setProperty('--tx', tx.toFixed(1)+'px');
+      d.style.setProperty('--ty', ty.toFixed(1)+'px');
+      const sz = (5 + Math.random()*3.5).toFixed(1); // v0.18: 5~8.5px — 가루 밀도/존재감 강화
+      d.style.width = sz+'px'; d.style.height = sz+'px';
+      d.style.animationDelay = Math.floor(Math.random()*140)+'ms';
+      frag.appendChild(d); nodes.push(d);
+    }
+    // 도착: 별 십자 반짝임 + 영웅 짧은 흡수 바운스 (재렌더 대비 — 도착 시점에 칩을 다시 조회)
+    setTimeout(()=>{
+      const chip = heroChipEl(gType);
+      if(!chip) return;
+      spawnAbsorb(chip, color, (1 + tier*0.12) * ABSORB_POP_STRENGTH);
+      if(!chip.classList.contains('down')){
+        chip.classList.add('gain');
+        setTimeout(()=>chip.classList.remove('gain'), 270);
+      }
+    }, TRAIL_FLY_MS);
+  }
+  layer.appendChild(frag);
+  setTimeout(()=>{ nodes.forEach(nd=>nd.remove()); }, 900); // 비행+지연 종료 후 일괄 제거
+}
+
+// 도착/회복 반짝임: 대상 위 4방 별 십자 (속성색)
+function spawnAbsorb(el, color, scale){
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [x,y] = centerOf(el);
+  const a = document.createElement('div');
+  a.className = 'fxAbsorb';
+  a.style.left = x+'px'; a.style.top = (y-14)+'px';
+  a.style.setProperty('--fc', color);
+  a.style.setProperty('--as', (scale||1).toFixed(2));
+  layer.appendChild(a);
+  setTimeout(()=>a.remove(), 340);
+}
+
+// 타격 스파크: 명중 지점의 짧은 십자 섬광 (D항목 — 모든 타격 공통, big=강공/필살)
+function spawnImpact(el, color, big){
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [x,y] = centerOf(el);
+  const a = document.createElement('div');
+  a.className = 'fxImpact';
+  a.style.left = x+'px'; a.style.top = y+'px';
+  a.style.setProperty('--fc', color || '#fff');
+  a.style.setProperty('--is', big ? '1.7' : '1');
+  layer.appendChild(a);
+  setTimeout(()=>a.remove(), 240);
 }
 
 /* ── 행동선: 하단 영웅 → 퍼즐판 침범 → 상단 적 ── */
@@ -1007,7 +1272,11 @@ function centerOf(el){
 }
 
 // SVG 행동선: 짧게 그려졌다 사라진다. 레이어는 pointer-events:none
-function drawLine(fromEl, toEl, color, dashed){
+// v0.17: 계열별 행동선 튜닝 — opts {dashed,width,bend,duration,alpha}
+// 문법 불변: 실선=타격, 점선=조준/예고. bend=0이면 기존과 동일한 직선.
+// 구 시그니처 호환: 4번째 인자가 true면 {dashed:true}로 해석 (궁수 점선)
+function drawLine(fromEl, toEl, color, opts){
+  const o = (opts===true) ? {dashed:true} : (opts || {});
   const fx = $('#fxLayer');
   if(!fromEl || !toEl) return;
   // 연쇄 폭주 시 행동선 과밀 방지: 최대 10개 유지
@@ -1017,23 +1286,31 @@ function drawLine(fromEl, toEl, color, dashed){
   fx.setAttribute('height', app.clientHeight);
   const [x1,y1] = centerOf(fromEl);
   const [x2,y2] = centerOf(toEl);
-  const ln = document.createElementNS('http://www.w3.org/2000/svg','line');
-  ln.setAttribute('x1',x1); ln.setAttribute('y1',y1);
-  ln.setAttribute('x2',x2); ln.setAttribute('y2',y2);
+  const dx = x2-x1, dy = y2-y1, len0 = Math.hypot(dx,dy) || 1;
+  const bend = o.bend || 0; // 수직 방향 곡률 (+/-로 휘는 방향)
+  const cx = (x1+x2)/2 + (-dy/len0)*bend;
+  const cy = (y1+y2)/2 + ( dx/len0)*bend;
+  const ln = document.createElementNS('http://www.w3.org/2000/svg','path');
+  ln.setAttribute('d','M'+x1.toFixed(1)+','+y1.toFixed(1)
+                  +' Q'+cx.toFixed(1)+','+cy.toFixed(1)
+                  +' ' +x2.toFixed(1)+','+y2.toFixed(1));
+  ln.setAttribute('fill','none');
   ln.setAttribute('stroke',color);
-  ln.setAttribute('stroke-width','3');
+  ln.setAttribute('stroke-width', o.width || 3);
   ln.setAttribute('stroke-linecap','round');
-  ln.setAttribute('opacity','0.85');
-  const len = Math.hypot(x2-x1, y2-y1);
-  if(dashed){
-    ln.setAttribute('stroke-dasharray','7 6'); // 궁수: 점선 관통
+  const alpha = (o.alpha != null) ? o.alpha : 0.85;
+  ln.setAttribute('opacity', alpha);
+  fx.appendChild(ln);
+  const len = ln.getTotalLength ? ln.getTotalLength() : len0;
+  if(o.dashed){
+    ln.setAttribute('stroke-dasharray','7 6'); // 점선: 조준/관통 문법
   }else{
     ln.setAttribute('stroke-dasharray', len);
     ln.setAttribute('stroke-dashoffset', len);
-    ln.animate([{strokeDashoffset:len},{strokeDashoffset:0}], {duration:200, fill:'forwards'});
+    ln.animate([{strokeDashoffset:len},{strokeDashoffset:0}],
+               {duration:o.duration || 200, fill:'forwards'});
   }
-  fx.appendChild(ln);
-  ln.animate([{opacity:.85},{opacity:0}], {duration:250, delay:280, fill:'forwards'});
+  ln.animate([{opacity:alpha},{opacity:0}], {duration:250, delay:280, fill:'forwards'});
   setTimeout(()=>ln.remove(), 560); // 짧게 사라짐 — 다음 조작 방해 금지
 }
 
@@ -1055,6 +1332,17 @@ function drawGuardRing(){
   fx.appendChild(rect);
   rect.animate([{opacity:1, strokeWidth:'2.5'},{opacity:0, strokeWidth:'5'}], {duration:550, fill:'forwards'});
   setTimeout(()=>rect.remove(), 580);
+  // v0.17: 안쪽 방패석 남청 2차 펄스 — "막아준다"의 두께감 (120ms 시차)
+  setTimeout(()=>{
+    const r2 = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r2.setAttribute('x', p.left-a.left+1); r2.setAttribute('y', p.top-a.top+1);
+    r2.setAttribute('width', p.width-2); r2.setAttribute('height', p.height-2);
+    r2.setAttribute('rx','10'); r2.setAttribute('fill','none');
+    r2.setAttribute('stroke', TYPE_COLORS[3]); r2.setAttribute('stroke-width','2');
+    fx.appendChild(r2);
+    r2.animate([{opacity:.9, strokeWidth:'2'},{opacity:0, strokeWidth:'4'}], {duration:450, fill:'forwards'});
+    setTimeout(()=>r2.remove(), 480);
+  }, 120);
 }
 
 // 마법사 원형 파동: 적 진영 중앙에서 원형 충격파가 확산 (직선 행동선과 구별되는 연출)
@@ -1476,6 +1764,7 @@ function renderStage(){
 }
 
 function renderAll(){
+  applyFxTune(); // v0.18: 연출 튜닝 상수 → CSS 변수/전장판 원근 주입
   renderStage(); renderEnemies(); renderBoard(); renderParty();
 }
 
@@ -1508,7 +1797,10 @@ async function performHeroAction(a){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
         renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+행동선으로 전달
-        drawLine(heroChipEl(0), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[0]); // 대검 전사: 퍼즐판 관통 행동선 (속성색 일원화)
+        // v0.17: 짧고 굵은 베기 — 빠른 드로잉 + 살짝 휘는 궤적 + 타격 스파크
+        drawLine(heroChipEl(0), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[0],
+                 {width:6, bend:10, duration:120});
+        spawnImpact(enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[0], a.tier===3);
         floatText(enemyEl(enemies.indexOf(tgt)), '-'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
@@ -1519,7 +1811,9 @@ async function performHeroAction(a){
         // 집중 해방: 비축 마력 + 현재 위력의 원형 파동
         const dmg = mageCharge.dmg + Math.round(spec.dmg * a.mult);
         mageCharge = null;
-        drawWave(); // 원형 확산 폭발 연출
+        drawWave(); // 원형 확산 폭발 연출 (구조 불변)
+        targets.forEach((e,k)=>setTimeout(()=>     // v0.17 보강: 파동이 닿는 순서로 강 스파크
+          spawnImpact(enemyEl(enemies.indexOf(e)), '#b88aff', true), 140 + k*45));
         targets.forEach(e=>{ e.hp -= dmg; });
         banner('💥 원형 파동! 모든 적에게 '+dmg+' 피해', 'boss');
         addLog('원형 파동! 모든 적에게 '+dmg+' 피해', 'gold');
@@ -1541,8 +1835,11 @@ async function performHeroAction(a){
         const dmg = Math.round(spec.dmg * a.mult);
         targets.forEach(e=>{ e.hp -= dmg; });
         renderEnemies(null, true); // 일반 광역: 플로팅으로 전달
-        targets.forEach(e=>{
-          drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#e0633e');
+        targets.forEach((e,k)=>{
+          // v0.17: 마나 별빛의 완만한 곡선 (구 불꽃색 하드코딩 잔존분 수정 — 015B 누락 자체 발견)
+          drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
+                   {width:3, bend:26 + k*4, alpha:.8, duration:220});
+          spawnImpact(enemyEl(enemies.indexOf(e)), TYPE_COLORS[1], false);
           floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
           if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
         });
@@ -1558,7 +1855,10 @@ async function performHeroAction(a){
         heroHp[tgt] = Math.min(HERO_MAX[tgt], heroHp[tgt] + heal);
         const gained = heroHp[tgt] - before;
         renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달
-        drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2]); // 회복선: 사제 → 회복 대상 영웅 (치유 금색)
+        // v0.17: 위로 부드럽게 감기는 회복 아치 + 도착 금빛 반짝임 (공격선과 즉시 구분)
+        drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2],
+                 {width:3.5, bend:-24, alpha:.9, duration:260});
+        spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
         floatText(heroChipEl(tgt), '+'+gained, 'heal');      // 누가 회복되었는지 직접 표시
       }
     }
@@ -1580,7 +1880,15 @@ async function performHeroAction(a){
         const dmg = Math.round(spec.dmg * a.mult);
         tgt.hp -= dmg;
         renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+점선으로 전달
-        drawLine(heroChipEl(4), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[4], true); // 궁수: 점선 관통선 (활석 청록)
+        // v0.17: 얇고 빠른 화살 점선 — 4매치+(연속 사격)는 90ms 간격 2발 잔상
+        drawLine(heroChipEl(4), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[4],
+                 {dashed:true, width:2.2});
+        if(a.tier >= 2){
+          const ti = enemies.indexOf(tgt);
+          setTimeout(()=>drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4],
+                                  {dashed:true, width:2.2, bend:9, alpha:.7}), 90);
+        }
+        spawnImpact(enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[4], a.tier===3);
         floatText(enemyEl(enemies.indexOf(tgt)), '🎯 -'+dmg, 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
       }
@@ -1673,10 +1981,12 @@ async function enemyAttack(e){
   // 일반 피해/막힘: 대상 플로팅("-N" / "🛡 raw→eff")이 전달 — 토스트 X
   renderParty();
   hurtHero(tgt);
+  spawnImpact(heroChipEl(tgt), blocked ? '#ffd97a' : '#e0504a', false); // v0.17: 피격 스파크
   floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
   if(shieldCounter>0){
     e.hp -= shieldCounter;
     renderEnemies(enemies.indexOf(e));
+    spawnImpact(enemyEl(enemies.indexOf(e)), '#ffd97a', false); // v0.17: 반격 스파크
     floatText(enemyEl(enemies.indexOf(e)), '⚔ -'+shieldCounter, 'guard'); // 반격: 플로팅
     if(e.hp<=0){
       addLog(e.name+' 처치!', 'gold');
@@ -1724,9 +2034,15 @@ async function bossBigAttack(e){
     ? '방패 병사의 방패! 마왕의 일격, 전원 '+BOSS_BIG_EACH+' 피해가 '+eff+'로 감소.'
     : '마왕의 일격! 생존 영웅 전원에게 '+eff+' 피해!', blocked?'shield':'boss');
   renderParty();
-  hitList.forEach(t=>{
+  if(!blocked){ // v0.17 보강: 균열이 꽂히는 순간 파티 진영만 아주 약한 진동 (예고/번개 구조 불변)
+    const pa = $('#partyArea');
+    pa.classList.add('thump');
+    setTimeout(()=>pa.classList.remove('thump'), 200);
+  }
+  hitList.forEach((t,k)=>{
     hurtHero(t);
     if(blocked) drawBlockFlash(heroChipEl(t));
+    setTimeout(()=>spawnImpact(heroChipEl(t), blocked ? '#ffd97a' : '#d8554a', true), k*40); // 강 스파크
     floatText(heroChipEl(t), blocked ? '🛡 '+BOSS_BIG_EACH+'→'+eff : '-'+eff, blocked?'guard':'dmg');
   });
   if(shieldCounter>0){
@@ -1799,7 +2115,8 @@ async function resolveBoard(){
     let slot = 0;
     if(chain>1){
       const txt = chain+'연쇄! 위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%';
-      floatBoard(txt, 'gold chainPop', slot++); // v0.15: 연쇄는 바운스 팝
+      // v0.18: 3연쇄+는 "더! 더! 더!" 메가 팝
+      floatBoard(txt, chain>=3 ? 'gold chainPop mega' : 'gold chainPop', slot++);
     }
     for(const g of groups){
       queueAction(g.type, g.cells.length, chain);
@@ -1809,16 +2126,32 @@ async function resolveBoard(){
     }
 
     // 삭제 연출 (v0.15): ① 응축 반응(primed) → ② 팡 터짐(removing + 버스트 FX)
+    // v0.18: 셀별 가중 단계 — p2(4매치/2연쇄), p3(5매치/3연쇄+) — 큰 힘일수록 더 적극적으로
     const removeSet = new Set();
-    groups.forEach(g=>g.cells.forEach(c=>removeSet.add(c)));
+    const cellTier = new Map(); // cellIdx → 1/2/3 (응축·팡 강도)
+    groups.forEach(g=>{
+      const sizeT = g.cells.length>=5 ? 3 : g.cells.length===4 ? 2 : 1;
+      const pT = Math.max(sizeT, chain>=3 ? 3 : chain===2 ? 2 : 1);
+      g.cells.forEach(c=>{ removeSet.add(c); cellTier.set(c, Math.max(pT, cellTier.get(c)||1)); });
+    });
     const matchedEls = [];
     document.querySelectorAll('.cell').forEach(c=>{
       if(removeSet.has(+c.dataset.i)) matchedEls.push(c);
     });
-    matchedEls.forEach(c=>c.classList.add('primed'));
+    matchedEls.forEach(c=>{
+      const pT = cellTier.get(+c.dataset.i) || 1;
+      c.classList.add('primed');
+      if(pT>=2) c.classList.add(pT===3 ? 'p3' : 'p2');
+    });
     await delay(PRIME_MS);
     spawnBurstFX(groups, chain);              // 좌표는 셀 삭제 전에 채취
-    matchedEls.forEach(c=>c.classList.add('removing'));
+    spawnTrailFX(groups, chain);              // v0.17: 요정가루 발자취 → 해당 영웅 (비차단)
+    if(BOARD_SHAKE_STRENGTH > 0 && (chain >= 3 || groups.some(g=>g.cells.length >= 5))){
+      const bw = $('#boardWrap'); // 묵직한 pop: 보드만 — 강도는 --shake-k 상수
+      bw.classList.add('thump');
+      setTimeout(()=>bw.classList.remove('thump'), 200);
+    }
+    matchedEls.forEach(c=>c.classList.add('removing')); // 가중 클래스(p2/p3)는 그대로 → popOut2/3 적용
     await delay(POP_MS);
 
     // 삭제 → 낙하 → 생성
