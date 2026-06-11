@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.20 — FABLE_TASK_020: Game Flow Shell & Job Codex Foundation
+<!-- Emblem Quest Lab v0.21 — FABLE_TASK_021: 5 Slot / 20 Job Stat Framework & Armor Formula Baseline
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
-           v0.19: Fallen Hero & Dead Block -->
+           v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -125,6 +125,15 @@
     0%,100%{filter:drop-shadow(0 0 3px rgba(216,85,74,.4))}
     50%{filter:drop-shadow(0 0 11px rgba(216,85,74,.95))}
   }
+  .mob .stRow{ /* v0.21: 상태이상 미니 배지 (독/방어 감소) */
+    position:absolute;top:-3px;left:-5px;display:flex;gap:2px;z-index:7;
+  }
+  .mob .stRow i{
+    font-style:normal;font-size:8.5px;font-weight:800;
+    background:#241b30;border:1px solid #5b3a5e;border-radius:6px;
+    padding:0 4px;color:#e8c8ff;
+  }
+  .mob .stRow i.stA{border-color:#3a5a94;color:#bcd0ec;}
   .mob .intent{
     position:absolute;top:-16px;left:50%;transform:translateX(-50%);
     background:#5b1f1f;color:#ffd28a;border:1px solid #a35b2c;
@@ -943,9 +952,58 @@
     position:absolute;inset:0;z-index:70;
     background:linear-gradient(180deg,#161226 0%,#0d0a18 100%);
     display:none;flex-direction:column;align-items:center;
-    padding:26px 16px 20px;gap:14px;overflow-y:auto;
+    /* v0.20B: iPhone safe-area — 상단바 아래 잘림/하단 제스처바 겹침 방지 */
+    padding:calc(22px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    gap:14px;overflow-y:auto;-webkit-overflow-scrolling:touch;
     border-radius:12px;
   }
+  /* ── v0.20B: 도감은 3분할 — 헤더 고정 / 본문만 스크롤 / 하단 버튼 고정 (겹침 원천 차단) ── */
+  #screenCodex{padding:0;gap:0;overflow:hidden;align-items:stretch;}
+  #codexHead{
+    flex:none;
+    padding:calc(16px + env(safe-area-inset-top, 0px)) 16px 10px;
+    border-bottom:1px solid var(--line);
+    background:#161226;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  #codexHead .row{display:flex;align-items:center;gap:8px;}
+  #codexBack{
+    background:transparent;border:1px solid var(--line);color:var(--dim);
+    border-radius:9px;font-size:12px;font-weight:700;padding:6px 10px;cursor:pointer;flex:none;
+  }
+  #codexHead .ttl{font-size:16px;font-weight:900;color:var(--ink);letter-spacing:1.5px;}
+  #codexHead .sub{font-size:11px;color:var(--dim);line-height:1.5;}
+  #codexBody{
+    flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:12px 16px 14px;
+  }
+  #codexNav{
+    flex:none;display:flex;gap:8px;
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line);background:#131020;
+  }
+  #codexNav button{flex:1;}
+  /* 카테고리 카드 */
+  .catCard{
+    width:100%;max-width:360px;
+    display:flex;align-items:center;gap:12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px;cursor:pointer;text-align:left;
+  }
+  .catCard:active{transform:scale(.985);}
+  .catCard .sym{
+    width:44px;height:44px;flex:none;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;
+    border:2px solid color-mix(in srgb,var(--tc,#888) 42%,#06040c);
+    background:linear-gradient(168deg,color-mix(in srgb,var(--tc,#888) 58%,#332b4d),color-mix(in srgb,var(--tc,#888) 20%,#0d0a16));
+    text-shadow:0 2px 3px rgba(0,0,0,.55);
+  }
+  .catCard .catName{font-size:14.5px;font-weight:900;color:var(--ink);}
+  .catCard .catBlock{font-size:10.5px;color:var(--dim);}
+  .catCard .catDesc{font-size:11px;color:var(--dim);line-height:1.45;margin-top:2px;}
+  .catCard .catCount{flex:none;font-size:11px;color:var(--gold);font-weight:800;text-align:right;}
+  .catCard .catCount small{display:block;font-size:9px;color:var(--dim);font-weight:400;margin-top:2px;}
   body[data-screen="title"] #screenTitle,
   body[data-screen="partySelect"] #screenParty,
   body[data-screen="codex"] #screenCodex{display:flex;}
@@ -990,20 +1048,28 @@
     border:1px solid var(--line);color:var(--dim);
   }
   .slotPicks i.cur{border-color:var(--gold);color:var(--gold);font-weight:800;}
+  .slotPicks i.pick{cursor:pointer;color:#bdb6d2;border-color:#4a4368;} /* v0.21: 선택 가능 직업 */
+  .slotPicks i.pick.cur{border-color:var(--gold);color:var(--gold);}
+  .slotPicks i.pick:active{transform:scale(.94);}
   /* 도감: 직업 카드 */
   .codexList{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;}
-  .codexCard{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;}
-  .codexCard .head{display:flex;align-items:center;gap:8px;}
-  .codexCard .head .sym{font-size:18px;}
-  .codexCard .head .nm{font-size:14.5px;font-weight:900;color:var(--ink);}
-  .codexCard .head .sl{font-size:10px;color:var(--dim);margin-left:auto;}
-  .codexCard .desc{font-size:11px;color:var(--dim);line-height:1.55;margin:5px 0;}
-  .codexCard .statRow{display:flex;gap:10px;font-size:10.5px;color:#a59dbd;margin-bottom:5px;}
-  .codexCard .tagRow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;}
-  .codexCard .tagRow i{font-style:normal;font-size:9px;padding:1px 7px;border-radius:7px;background:#221c38;color:var(--dim);}
-  .codexCard .mline{font-size:10.5px;color:#bdb6d2;line-height:1.7;}
-  .codexCard .mline b{color:var(--gold);font-weight:800;}
-  .codexCard.pending{opacity:.45;text-align:center;font-size:11px;color:var(--dim);padding:14px;}
+  .codexCard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;max-width:360px;}
+  .codexCard .nm{font-size:15.5px;font-weight:900;color:var(--ink);margin-bottom:3px;}
+  .codexCard .desc{font-size:11.5px;color:var(--dim);line-height:1.6;margin-bottom:9px;word-break:keep-all;}
+  .codexCard .statRow{display:flex;gap:16px;font-size:11.5px;color:#cfc8e2;font-weight:700;margin-bottom:8px;}
+  .codexCard .statRow span b{color:var(--dim);font-weight:400;font-size:10px;margin-right:3px;}
+  .codexCard .tagRow{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+  .codexCard .tagRow i{font-style:normal;font-size:9.5px;padding:2px 8px;border-radius:8px;background:#221c38;color:var(--dim);}
+  .codexCard .mrow{ /* v0.20B: 매치 설명 — 라벨 열 + 내용 열, 줄바꿈 자연 */
+    display:grid;grid-template-columns:44px 1fr;gap:8px;
+    font-size:11px;color:#bdb6d2;line-height:1.55;padding:3px 0;word-break:keep-all;
+  }
+  .codexCard .mrow b{color:var(--gold);font-weight:800;font-size:10.5px;}
+  .codexCard.pending{
+    opacity:.4;text-align:center;padding:14px;width:100%;max-width:360px;
+  }
+  .codexCard.pending .pnm{font-size:12px;font-weight:700;color:var(--dim);margin-bottom:3px;}
+  .codexCard.pending .pdesc{font-size:10px;color:#6e6880;}
   .screen .navBtns{display:flex;gap:8px;width:100%;max-width:360px;margin-top:4px;}
   .screen .navBtns button{flex:1;}
   #overlay{
@@ -1068,7 +1134,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.20 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.21 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1085,10 +1151,16 @@
   </div>
 
   <div id="screenCodex" class="screen">
-    <div class="screenTitle">직업 도감</div>
-    <div class="screenSub">기본 5직업 — 앞으로 슬롯당 4직업, 총 20직업으로 확장</div>
-    <div class="codexList" id="codexList"></div>
-    <div class="navBtns">
+    <!-- v0.20B: 3분할 — 헤더 고정 / 본문만 스크롤 / 하단 버튼 고정 -->
+    <div id="codexHead">
+      <div class="row">
+        <button id="codexBack" style="display:none">← 직업 도감</button>
+        <span class="ttl" id="codexTitle">직업 도감</span>
+      </div>
+      <div class="sub" id="codexSub">5개의 직업 카테고리 — 앞으로 카테고리당 4직업, 총 20직업으로 확장</div>
+    </div>
+    <div id="codexBody"></div>
+    <div id="codexNav">
       <button class="ghost" id="btnCodexToParty">편성으로</button>
       <button class="ghost" id="btnCodexToTitle">타이틀로</button>
     </div>
@@ -1101,7 +1173,7 @@
 const COLS = 7;       // 가로 7칸
 const ROWS = 7;       // 세로 7칸 (v0.6: 7×7 정사각 "전장" 보드 실험)
 // v0.15.5: 5계열 = 5블록 = 5기본 직업 확정 (FABLE_TASK_015B)
-// cls=계열, block=블록명(문장석), hero=기본 직업명. 인덱스/행동 구조(ACTS·PARTY)는 불변.
+// cls=계열, block=블록명(문장석), hero=기본 직업명. 인덱스/PARTY 구조는 불변. (행동은 v0.21부터 JOBS 기반)
 const TYPES = [
   {sym:'⚔️', block:'대검석', hero:'대검 전사', cls:'근접 딜러',   role:'전열 공격'},
   {sym:'✦',  block:'마나석', hero:'마법사',    cls:'서포터',     role:'집중·광역 파동'},
@@ -1150,84 +1222,203 @@ function applyFxTune(){
 }
 // 행동 테이블: 티어 1(3개) / 2(4개) / 3(5개 이상)
 // dmg=피해, heal=회복, red=피해 감소율, counter=반격 피해
-const ACTS = {
-  0: {1:{dmg:9, label:'베기'},      2:{dmg:15, label:'강타'},       3:{dmg:24, label:'필살·일섬'}},
-  1: {1:{dmg:5, label:'화염탄'},    2:{dmg:9,  label:'화염폭풍'},   3:{dmg:14, label:'필살·메테오'}},   // 전체 공격
-  2: {1:{heal:8, label:'치유'},     2:{heal:14,label:'대치유'},     3:{heal:24,label:'필살·성광'}},
-  3: {1:{red:0.5, label:'방어 태세'},2:{red:0.75,label:'철벽'},     3:{red:0.75, counter:6, label:'필살·성역'}}, // 5매치: 크게 감소 + 반격
-  4: {1:{dmg:8, label:'사격'},      2:{dmg:13, label:'연속 사격'},  3:{dmg:21, label:'필살·관통시'}},   // 최저 HP 적 저격
-};
+// v0.21: (구 ACTS 폐지) 3/4/5매치 행동·수치는 JOBS[*].actions + actionValue 공식이 단일 소스
 /* ════ v0.20: 직업 데이터 구조 초안 (FABLE_TASK_020 C항목) ════
    - 5슬롯 × 슬롯당 4직업 확장 가능 구조 (현재는 슬롯당 기본 1직업 + 준비 중 3칸)
    - hp는 HERO_MAX와 동일값 표시용. power/defense는 v0.21 스탯 프레임워크용 자리 (전투 미적용)
-   - 매치 설명은 ACTS(실제 전투 수치)에서 생성 — 도감과 전투의 단일 진실 소스 */
+   - 매치 설명은 JOBS.actions + actionValue 공식에서 생성 — 도감과 전투의 단일 진실 소스 */
 const JOB_SLOTS = [
-  { id:'tank',    blockType:3, name:'탱커',        blockName:'방패석' },
-  { id:'melee',   blockType:0, name:'근접 딜러',   blockName:'대검석' },
-  { id:'ranged',  blockType:4, name:'원거리 딜러', blockName:'활석' },
-  { id:'support', blockType:1, name:'서포터',      blockName:'마나석' },
-  { id:'healer',  blockType:2, name:'힐러',        blockName:'치유석' },
+  { id:'tank',    blockType:3, name:'탱커',        blockName:'방패석', desc:'피해를 막고 아군을 지키는 역할' },
+  { id:'melee',   blockType:0, name:'근접 딜러',   blockName:'대검석', desc:'전열에서 적을 베어내는 역할' },
+  { id:'ranged',  blockType:4, name:'원거리 딜러', blockName:'활석',   desc:'후열에서 약한 적을 노리는 역할' },
+  { id:'support', blockType:1, name:'서포터',      blockName:'마나석', desc:'마나를 다뤄 전장을 뒤흔드는 역할' },
+  { id:'healer',  blockType:2, name:'힐러',        blockName:'치유석', desc:'아군을 회복하고 상태 이상을 관리하는 역할' },
 ];
+/* v0.21: 행동값 공식 — 행동값 = Power × 매치계수 × 연쇄계수 (FABLE_TASK_021 C항목) */
+const MATCH_MULT = {1:1.0, 2:1.6, 3:2.6}; // 3매치 / 4매치 / 5매치+
+const BLOCK_SLOT = {3:'tank', 0:'melee', 4:'ranged', 1:'support', 2:'healer'}; // 블록 → 슬롯
+
+/* v0.21: 직업 = 전투/도감의 단일 진실 소스 — hp/power/defense/tags/actions(3·4·5매치) */
 const JOBS = {
-  guardSoldier: { slot:'tank',    blockType:3, name:'방패 병사', hp:46, power:6, defense:4,
-    summary:'일정 시간 파티 전체의 피해를 줄이는 기본 탱커', tags:['보호','피해감소','버티기'] },
-  greatswordWarrior: { slot:'melee', blockType:0, name:'대검 전사', hp:38, power:9, defense:2,
-    summary:'전열의 적을 안정적으로 베어내는 기본 근접 딜러', tags:['전열','단일 공격'] },
-  archer: { slot:'ranged', blockType:4, name:'궁수', hp:32, power:8, defense:1,
-    summary:'약한 적을 노려 마무리하는 기본 원거리 딜러 (장기적으로 후열 저격 정체성으로 조정 예정)', tags:['저격','마무리'] },
-  mage: { slot:'support', blockType:1, name:'마법사', hp:28, power:5, defense:1,
-    summary:'마력을 집중한 뒤 광역 파동으로 전장을 터뜨리는 서포터', tags:['광역','집중','파동'] },
-  priest: { slot:'healer', blockType:2, name:'사제', hp:30, power:0, defense:2,
-    summary:'가장 위험한 아군 하나를 크게 회복하는 기본 힐러', tags:['치유','생존 보조'] },
+  // ── 기본 5직업 (B항목 권장 스탯 — 기존 손맛과 거의 동일: 궁수는 수치 완전 일치) ──
+  guardSoldier: { slot:'tank', blockType:3, name:'방패 병사', hp:48, power:6, defense:4,
+    summary:'일정 시간 파티 전체의 피해를 줄이는 기본 탱커', tags:['보호','피해감소','버티기'],
+    actions:{
+      1:{type:'guard', red:0.5,  label:'방어 태세', desc:'6초간 파티 피해 50% 감소'},
+      2:{type:'guard', red:0.75, label:'철벽',      desc:'6초간 파티 피해 75% 감소'},
+      3:{type:'guard', red:0.75, counter:6, label:'필살·성역', desc:'6초간 75% 감소 + 반격'},
+    }},
+  greatswordWarrior: { slot:'melee', blockType:0, name:'대검 전사', hp:40, power:10, defense:2,
+    summary:'전열의 적을 안정적으로 베어내는 기본 근접 딜러', tags:['전열','단일 공격'],
+    actions:{
+      1:{type:'strikeFront', label:'베기',        desc:'선두 적 피해'},
+      2:{type:'strikeFront', label:'강타',        desc:'선두 적 큰 피해'},
+      3:{type:'strikeFront', label:'필살·일섬',   desc:'선두 적 매우 큰 피해'},
+    }},
+  archer: { slot:'ranged', blockType:4, name:'궁수', hp:34, power:8, defense:1,
+    summary:'약한 적을 노려 마무리하는 기본 원거리 딜러 (장기적으로 후열 저격 정체성으로 조정 예정)', tags:['저격','마무리'],
+    actions:{
+      1:{type:'snipeWeak', label:'사격',          desc:'약한 적 피해'},
+      2:{type:'snipeWeak', label:'연속 사격',     desc:'약한 적 큰 피해'},
+      3:{type:'snipeWeak', label:'필살·관통시',   desc:'약한 적 매우 큰 피해'},
+    }},
+  mage: { slot:'support', blockType:1, name:'마법사', hp:28, power:5, defense:0,
+    summary:'마력을 집중한 뒤 광역 파동으로 전장을 터뜨리는 서포터', tags:['광역','집중','마나'],
+    actions:{
+      1:{type:'novaAll', label:'화염탄',     desc:'적 전체 피해'},
+      2:{type:'charge',  label:'집중',       desc:'위력 비축 → 원형 파동'},
+      3:{type:'charge',  label:'강한 집중',  desc:'큰 위력 비축 → 원형 파동'},
+    }},
+  priest: { slot:'healer', blockType:2, name:'사제', hp:32, power:9, defense:1,
+    summary:'가장 위험한 아군 하나를 크게 회복하는 기본 힐러', tags:['회복','단일','안정'],
+    actions:{
+      1:{type:'healSingle', label:'치유',        desc:'가장 위험한 아군 회복'},
+      2:{type:'healSingle', label:'대치유',      desc:'가장 위험한 아군 큰 회복'},
+      3:{type:'healSingle', label:'필살·성광',   desc:'가장 위험한 아군 매우 큰 회복'},
+    }},
+  // ── 샘플 신규 3직업 (G항목): 상태이상/방어 체계 검증용 ──
+  purifier: { slot:'healer', blockType:2, name:'정화사', hp:30, power:5, defense:1,
+    summary:'낮은 회복과 함께 해로운 효과를 정화하는 힐러', tags:['회복','정화','상태이상 대응'],
+    actions:{
+      1:{type:'healSingle', label:'정화의 손길', desc:'가장 위험한 아군 소량 회복'},
+      2:{type:'cleanseHeal', label:'정화',       desc:'아군 회복 + 해로운 효과 1개 해제'},
+      3:{type:'cleanseAll', label:'대정화',      desc:'아군 전체 정화 + 소량 회복'},
+    }},
+  trapper: { slot:'support', blockType:1, name:'덫꾼', hp:32, power:6, defense:1,
+    summary:'방어를 무시하는 독으로 철갑을 녹이는 서포터', tags:['독','지속피해','방어무시'],
+    actions:{
+      1:{type:'poison', target:'one', label:'독침',   desc:'적 1명에게 독 3회'},
+      2:{type:'poison', target:'one', label:'맹독침', desc:'적 1명에게 강한 독 3회'},
+      3:{type:'poison', target:'all', mult:1.0, label:'독안개', desc:'적 전체에게 독 3회'},
+    }},
+  crusher: { slot:'melee', blockType:0, name:'분쇄자', hp:44, power:8, defense:3,
+    summary:'장갑을 부수며 베는 철갑 대응 근접 딜러', tags:['전열','방어력 감소','장갑 대응'],
+    actions:{
+      1:{type:'strikeFront', armorBreak:2, label:'분쇄',      desc:'선두 적 피해 + 방어 감소'},
+      2:{type:'strikeFront', armorBreak:4, label:'장갑 분쇄', desc:'선두 적 피해 + 큰 방어 감소'},
+      3:{type:'strikeFront', armorBreak:6, label:'필살·파갑', desc:'선두 적 큰 피해 + 방어 대폭 감소'},
+    }},
 };
-// 슬롯별 직업 풀: [기본, 준비, 준비, 준비] — v0.21에서 20직업으로 채움
+// 슬롯별 직업 풀 (H항목): 근딜/서포터/힐러에 샘플 2번째 직업 — 나머지는 준비 중
 const SLOT_JOBS = {
-  tank:['guardSoldier',null,null,null], melee:['greatswordWarrior',null,null,null],
-  ranged:['archer',null,null,null], support:['mage',null,null,null], healer:['priest',null,null,null],
+  tank:['guardSoldier',null,null,null],
+  melee:['greatswordWarrior','crusher',null,null],
+  ranged:['archer',null,null,null],
+  support:['mage','trapper',null,null],
+  healer:['priest','purifier',null,null],
 };
-// 현재 장착 직업 (이번 버전은 기본 고정 — 교체 로직은 v0.21+)
+// 현재 장착 직업 — v0.21: 편성 화면에서 교체 가능, 전투가 이 값을 직접 읽는다
 const equippedJobs = {
   tank:'guardSoldier', melee:'greatswordWarrior', ranged:'archer', support:'mage', healer:'priest',
 };
-// 매치 설명 생성: ACTS 실제 수치 기반 (마법사 4/5매치는 실제 동작 = 집중 비축)
-function matchDesc(bt, tier){
-  const a = ACTS[bt][tier];
-  if(bt===1 && tier>=2) return '집중('+a.label+') — '+a.dmg+' 비축 → 다음 마나석 매치에 원형 파동';
-  if(bt===1) return a.label+' — 적 전체 '+a.dmg;
-  if(bt===2) return a.label+' — 최저 HP 아군 회복 '+a.heal;
-  if(bt===3) return a.label+' — 6초간 파티 피해 '+Math.round(a.red*100)+'% 감소'+(a.counter?' + 반격 '+a.counter:'');
-  if(bt===4) return a.label+' — 최저 HP 적 '+a.dmg;
-  return a.label+' — 선두 적 '+a.dmg;
+// v0.21: 블록 타입 → 장착 직업/스탯 조회 (전투·UI 공용)
+function jobOf(typeId){ return JOBS[equippedJobs[BLOCK_SLOT[typeId]]]; }
+function heroMaxOf(typeId){ return jobOf(typeId).hp; }
+function heroNameOf(typeId){ return jobOf(typeId).name; }
+function heroDefOf(typeId){ return jobOf(typeId).defense || 0; }
+// 행동값 = Power × 매치계수(액션별 오버라이드 가능) × 연쇄계수
+function actionValue(job, tier, chainMult){
+  const act = job.actions[tier];
+  const m = (act.mult != null) ? act.mult : MATCH_MULT[tier];
+  return Math.round(job.power * m * (chainMult || 1));
+}
+/* ════ v0.21: 방어력 공식 + 상태이상 골격 (FABLE_TASK_021 D/F항목) ════
+   - 물리 피해: 최종 피해 = max(1, 기본 피해 - 유효 Defense)
+   - 독: Defense 무시, 대상 행동 시점마다 발동, 3회 (행동 횟수 기반)
+   - 방어력 감소(armorDown): 전투 중 지속 (안전한 쪽 선택 — 횟수 관리 복잡도 회피)
+   - 정화(cleanse): 아군 디버프 제거 골격 (아직 아군에게 디버프를 거는 적은 없음 — 자리 확보)
+   - 헬퍼는 순수 함수로 유지 (렌더/플로팅/승패 판정은 호출자 책임 → 테스트 용이) */
+function effDef(e){
+  const down = (e.status && e.status.armorDown) ? e.status.armorDown.amount : 0;
+  return Math.max(0, (e.defense || 0) - down);
+}
+function dealDamage(e, raw, opts){
+  const pierce = opts && opts.pierce;
+  const def = pierce ? 0 : effDef(e);
+  const eff = Math.max(1, raw - def);
+  e.hp -= eff;
+  return { eff, reduced: def > 0 && eff < raw };
+}
+function applyPoison(e, power){
+  e.status = e.status || {};
+  const prev = e.status.poison;
+  e.status.poison = { power: Math.max(power, prev ? prev.power : 0), stacks: 3 }; // 갱신형 (무한 중첩 방지)
+}
+function applyArmorDown(e, amount){
+  e.status = e.status || {};
+  const cur = e.status.armorDown ? e.status.armorDown.amount : 0;
+  e.status.armorDown = { amount: Math.min(cur + amount, e.defense || 0) }; // 방어 이하로 캡
+}
+function tickPoison(e){ // 대상 행동 시점에 호출 — 입힌 피해량 반환 (0 = 독 없음)
+  if(!e.status || !e.status.poison) return 0;
+  const p = e.status.poison;
+  e.hp -= p.power; // 방어 무시
+  p.stacks--;
+  const dealt = p.power;
+  if(p.stacks <= 0) delete e.status.poison;
+  return dealt;
+}
+// 아군 상태이상 자리 (F항목 cleanse 골격) — 현재 아군에게 디버프를 거는 적은 없음
+let heroStatus = {}; // {typeId: {poison:{...}, ...}}
+function cleanseHero(typeId, count){ // 해제한 효과 수 반환
+  const st = heroStatus[typeId];
+  if(!st) return 0;
+  let removed = 0;
+  for(const k of Object.keys(st)){
+    if(count != null && removed >= count) break;
+    delete st[k]; removed++;
+  }
+  if(Object.keys(st).length === 0) delete heroStatus[typeId];
+  return removed;
+}
+
+/* v0.21: 도감/편성 설명 = JOBS.actions + 공식에서 생성 (전투와 단일 소스) */
+function actionDesc(job, tier){
+  const act = job.actions[tier];
+  const v = actionValue(job, tier);
+  switch(act.type){
+    case 'strikeFront': return act.label+' — 선두 적 '+v+(act.armorBreak ? ' + 방어 -'+act.armorBreak+' (전투 중 지속)' : '');
+    case 'snipeWeak':   return act.label+' — 약한 적 '+v;
+    case 'novaAll':     return act.label+' — 적 전체 '+v;
+    case 'charge':      return act.label+' — '+v+' 비축 → 다음 마나석 매치에 원형 파동';
+    case 'healSingle':  return act.label+' — 가장 위험한 아군 '+v+' 회복';
+    case 'cleanseHeal': return act.label+' — 가장 위험한 아군 '+v+' 회복 + 해로운 효과 1개 해제';
+    case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
+    case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
+    case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+'에게 독 '+v+'×3회 (방어 무시)';
+  }
+  return act.label;
 }
 
 const BATTLES = [
   // 샘플 A — 소형 다수전: 3열 라이브 데모 (전열2/중간2/후열1)
   {label:'전투 1', note:'샘플 A · 소형 다수', enemies:[
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'front'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'mid'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'mid'},
-    {name:'슬라임', kind:'slime', maxHp:30, atk:6, row:'back'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'mid'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'mid'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'back'},
   ]},
   // 샘플 B — 정예+일반: 전열 중앙 정예 + 양옆 일반, 후열 박쥐 2
   {label:'전투 2', note:'샘플 B · 정예+일반', enemies:[
-    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, row:'front'},
-    {name:'고블린 정예', kind:'elite',  maxHp:60, atk:10, row:'front'},
-    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, row:'front'},
-    {name:'박쥐', kind:'bat', maxHp:25, atk:5, row:'back'},
-    {name:'박쥐', kind:'bat', maxHp:25, atk:5, row:'back'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+    {name:'고블린 정예', kind:'elite',  maxHp:60, atk:10, defense:2, row:'front'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+    // v0.21: 철갑 테스트 샘플 (E항목) — 물리는 1만 박힘, 독/방어 감소로 뚫는다
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'mid', armorNote:true},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
   ]},
   // 샘플 C — 단독 거대 보스: 상단 공간 점유
   {label:'전투 3', note:'샘플 C · 거대 보스', enemies:[
-    {name:'미니 마왕', kind:'boss', maxHp:130, atk:8, boss:true, row:'front'},
+    {name:'미니 마왕', kind:'boss', maxHp:130, atk:8, defense:3, boss:true, row:'front'},
   ]},
 ];
 // 파티 편성: TYPES 인덱스 배열. 항목을 빼면 4인 파티 표시도 같은 코드로 대응
 // (이번 버전은 5인 고정 — 4인 모드 실제 구현은 금지 범위)
 const PARTY = [0, 1, 2, 3, 4];
 
-// 영웅별 최대 HP (v0.9: 공유 HP 폐지 — 역할별 차등)
-const HERO_MAX = {0:38, 1:28, 2:30, 3:46, 4:32}; // 대검 전사/마법사/사제/방패 병사/궁수 (수치 불변)
+// v0.21: 영웅 최대 HP는 장착 직업이 결정 — heroMaxOf(typeId) = jobOf(typeId).hp (HERO_MAX 상수 폐지)
 const CHAIN_BONUS = 0.3; // 연쇄 1단계당 +30%
 const BOSS_BIG = 32;       // (구) 강공 총량 기준치 — 공유 HP 시절 수치, 참조용 유지
 const BOSS_BIG_EACH = 14;  // v0.9 임시: 강공은 "전원 각 14 피해"로 전환 (개별 HP 구조 대응)
@@ -1244,7 +1435,7 @@ function canPlay(){ return state!=='over' && !boardBusy && !showcase; }
 let battleIdx = 0;
 let enemies = [];
 let heroHp = {};         // 영웅별 현재 HP: {typeId: currentHp}
-function initHeroHp(){ PARTY.forEach(t=>{ heroHp[t] = HERO_MAX[t]; }); }
+function initHeroHp(){ PARTY.forEach(t=>{ heroHp[t] = heroMaxOf(t); }); }
 function aliveHeroes(){ return PARTY.filter(t=>heroHp[t] > 0); }
 // v0.19: 쓰러짐(fallen/down) 판정 — heroHp ≤ 0 단일 기준. HP가 회복되면 상태도 자동 해제
 function isFallen(typeId){ return heroHp[typeId] <= 0; }
@@ -1911,8 +2102,15 @@ function renderEnemies(hitIdx, hitAll){
       + (e.charging?' charge':'');
     d.dataset.ei = i; // 진영(전열/후열) 분리 후에도 인덱스로 추적
     const pct = Math.max(0, e.hp/e.maxHp*100);
+    // v0.21: 상태이상 배지 — 렌더가 매번 새로 그림 (DOM 누적 원천 차단)
+    let st = '';
+    if(e.hp > 0 && e.status){
+      if(e.status.poison) st += '<i class="stP">☠'+e.status.poison.stacks+'</i>';
+      if(e.status.armorDown && e.status.armorDown.amount > 0) st += '<i class="stA">🛡-'+e.status.armorDown.amount+'</i>';
+    }
     d.innerHTML =
       (e.charging ? '<div class="intent">⚡ 강공 준비</div>' : '') +
+      (st ? '<div class="stRow">'+st+'</div>' : '') +
       monsterAvatar(e.kind) +
       '<div class="mini"><i style="width:'+pct+'%"></i></div>' +
       '<div class="gauge"><i style="width:'+Math.min(100, e.gauge||0)+'%"></i></div>';
@@ -1959,7 +2157,7 @@ function renderParty(actType){
   // 영웅별 개별 HP 렌더링: 미니바가 실제 currentHp/maxHp 반영
   PARTY.forEach(typeId=>{
     const cur = Math.max(0, heroHp[typeId]);
-    const max = HERO_MAX[typeId];
+    const max = heroMaxOf(typeId); // v0.21: 장착 직업 HP
     const ratio = cur / max;
     const d = document.createElement('div');
     d.className = 'ally t'+typeId
@@ -2020,110 +2218,147 @@ async function performHeroAction(a){
       floatText(heroChipEl(a.type), '💫 행동 불가', 'guard');
       return;
     }
-    if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) return;
+    const job = jobOf(a.type);
+    const act = job.actions[a.tier];
+    const OFFENSIVE = ['strikeFront','snipeWeak','novaAll','poison'];
+    if(aliveEnemies().length===0 && OFFENSIVE.includes(act.type)) return;
     renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
-    const spec = ACTS[a.type][a.tier];
+    // v0.21: 행동값 = Power × 매치계수 × 연쇄계수 (FABLE_TASK_021 — ACTS 폐지, JOBS 단일 소스)
+    const val = actionValue(job, a.tier, a.mult);
 
-    if(a.type===0){ // 대검 전사: 선두 단일 공격 — 대상이 흔들리고 피해 수치가 뜬다
+    // 공통 피해 처리: 방어 공식 + 플로팅/로그 (reduced면 🛡 표기)
+    const hitEnemy = (e, raw, opts)=>{
+      const r = dealDamage(e, raw, opts);
+      floatText(enemyEl(enemies.indexOf(e)), '-'+r.eff+(r.reduced?' 🛡':''), 'dmg');
+      if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+      return r;
+    };
+
+    if(act.type==='strikeFront'){ // 대검 전사/분쇄자: 선두 단일 (+분쇄자는 방어 감소)
       const tgt = aliveEnemies()[0];
       if(tgt){
-        const dmg = Math.round(spec.dmg * a.mult);
-        tgt.hp -= dmg;
-        renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+행동선으로 전달
+        const ti0 = enemies.indexOf(tgt);
         // v0.17: 짧고 굵은 베기 — 빠른 드로잉 + 살짝 휘는 궤적 + 타격 스파크
-        drawLine(heroChipEl(0), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[0],
-                 {width:6, bend:10, duration:120});
-        spawnImpact(enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[0], a.tier===3);
-        floatText(enemyEl(enemies.indexOf(tgt)), '-'+dmg, 'dmg');
-        if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
+        drawLine(heroChipEl(0), enemyEl(ti0), TYPE_COLORS[0], {width:6, bend:10, duration:120});
+        spawnImpact(enemyEl(ti0), TYPE_COLORS[0], a.tier===3);
+        hitEnemy(tgt, val);
+        if(act.armorBreak && tgt.hp > 0){ // v0.21 분쇄자: 방어 감소 (전투 중 지속)
+          applyArmorDown(tgt, act.armorBreak);
+          floatText(enemyEl(enemies.indexOf(tgt)), '🛡 -'+act.armorBreak, 'guard');
+          addLog(tgt.name+'의 방어가 '+act.armorBreak+' 깎였다! (유효 방어 '+effDef(tgt)+')', 'sys');
+        }
+        renderEnemies(ti0);
       }
     }
-    else if(a.type===1){ // 마법사 v0.8: 집중 → 예고 → 원형 파동 (직업 개성 1차 프로토타입)
+    else if(act.type==='novaAll' || act.type==='charge'){ // 마법사: 집중 → 예고 → 원형 파동
       const targets = aliveEnemies();
-      if(mageCharge){
-        // 집중 해방: 비축 마력 + 현재 위력의 원형 파동
-        const dmg = mageCharge.dmg + Math.round(spec.dmg * a.mult);
+      if(act.type==='novaAll' && mageCharge){
+        // 집중 해방: 비축 마력 + 현재 위력의 원형 파동 (피해는 개별 방어 적용)
+        const total = mageCharge.dmg + val;
         mageCharge = null;
         drawWave(); // 원형 확산 폭발 연출 (구조 불변)
         targets.forEach((e,k)=>setTimeout(()=>     // v0.17 보강: 파동이 닿는 순서로 강 스파크
           spawnImpact(enemyEl(enemies.indexOf(e)), '#b88aff', true), 140 + k*45));
-        targets.forEach(e=>{ e.hp -= dmg; });
-        banner('💥 원형 파동! 모든 적에게 '+dmg+' 피해', 'boss');
-        addLog('원형 파동! 모든 적에게 '+dmg+' 피해', 'gold');
+        banner('💥 원형 파동! 적 전체에 '+total+' 위력', 'boss');
+        addLog('원형 파동! 적 전체에 위력 '+total, 'gold');
+        targets.forEach(e=>hitEnemy(e, total));
         renderEnemies(null, true);
-        targets.forEach(e=>{
-          floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
-          if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
-        });
-      } else if(a.tier >= 2){
+      } else if(act.type==='charge'){
         // 4매치 이상: 즉시 공격 대신 집중 (마력 비축)
-        mageCharge = { dmg: Math.round(spec.dmg * a.mult) };
-        banner('🔮 마법사 집중! 다음 마나석 매치에 원형 파동', 'shield');
-        addLog('마법사가 마력을 모은다... ('+spec.label+' 비축 '+mageCharge.dmg+')', 'gold');
+        mageCharge = { dmg: val };
+        banner('🔮 '+job.name+' 집중! 다음 마나석 매치에 원형 파동', 'shield');
+        addLog(job.name+'이(가) 마력을 모은다... ('+act.label+' 비축 '+val+')', 'gold');
         renderParty(a.type);   // 집중 링 표시
         renderEnemies();       // 적 진영에 예고 원 표시
         floatText(heroChipEl(1), '🔮 집중', 'guard');
       } else {
-        // 3매치: 기존 즉시 광역
-        const dmg = Math.round(spec.dmg * a.mult);
-        targets.forEach(e=>{ e.hp -= dmg; });
-        renderEnemies(null, true); // 일반 광역: 플로팅으로 전달
+        // 3매치: 즉시 광역
         targets.forEach((e,k)=>{
-          // v0.17: 마나 별빛의 완만한 곡선 (구 불꽃색 하드코딩 잔존분 수정 — 015B 누락 자체 발견)
+          // v0.17: 마나 별빛의 완만한 곡선
           drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
                    {width:3, bend:26 + k*4, alpha:.8, duration:220});
           spawnImpact(enemyEl(enemies.indexOf(e)), TYPE_COLORS[1], false);
-          floatText(enemyEl(enemies.indexOf(e)), '-'+dmg, 'dmg');
-          if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
+          hitEnemy(e, val);
         });
+        renderEnemies(null, true);
       }
     }
-    else if(a.type===2){ // 사제 v0.9: HP 비율이 가장 낮은 아군 우선 회복
-      const heal = Math.round(spec.heal * a.mult);
+    else if(act.type==='poison'){ // v0.21 덫꾼: 방어 무시 독 — 철갑의 답 (F/G항목)
+      const pool = aliveEnemies();
+      let targets;
+      if(act.target==='all') targets = pool;
+      else { // 단일: 유효 방어가 가장 높은 적 우선 (철갑 대응 정체성), 동률이면 HP 높은 쪽
+        const tgt = pool.length ? pool.reduce((m,e)=>{
+          const a1=effDef(e), b1=effDef(m);
+          return (a1>b1 || (a1===b1 && e.hp>m.hp)) ? e : m;
+        }, pool[0]) : null;
+        targets = tgt ? [tgt] : [];
+      }
+      targets.forEach((e,k)=>{
+        applyPoison(e, val);
+        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
+                 {width:2.6, bend:18 + k*5, alpha:.75, duration:200});
+        floatText(enemyEl(enemies.indexOf(e)), '☠ 독 '+val+'×3', 'guard');
+      });
+      if(targets.length) addLog(job.name+'의 '+act.label+'! 독은 방어를 무시한다 (대상 행동마다 '+val+'씩 3회)', 'sys');
+      renderEnemies();
+    }
+    else if(act.type==='healSingle' || act.type==='cleanseHeal' || act.type==='cleanseAll'){ // 사제/정화사
       const alive = aliveHeroes();
-      if(alive.length){
+      if(!alive.length){ /* 전멸 직전 — 회복 대상 없음 */ }
+      else if(act.type==='cleanseAll'){
+        // v0.21 정화사 5매치: 아군 전체 정화 + 각 소량 회복
+        let removed = 0;
+        alive.forEach(t=>{
+          removed += cleanseHero(t);
+          heroHp[t] = Math.min(heroMaxOf(t), heroHp[t] + val);
+          floatText(heroChipEl(t), '+'+val+' ✨', 'heal');
+          spawnAbsorb(heroChipEl(t), TYPE_COLORS[2], 1.05);
+        });
+        renderParty(a.type);
+        addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?'('+removed+'개 해제)':'')+' + 각 '+val+' 회복', 'gold');
+      } else {
         const tgt = alive.reduce((m,t)=>
-          (heroHp[t]/HERO_MAX[t]) < (heroHp[m]/HERO_MAX[m]) ? t : m, alive[0]);
+          (heroHp[t]/heroMaxOf(t)) < (heroHp[m]/heroMaxOf(m)) ? t : m, alive[0]);
         const before = heroHp[tgt];
-        heroHp[tgt] = Math.min(HERO_MAX[tgt], heroHp[tgt] + heal);
+        heroHp[tgt] = Math.min(heroMaxOf(tgt), heroHp[tgt] + val);
         const gained = heroHp[tgt] - before;
+        let cleansed = 0;
+        if(act.type==='cleanseHeal') cleansed = cleanseHero(tgt, 1); // 해로운 효과 1개 해제
         renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달
-        // v0.17: 위로 부드럽게 감기는 회복 아치 + 도착 금빛 반짝임 (공격선과 즉시 구분)
+        // v0.17: 위로 부드럽게 감기는 회복 아치 + 도착 금빛 반짝임
         drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2],
                  {width:3.5, bend:-24, alpha:.9, duration:260});
         spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
-        floatText(heroChipEl(tgt), '+'+gained, 'heal');      // 누가 회복되었는지 직접 표시
+        floatText(heroChipEl(tgt), '+'+gained+(cleansed?' ✨':''), 'heal');
       }
     }
-    else if(a.type===3){ // 방패 병사: 피해 감소 — v0.12: 6초 지속 창 (실시간 대응)
-      shieldRed = Math.max(shieldRed, spec.red);
+    else if(act.type==='guard'){ // 방패 병사: 피해 감소 — v0.12: 6초 지속 창
+      shieldRed = Math.max(shieldRed, act.red);
       shieldUntil = Date.now() + SHIELD_MS;
-      if(spec.counter){
-        shieldCounter = Math.max(shieldCounter, Math.round(spec.counter * a.mult));
+      if(act.counter){
+        shieldCounter = Math.max(shieldCounter, Math.round(act.counter * a.mult));
       }
-      // 방어 상태는 배지("방어 중 · N% 감소")+황금 링이 상시 전달 — 토스트 X
       renderParty(a.type); // shielded 외곽선 즉시 반영
       drawGuardRing(); // 임시 정책: 보호는 "파티 전체" — 링이 진영을 감싼다
       floatText(heroChipEl(3), '🛡 방어', 'guard');
     }
-    else if(a.type===4){ // 궁수: 최저 HP 적 저격 — 표식 + 타격 반응
+    else if(act.type==='snipeWeak'){ // 궁수: 최저 HP 적 저격
       const pool = aliveEnemies();
       const tgt = pool.length ? pool.reduce((m,e)=> e.hp<m.hp ? e : m, pool[0]) : null;
       if(tgt){
-        const dmg = Math.round(spec.dmg * a.mult);
-        tgt.hp -= dmg;
-        renderEnemies(enemies.indexOf(tgt)); // 일반 피해: 플로팅+점선으로 전달
+        const ti = enemies.indexOf(tgt);
         // v0.17: 얇고 빠른 화살 점선 — 4매치+(연속 사격)는 90ms 간격 2발 잔상
-        drawLine(heroChipEl(4), enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[4],
-                 {dashed:true, width:2.2});
+        drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4], {dashed:true, width:2.2});
         if(a.tier >= 2){
-          const ti = enemies.indexOf(tgt);
           setTimeout(()=>drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4],
                                   {dashed:true, width:2.2, bend:9, alpha:.7}), 90);
         }
-        spawnImpact(enemyEl(enemies.indexOf(tgt)), TYPE_COLORS[4], a.tier===3);
-        floatText(enemyEl(enemies.indexOf(tgt)), '🎯 -'+dmg, 'dmg');
+        spawnImpact(enemyEl(ti), TYPE_COLORS[4], a.tier===3);
+        const r = dealDamage(tgt, val);
+        floatText(enemyEl(ti), '🎯 -'+r.eff+(r.reduced?' 🛡':''), 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
+        renderEnemies(ti);
       }
     }
 }
@@ -2200,11 +2435,25 @@ async function processAttacks(){
 // 일반 공격: 완만한 곡선 타격선 → 임팩트 → 개별 피해
 async function enemyAttack(e){
   const ei = enemies.indexOf(e);
+  // v0.21: 독 발동 — 대상 행동 시점, 방어 무시 (F항목)
+  const pDmg = tickPoison(e);
+  if(pDmg > 0){
+    renderEnemies(ei);
+    floatText(enemyEl(ei), '☠ -'+pDmg, 'dmg');
+    if(e.hp <= 0){
+      addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
+      renderEnemies();
+      if(aliveEnemies().length===0){ await onBattleWon(); }
+      return; // 행동 전 사망 — 공격 불발
+    }
+  }
   const tgt = pickDefender();
   if(tgt===null) return;
   const raw = e.atk;
-  const eff = Math.round(raw * (1 - shieldRed));
-  const blocked = shieldRed>0 && eff<raw;
+  // v0.21: 방패 감소 후 영웅 Defense 감산 — 최종 = max(1, ...)
+  const shielded = Math.round(raw * (1 - shieldRed));
+  const eff = Math.max(1, shielded - heroDefOf(tgt));
+  const blocked = (shieldRed>0 || heroDefOf(tgt)>0) && eff<raw;
   drawStrikeLine(enemyEl(ei), heroChipEl(tgt), '#e0504a', blocked);
   await delay(160);
   if(blocked) drawBlockFlash(heroChipEl(tgt));
@@ -2212,7 +2461,7 @@ async function enemyAttack(e){
   heroHp[tgt] -= eff;
   if(heroHp[tgt] < 0) heroHp[tgt] = 0; // v0.19: 0 미만 유지 안 함 (이미 0이면 추가 피해 무의미)
   if(prevHp > 0 && heroHp[tgt] <= 0){
-    addLog('💔 '+TYPES[tgt].hero+'이(가) 쓰러졌다!', 'boss'); // 강한 정보 (v0.14 토스트 정책 유지)
+    addLog('💔 '+heroNameOf(tgt)+'이(가) 쓰러졌다!', 'boss'); // 강한 정보 (v0.14 토스트 정책 유지)
     if(tgt===1 && mageCharge){ mageCharge = null; addLog('마법사의 집중이 흩어졌다...', 'sys'); } // v0.19
   }
   // 일반 피해/막힘: 대상 플로팅("-N" / "🛡 raw→eff")이 전달 — 토스트 X
@@ -2221,10 +2470,10 @@ async function enemyAttack(e){
   spawnImpact(heroChipEl(tgt), blocked ? '#ffd97a' : '#e0504a', false); // v0.17: 피격 스파크
   floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
   if(shieldCounter>0){
-    e.hp -= shieldCounter;
+    const cr = dealDamage(e, shieldCounter); // v0.21: 반격도 방어 공식 통과
     renderEnemies(enemies.indexOf(e));
     spawnImpact(enemyEl(enemies.indexOf(e)), '#ffd97a', false); // v0.17: 반격 스파크
-    floatText(enemyEl(enemies.indexOf(e)), '⚔ -'+shieldCounter, 'guard'); // 반격: 플로팅
+    floatText(enemyEl(enemies.indexOf(e)), '⚔ -'+cr.eff+(cr.reduced?' 🛡':''), 'guard'); // 반격: 플로팅
     if(e.hp<=0){
       addLog(e.name+' 처치!', 'gold');
       if(aliveEnemies().length===0){ await onBattleWon(); return; }
@@ -2251,7 +2500,19 @@ function startBossPrep(e){
 async function bossBigAttack(e){
   clearAimLines();
   const ei = enemies.indexOf(e);
-  const eff = Math.round(BOSS_BIG_EACH * (1 - shieldRed));
+  // v0.21: 강공 직전에도 독 발동
+  const pDmg = tickPoison(e);
+  if(pDmg > 0){
+    renderEnemies(ei);
+    floatText(enemyEl(ei), '☠ -'+pDmg, 'dmg');
+    if(e.hp <= 0){
+      addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
+      renderEnemies();
+      if(aliveEnemies().length===0){ await onBattleWon(); }
+      return;
+    }
+  }
+  const eff = Math.round(BOSS_BIG_EACH * (1 - shieldRed)); // 기준치 (배너용) — 개별 최종은 영웅 방어 감산
   const blocked = shieldRed>0 && eff<BOSS_BIG_EACH;
   banner(blocked
     ? '🛡 방패 병사의 방패! 전원 '+BOSS_BIG_EACH+' → '+eff
@@ -2264,10 +2525,11 @@ async function bossBigAttack(e){
   await delay(300);
   hitList.forEach(t=>{
     const prev = heroHp[t];
-    heroHp[t] -= eff;
+    const fin = Math.max(1, eff - heroDefOf(t)); // v0.21: 영웅 방어 감산
+    heroHp[t] -= fin;
     if(heroHp[t] < 0) heroHp[t] = 0; // v0.19: 클램프
     if(prev > 0 && heroHp[t] <= 0){
-      addLog('💔 '+TYPES[t].hero+'이(가) 쓰러졌다!', 'boss');
+      addLog('💔 '+heroNameOf(t)+'이(가) 쓰러졌다!', 'boss');
       if(t===1 && mageCharge){ mageCharge = null; addLog('마법사의 집중이 흩어졌다...', 'sys'); } // v0.19
     }
   });
@@ -2284,12 +2546,13 @@ async function bossBigAttack(e){
     hurtHero(t);
     if(blocked) drawBlockFlash(heroChipEl(t));
     setTimeout(()=>spawnImpact(heroChipEl(t), blocked ? '#ffd97a' : '#d8554a', true), k*40); // 강 스파크
-    floatText(heroChipEl(t), blocked ? '🛡 '+BOSS_BIG_EACH+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+    const fin = Math.max(1, eff - heroDefOf(t));
+    floatText(heroChipEl(t), blocked ? '🛡 '+BOSS_BIG_EACH+'→'+fin : '-'+fin, blocked?'guard':'dmg');
   });
   if(shieldCounter>0){
-    e.hp -= shieldCounter;
+    const cr = dealDamage(e, shieldCounter); // v0.21: 반격도 방어 공식 통과
     renderEnemies(ei);
-    floatText(enemyEl(ei), '⚔ -'+shieldCounter, 'guard'); // 반격: 플로팅
+    floatText(enemyEl(ei), '⚔ -'+cr.eff+(cr.reduced?' 🛡':''), 'guard'); // 반격: 플로팅
     if(e.hp<=0){
       addLog(e.name+' 처치!', 'gold');
       if(aliveEnemies().length===0){ await onBattleWon(); return; }
@@ -2365,7 +2628,7 @@ async function resolveBoard(){
       if(isFallen(g.type)){
         // v0.19: 쓰러진 영웅의 블록 — 매치/연쇄/낙하는 정상, 행동만 미발생 (봉인은 차기 R&D)
         // "문장은 만들 수 있지만, 그 말을 해줄 동료가 쓰러져 있다"
-        floatBoard(t.sym+' '+t.hero+' 쓰러짐 — 행동 불가', 'sys', slot++, '#8d87a0');
+        floatBoard(t.sym+' '+heroNameOf(g.type)+' 쓰러짐 — 행동 불가', 'sys', slot++, '#8d87a0');
         continue;
       }
       queueAction(g.type, g.cells.length, chain);
@@ -2458,7 +2721,7 @@ async function onBattleWon(){
   // 승리 회복 (v0.9 임시): 영웅 전원 각자 +15, 각자 최대 HP 초과 불가
   // 쓰러진 영웅도 회복 — 사망/봉인 시스템 미도입이므로 다음 전투 참여 보장
   PARTY.forEach(t=>{
-    heroHp[t] = Math.min(HERO_MAX[t], Math.max(0, heroHp[t]) + VICTORY_HEAL);
+    heroHp[t] = Math.min(heroMaxOf(t), Math.max(0, heroHp[t]) + VICTORY_HEAL);
   });
   addLog('전투 승리! 파티가 숨을 고르며 각자 HP '+VICTORY_HEAL+' 회복.', 'good');
   renderParty();
@@ -2492,6 +2755,7 @@ function setupBattle(){
   // 실시간 게이지: 종별 속도 부여 + 0~35% 무작위 시차 (동시 만충 방지)
   enemies = BATTLES[battleIdx].enemies.map(e=>({
     ...e, hp:e.maxHp, charging:false,
+    status:{}, // v0.21: 상태이상은 전투마다 새 객체 — 이월/누적 원천 차단
     speed: SPEEDS[e.kind] || 10,
     gauge: Math.random()*35,
   }));
@@ -2511,7 +2775,10 @@ function setupBattle(){
   if(!hasValidMove(board)) board = genBoard();
   sel = null;
   addLog('═══ '+BATTLES[battleIdx].label+' 시작 ═══', 'gold');
-  enemies.forEach(e=>addLog(e.name+' 등장! (HP '+e.maxHp+')', 'sys'));
+  enemies.forEach(e=>addLog(e.name+' 등장! (HP '+e.maxHp+(e.defense ? ', 방어 '+e.defense : '')+')', 'sys'));
+  if(enemies.some(e=>e.armorNote)){ // v0.21: 철갑 테스트임을 드러냄 (E항목)
+    addLog('⚙ 철갑 테스트: 물리 피해는 방어력에 막힌다 — 독이나 방어 감소로 뚫어라!', 'gold');
+  }
   renderAll();
 }
 
@@ -2522,7 +2789,7 @@ function showScreen(name){
   document.body.dataset.screen = name;
   hideOverlay();
   if(name === 'partySelect') renderPartySelect();
-  if(name === 'codex') renderCodex();
+  if(name === 'codex'){ codexMode = 'category'; selectedCodexSlot = null; renderCodex(); } // v0.20B: 진입은 항상 카테고리
   // battle 외 화면에서는 tick/입력이 screen 가드로 정지 — 전투 상태는 startRun이 항상 새로 구성
 }
 // 전투 시작 (편성 → 전투): 항상 깨끗한 상태로 — 타이머/큐/상태 꼬임 방지
@@ -2547,40 +2814,92 @@ function renderPartySelect(){
       +   '<div class="slotName">'+slot.name+' · '+slot.blockName+'</div>'
       +   '<div class="jobName">'+job.name+'</div>'
       +   '<div class="jobSummary">'+job.summary+'</div>'
-      +   '<div class="slotPicks"><i class="cur">'+job.name+'</i><i>준비 중</i><i>준비 중</i><i>준비 중</i></div>'
+      +   '<div class="slotPicks">'+SLOT_JOBS[slot.id].map(jid=>{
+            if(!jid) return '<i>준비 중</i>';
+            const cur = equippedJobs[slot.id]===jid;
+            return '<i class="pick'+(cur?' cur':'')+'" data-slot="'+slot.id+'" data-job="'+jid+'">'+JOBS[jid].name+'</i>';
+          }).join('')+'</div>'
       + '</div>'
       + '<div class="stats">HP '+job.hp+'<br>Power '+job.power+'<br>Def '+job.defense+'</div>';
     list.appendChild(d);
   });
+  // v0.21: 직업 선택 — 탭 시 장착 교체 → 전투가 equippedJobs를 직접 읽는다 (H항목)
+  list.querySelectorAll('.pick').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      equippedJobs[el.dataset.slot] = el.dataset.job;
+      renderPartySelect(); // 스탯/설명/선택 표시 즉시 갱신
+    });
+  });
 }
 
+/* ── v0.20B: 도감 2단계 — 카테고리 목록 → 카테고리 상세 (한 화면 20칸 나열 폐지) ── */
+let codexMode = 'category';     // 'category' | 'detail'
+let selectedCodexSlot = null;   // 'tank' | 'melee' | 'ranged' | 'support' | 'healer'
+
 function renderCodex(){
-  const list = $('#codexList');
-  list.innerHTML = '';
+  if(codexMode === 'detail' && selectedCodexSlot) renderCodexDetail(selectedCodexSlot);
+  else renderCodexCategory();
+}
+
+function renderCodexCategory(){
+  codexMode = 'category';
+  selectedCodexSlot = null;
+  $('#codexBack').style.display = 'none';
+  $('#codexTitle').textContent = '직업 도감';
+  $('#codexSub').textContent = '5개의 직업 카테고리 — 앞으로 카테고리당 4직업, 총 20직업으로 확장';
+  const body = $('#codexBody');
+  body.innerHTML = '';
+  body.scrollTop = 0;
   JOB_SLOTS.forEach(slot=>{
-    SLOT_JOBS[slot.id].forEach(jobId=>{
-      if(!jobId){
-        const p = document.createElement('div');
-        p.className = 'codexCard pending';
-        p.textContent = slot.name+' 슬롯 — 준비 중';
-        list.appendChild(p);
-        return;
-      }
-      const job = JOBS[jobId];
-      const t = TYPES[job.blockType];
-      const d = document.createElement('div');
-      d.className = 'codexCard';
-      d.innerHTML =
-        '<div class="head"><span class="sym">'+t.sym+'</span><span class="nm">'+job.name+'</span>'
-        + '<span class="sl">'+slot.name+' · '+slot.blockName+'</span></div>'
-        + '<div class="desc">'+job.summary+'</div>'
-        + '<div class="statRow"><span>HP '+job.hp+'</span><span>Power '+job.power+'</span><span>Defense '+job.defense+'</span></div>'
-        + '<div class="tagRow">'+job.tags.map(x=>'<i>'+x+'</i>').join('')+'</div>'
-        + '<div class="mline"><b>3매치</b> '+matchDesc(job.blockType,1)+'<br>'
-        + '<b>4매치</b> '+matchDesc(job.blockType,2)+'<br>'
-        + '<b>5매치</b> '+matchDesc(job.blockType,3)+'</div>';
-      list.appendChild(d);
-    });
+    const t = TYPES[slot.blockType];
+    const count = SLOT_JOBS[slot.id].filter(Boolean).length;
+    const d = document.createElement('button');
+    d.className = 'catCard';
+    d.innerHTML =
+      '<div class="sym" style="--tc:'+TYPE_COLORS[slot.blockType]+'">'+t.sym+'</div>'
+      + '<div style="flex:1;min-width:0">'
+      +   '<div class="catName">'+slot.name+'</div>'
+      +   '<div class="catBlock">'+slot.blockName+'</div>'
+      +   '<div class="catDesc">'+slot.desc+'</div>'
+      + '</div>'
+      + '<div class="catCount">'+count+' / 4 등록<small>보기 ▶</small></div>';
+    d.addEventListener('click', ()=>renderCodexDetail(slot.id));
+    body.appendChild(d);
+  });
+}
+
+function renderCodexDetail(slotId){
+  codexMode = 'detail';
+  selectedCodexSlot = slotId;
+  const slot = JOB_SLOTS.find(x=>x.id===slotId);
+  const t = TYPES[slot.blockType];
+  $('#codexBack').style.display = '';
+  $('#codexTitle').textContent = t.sym+' '+slot.name+' / '+slot.blockName;
+  $('#codexSub').textContent = slot.desc;
+  const body = $('#codexBody');
+  body.innerHTML = '';
+  body.scrollTop = 0;
+  SLOT_JOBS[slotId].forEach(jobId=>{
+    if(!jobId){
+      const p = document.createElement('div');
+      p.className = 'codexCard pending';
+      p.innerHTML = '<div class="pnm">'+slot.name+' 슬롯 — 준비 중</div>'
+        + '<div class="pdesc">이 슬롯에는 앞으로 다른 '+slot.name+' 직업이 추가됩니다.</div>';
+      body.appendChild(p);
+      return;
+    }
+    const job = JOBS[jobId];
+    const d = document.createElement('div');
+    d.className = 'codexCard';
+    d.innerHTML =
+      '<div class="nm">'+job.name+'</div>'
+      + '<div class="desc">'+job.summary+'</div>'
+      + '<div class="statRow"><span><b>HP</b>'+job.hp+'</span><span><b>Power</b>'+job.power+'</span><span><b>Defense</b>'+job.defense+'</span></div>'
+      + '<div class="tagRow">'+job.tags.map(x=>'<i>'+x+'</i>').join('')+'</div>'
+      + '<div class="mrow"><b>3매치</b><span>'+actionDesc(job,1)+'</span></div>'
+      + '<div class="mrow"><b>4매치</b><span>'+actionDesc(job,2)+'</span></div>'
+      + '<div class="mrow"><b>5매치</b><span>'+actionDesc(job,3)+'</span></div>';
+    body.appendChild(d);
   });
 }
 
@@ -2733,6 +3052,7 @@ $('#btnStartRun').addEventListener('click', startRun);
 $('#btnPartyToCodex').addEventListener('click', ()=>showScreen('codex'));
 $('#btnPartyToTitle').addEventListener('click', ()=>showScreen('title'));
 $('#btnCodexToParty').addEventListener('click', ()=>showScreen('partySelect'));
+$('#codexBack').addEventListener('click', renderCodexCategory); // v0.20B: 상세 → 카테고리
 $('#btnCodexToTitle').addEventListener('click', ()=>showScreen('title'));
 showScreen('title'); // 게임은 타이틀에서 시작 — 전투는 편성의 [전투 시작]으로
 </script>
