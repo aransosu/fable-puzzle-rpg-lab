@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.18B — FABLE_TASK_018B: Mana Burst Scatter & Overchain Board Rumble Polish
-     (v0.16: Front Avatars / v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage) -->
+<!-- Emblem Quest Lab v0.20 — FABLE_TASK_020: Game Flow Shell & Job Codex Foundation
+     계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
+           v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
+           v0.19: Fallen Hero & Dead Block -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -451,6 +453,16 @@
     }
     100%{transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(.25);opacity:0}
   }
+  .fxDust.dying{animation:dustDie .5s ease-out forwards;} /* v0.19: 받을 영웅이 쓰러짐 — 꺼지는 가루 */
+  @keyframes dustDie{
+    0%{transform:translate(-50%,-50%) scale(.5);opacity:0}
+    14%{transform:translate(-50%,-50%) scale(.95);opacity:.75}
+    50%{transform:translate(calc(-50% + var(--mx,0px)),calc(-50% + var(--my,0px))) scale(1);opacity:.65}
+    100%{ /* 종점(74% 지점) 근처에서 힘없이 가라앉으며 소멸 — 흡인/재팽창 없음 */
+      transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px) + 8px)) scale(.35);
+      opacity:0;
+    }
+  }
   .fxAbsorb{ /* 도착 반짝임: 에너지가 영웅에게 닿는 4방 별 십자 */
     position:absolute;width:26px;height:26px;
     transform:translate(-50%,-50%) scale(.3);opacity:0;
@@ -814,12 +826,22 @@
   .ally.gain.t4 .gear::after{animation:stringFlash .3s ease-out;} /* 궁수: 청록 빛이 시위를 스침 */
   @keyframes stringFlash{45%{opacity:1;box-shadow:0 0 8px rgba(120,230,195,.95)}100%{opacity:.65}}
   /* HP 0: 쓰러진 상태 (사망/봉인 시스템은 미도입 — 시각 표현만) */
+  /* v0.19: 쓰러짐(전투 불능) 표현 강화 — 귀여움 유지, 상태는 명확하게 */
   .ally.down .av{
-    animation:none;
-    transform:rotate(74deg) translate(8px,10px);
-    filter:grayscale(1) brightness(.55) opacity(.6);
+    animation:none; /* idle bob 정지 — 생기 멈춤 */
+    transform:rotate(80deg) translate(9px,12px) scale(.96);
+    filter:grayscale(1) brightness(.5);
+    opacity:.62;
+    transition:transform .45s ease-in, filter .4s, opacity .4s; /* 쓰러지는 과정이 보임 */
   }
-  .ally.down .mini{opacity:.4;}
+  .ally.down .face::before,.ally.down .face::after{height:2px;border-radius:1px;} /* 감긴 눈 */
+  .ally.down .gear,.ally.down .gear2{opacity:.45;} /* 장비 생기 감소 */
+  .ally.down .shadow{opacity:.5;}
+  .ally.down::after{ /* 어지럼 표식 — 전투 불능이 한눈에 (애니메이션 없음: 무한 총량 동결) */
+    content:'💫';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    font-size:13px;opacity:.95;pointer-events:none;
+  }
+  .ally.down .mini{opacity:.45;}
   /* 방패 상태 배지: 진영 우상단 부유 (공간 점유 없음) */
   #shieldTag{
     position:absolute;top:-9px;right:10px;z-index:8;
@@ -916,6 +938,74 @@
     100%{opacity:0;transform:translateX(-50%) translateY(-26px) scale(1)}
   }
   /* ---------- 오버레이 ---------- */
+  /* ════ v0.20: 게임 flow 화면 (FABLE_TASK_020) — 전투 DOM 위를 덮는 불투명 스크린 ════ */
+  .screen{
+    position:absolute;inset:0;z-index:70;
+    background:linear-gradient(180deg,#161226 0%,#0d0a18 100%);
+    display:none;flex-direction:column;align-items:center;
+    padding:26px 16px 20px;gap:14px;overflow-y:auto;
+    border-radius:12px;
+  }
+  body[data-screen="title"] #screenTitle,
+  body[data-screen="partySelect"] #screenParty,
+  body[data-screen="codex"] #screenCodex{display:flex;}
+  .screen .gameLogo{
+    font-size:26px;font-weight:900;letter-spacing:5px;color:var(--gold);
+    text-shadow:0 0 14px rgba(232,179,75,.4);text-align:center;margin-top:34px;
+  }
+  .screen .tagline{font-size:13px;color:var(--dim);line-height:1.8;text-align:center;white-space:pre-line;}
+  .screen .verTag{font-size:10.5px;color:#5e5878;letter-spacing:1px;}
+  .screen .menuBtns{display:flex;flex-direction:column;gap:10px;width:78%;max-width:280px;margin-top:18px;}
+  .screen button.primary{
+    background:var(--gold);color:#241c08;border:none;border-radius:11px;
+    font-size:15px;font-weight:800;padding:12px 10px;cursor:pointer;letter-spacing:1px;
+  }
+  .screen button.ghost{
+    background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:11px;
+    font-size:13px;font-weight:700;padding:10px;cursor:pointer;
+  }
+  .screen .screenTitle{font-size:17px;font-weight:900;color:var(--ink);letter-spacing:2px;}
+  .screen .screenSub{font-size:11.5px;color:var(--dim);}
+  /* 편성: 5슬롯 카드 */
+  .slotList{display:flex;flex-direction:column;gap:8px;width:100%;max-width:360px;}
+  .slotCard{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:8px 10px;
+  }
+  .slotCard .sym{
+    width:38px;height:38px;flex:none;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;
+    border:2px solid color-mix(in srgb,var(--tc,#888) 42%,#06040c);
+    background:linear-gradient(168deg,color-mix(in srgb,var(--tc,#888) 58%,#332b4d),color-mix(in srgb,var(--tc,#888) 20%,#0d0a16));
+    text-shadow:0 2px 3px rgba(0,0,0,.55);
+  }
+  .slotCard .info{flex:1;min-width:0;}
+  .slotCard .slotName{font-size:10.5px;color:var(--dim);letter-spacing:1px;}
+  .slotCard .jobName{font-size:14px;font-weight:800;color:var(--ink);}
+  .slotCard .jobSummary{font-size:10.5px;color:var(--dim);line-height:1.4;}
+  .slotCard .stats{font-size:10px;color:#8d87a0;flex:none;text-align:right;line-height:1.6;}
+  .slotPicks{display:flex;gap:4px;margin-top:3px;}
+  .slotPicks i{
+    font-style:normal;font-size:9px;padding:2px 6px;border-radius:6px;
+    border:1px solid var(--line);color:var(--dim);
+  }
+  .slotPicks i.cur{border-color:var(--gold);color:var(--gold);font-weight:800;}
+  /* 도감: 직업 카드 */
+  .codexList{display:flex;flex-direction:column;gap:10px;width:100%;max-width:360px;}
+  .codexCard{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;}
+  .codexCard .head{display:flex;align-items:center;gap:8px;}
+  .codexCard .head .sym{font-size:18px;}
+  .codexCard .head .nm{font-size:14.5px;font-weight:900;color:var(--ink);}
+  .codexCard .head .sl{font-size:10px;color:var(--dim);margin-left:auto;}
+  .codexCard .desc{font-size:11px;color:var(--dim);line-height:1.55;margin:5px 0;}
+  .codexCard .statRow{display:flex;gap:10px;font-size:10.5px;color:#a59dbd;margin-bottom:5px;}
+  .codexCard .tagRow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;}
+  .codexCard .tagRow i{font-style:normal;font-size:9px;padding:1px 7px;border-radius:7px;background:#221c38;color:var(--dim);}
+  .codexCard .mline{font-size:10.5px;color:#bdb6d2;line-height:1.7;}
+  .codexCard .mline b{color:var(--gold);font-weight:800;}
+  .codexCard.pending{opacity:.45;text-align:center;font-size:11px;color:var(--dim);padding:14px;}
+  .screen .navBtns{display:flex;gap:8px;width:100%;max-width:360px;margin-top:4px;}
+  .screen .navBtns button{flex:1;}
   #overlay{
     position:absolute;inset:0;
     background:rgba(12,10,22,.86);
@@ -933,6 +1023,8 @@
     border-radius:10px;font-size:15px;font-weight:700;
     padding:10px 28px;cursor:pointer;
   }
+  #ovBtns{display:flex;flex-direction:column;gap:8px;align-items:center;} /* v0.20: 다중 버튼 */
+  #ovBtns button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);font-size:13px;padding:8px 22px;}
 </style>
 </head>
 <body>
@@ -955,7 +1047,7 @@
     <div id="overlay">
       <h2 id="ovTitle"></h2>
       <p id="ovText"></p>
-      <button id="ovBtn"></button>
+      <div id="ovBtns"></div>
     </div>
   </div>
 
@@ -966,6 +1058,41 @@
 
   <div id="trailLayer"></div>
   <svg id="fxLayer"></svg>
+
+  <!-- ════ v0.20: 게임 flow 화면 — 타이틀 / 편성 / 도감 (전투 DOM 위 불투명 덮개) ════ -->
+  <div id="screenTitle" class="screen">
+    <div class="gameLogo">EMBLEM<br>QUEST LAB</div>
+    <div class="tagline">블록을 깨워 영웅에게 힘을 보내라.
+5개의 역할 슬롯으로 전장을 돌파하라.</div>
+    <div class="menuBtns">
+      <button class="primary" id="btnToParty">⚔ 전투 준비</button>
+      <button class="ghost" id="btnToCodex">📖 직업 도감</button>
+    </div>
+    <div class="verTag">R&amp;D BUILD v0.20 — Emblem Quest Lab</div>
+  </div>
+
+  <div id="screenParty" class="screen">
+    <div class="screenTitle">파티 편성</div>
+    <div class="screenSub">5개의 역할 슬롯 — 슬롯마다 직업을 고른다 (확장 예정: 슬롯당 4직업)</div>
+    <div class="slotList" id="slotList"></div>
+    <div class="navBtns">
+      <button class="primary" id="btnStartRun">전투 시작 ▶</button>
+    </div>
+    <div class="navBtns">
+      <button class="ghost" id="btnPartyToCodex">직업 도감</button>
+      <button class="ghost" id="btnPartyToTitle">타이틀로</button>
+    </div>
+  </div>
+
+  <div id="screenCodex" class="screen">
+    <div class="screenTitle">직업 도감</div>
+    <div class="screenSub">기본 5직업 — 앞으로 슬롯당 4직업, 총 20직업으로 확장</div>
+    <div class="codexList" id="codexList"></div>
+    <div class="navBtns">
+      <button class="ghost" id="btnCodexToParty">편성으로</button>
+      <button class="ghost" id="btnCodexToTitle">타이틀로</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1030,6 +1157,49 @@ const ACTS = {
   3: {1:{red:0.5, label:'방어 태세'},2:{red:0.75,label:'철벽'},     3:{red:0.75, counter:6, label:'필살·성역'}}, // 5매치: 크게 감소 + 반격
   4: {1:{dmg:8, label:'사격'},      2:{dmg:13, label:'연속 사격'},  3:{dmg:21, label:'필살·관통시'}},   // 최저 HP 적 저격
 };
+/* ════ v0.20: 직업 데이터 구조 초안 (FABLE_TASK_020 C항목) ════
+   - 5슬롯 × 슬롯당 4직업 확장 가능 구조 (현재는 슬롯당 기본 1직업 + 준비 중 3칸)
+   - hp는 HERO_MAX와 동일값 표시용. power/defense는 v0.21 스탯 프레임워크용 자리 (전투 미적용)
+   - 매치 설명은 ACTS(실제 전투 수치)에서 생성 — 도감과 전투의 단일 진실 소스 */
+const JOB_SLOTS = [
+  { id:'tank',    blockType:3, name:'탱커',        blockName:'방패석' },
+  { id:'melee',   blockType:0, name:'근접 딜러',   blockName:'대검석' },
+  { id:'ranged',  blockType:4, name:'원거리 딜러', blockName:'활석' },
+  { id:'support', blockType:1, name:'서포터',      blockName:'마나석' },
+  { id:'healer',  blockType:2, name:'힐러',        blockName:'치유석' },
+];
+const JOBS = {
+  guardSoldier: { slot:'tank',    blockType:3, name:'방패 병사', hp:46, power:6, defense:4,
+    summary:'일정 시간 파티 전체의 피해를 줄이는 기본 탱커', tags:['보호','피해감소','버티기'] },
+  greatswordWarrior: { slot:'melee', blockType:0, name:'대검 전사', hp:38, power:9, defense:2,
+    summary:'전열의 적을 안정적으로 베어내는 기본 근접 딜러', tags:['전열','단일 공격'] },
+  archer: { slot:'ranged', blockType:4, name:'궁수', hp:32, power:8, defense:1,
+    summary:'약한 적을 노려 마무리하는 기본 원거리 딜러 (장기적으로 후열 저격 정체성으로 조정 예정)', tags:['저격','마무리'] },
+  mage: { slot:'support', blockType:1, name:'마법사', hp:28, power:5, defense:1,
+    summary:'마력을 집중한 뒤 광역 파동으로 전장을 터뜨리는 서포터', tags:['광역','집중','파동'] },
+  priest: { slot:'healer', blockType:2, name:'사제', hp:30, power:0, defense:2,
+    summary:'가장 위험한 아군 하나를 크게 회복하는 기본 힐러', tags:['치유','생존 보조'] },
+};
+// 슬롯별 직업 풀: [기본, 준비, 준비, 준비] — v0.21에서 20직업으로 채움
+const SLOT_JOBS = {
+  tank:['guardSoldier',null,null,null], melee:['greatswordWarrior',null,null,null],
+  ranged:['archer',null,null,null], support:['mage',null,null,null], healer:['priest',null,null,null],
+};
+// 현재 장착 직업 (이번 버전은 기본 고정 — 교체 로직은 v0.21+)
+const equippedJobs = {
+  tank:'guardSoldier', melee:'greatswordWarrior', ranged:'archer', support:'mage', healer:'priest',
+};
+// 매치 설명 생성: ACTS 실제 수치 기반 (마법사 4/5매치는 실제 동작 = 집중 비축)
+function matchDesc(bt, tier){
+  const a = ACTS[bt][tier];
+  if(bt===1 && tier>=2) return '집중('+a.label+') — '+a.dmg+' 비축 → 다음 마나석 매치에 원형 파동';
+  if(bt===1) return a.label+' — 적 전체 '+a.dmg;
+  if(bt===2) return a.label+' — 최저 HP 아군 회복 '+a.heal;
+  if(bt===3) return a.label+' — 6초간 파티 피해 '+Math.round(a.red*100)+'% 감소'+(a.counter?' + 반격 '+a.counter:'');
+  if(bt===4) return a.label+' — 최저 HP 적 '+a.dmg;
+  return a.label+' — 선두 적 '+a.dmg;
+}
+
 const BATTLES = [
   // 샘플 A — 소형 다수전: 3열 라이브 데모 (전열2/중간2/후열1)
   {label:'전투 1', note:'샘플 A · 소형 다수', enemies:[
@@ -1076,6 +1246,8 @@ let enemies = [];
 let heroHp = {};         // 영웅별 현재 HP: {typeId: currentHp}
 function initHeroHp(){ PARTY.forEach(t=>{ heroHp[t] = HERO_MAX[t]; }); }
 function aliveHeroes(){ return PARTY.filter(t=>heroHp[t] > 0); }
+// v0.19: 쓰러짐(fallen/down) 판정 — heroHp ≤ 0 단일 기준. HP가 회복되면 상태도 자동 해제
+function isFallen(typeId){ return heroHp[typeId] <= 0; }
 let shieldRed = 0;       // 이번 라운드 적 공격 감소율
 let shieldCounter = 0;   // 이번 라운드 반격 피해 (방패 병사 5매치)
 let mageCharge = null;   // 마법사 집중 상태: {dmg} — 다음 마나석 매치에 원형 파동
@@ -1226,7 +1398,10 @@ function spawnTrailFX(groups, chain){
   const frag = document.createDocumentFragment();
   for(const g of groups){
     const gType = g.type;
-    const color = TYPE_COLORS[gType] || '#fff';
+    const down = isFallen(gType); // v0.19: 받을 영웅이 쓰러짐 — 가루는 가다가 꺼진다
+    const color = down
+      ? 'color-mix(in srgb, '+(TYPE_COLORS[gType]||'#fff')+' 38%, #6e6880)' // 흐린 속성색
+      : (TYPE_COLORS[gType] || '#fff');
     const hero = heroChipEl(gType);
     if(!hero) continue;
     // 출발점: 그룹 중심 (#app 좌표 — 셀 삭제 전 호출이 전제)
@@ -1245,10 +1420,12 @@ function spawnTrailFX(groups, chain){
     const hy = hy0 - 14; // 도착점: 영웅 머리께
     for(let k=0; k<per; k++){
       const d = document.createElement('div');
-      d.className = 'fxDust';
+      d.className = down ? 'fxDust dying' : 'fxDust';
       // v0.18: 종점은 영웅 정중앙 정밀 — 흩어진 가루가 도착 직전 한 점으로 모여드는 흡인 (산포는 경유점이 담당)
-      const tx = hx - sx;
-      const ty = hy - sy;
+      // v0.19: 쓰러진 영웅이면 종점을 74% 지점으로 — 닿지 못하고 영웅 근처에서 꺼짐
+      const reach = down ? 0.74 : 1;
+      const tx = (hx - sx) * reach;
+      const ty = (hy - sy) * reach;
       const L = Math.hypot(tx, ty) || 1;
       // 경유점: 직선 절반 + 수직 흔들림 — 가루마다 다른 곡선으로 "스르륵"
       const sway = (Math.random()*30 - 15) * (1 + tier*0.12);
@@ -1265,9 +1442,10 @@ function spawnTrailFX(groups, chain){
       frag.appendChild(d); nodes.push(d);
     }
     // 도착: 별 십자 반짝임 + 영웅 짧은 흡수 바운스 (재렌더 대비 — 도착 시점에 칩을 다시 조회)
-    setTimeout(()=>{
+    // v0.19: 쓰러진 영웅은 도착 반짝임/gainPop 미발생 — "힘을 보냈지만 받아낼 수 없다"
+    if(!down) setTimeout(()=>{
       const chip = heroChipEl(gType);
-      if(!chip) return;
+      if(!chip || isFallen(gType)) return; // 비행 중 쓰러진 경우도 흡수 안 함
       spawnAbsorb(chip, color, (1 + tier*0.12) * ABSORB_POP_STRENGTH);
       if(!chip.classList.contains('down')){
         chip.classList.add('gain');
@@ -1837,6 +2015,11 @@ function updateQueueBadge(){
 
 // 영웅 행동 1건 실행 (연출 포함) — 실행 시점에 대상 생존 재확인
 async function performHeroAction(a){
+    if(isFallen(a.type)){
+      // v0.19: 실행 시점 HP 0 재검사 — 큐 진입 후 쓰러진 경우도 행동 불가 (큐 구조 자체는 불변)
+      floatText(heroChipEl(a.type), '💫 행동 불가', 'guard');
+      return;
+    }
     if(aliveEnemies().length===0 && ACTS[a.type][a.tier].dmg) return;
     renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
     const spec = ACTS[a.type][a.tier];
@@ -2027,7 +2210,11 @@ async function enemyAttack(e){
   if(blocked) drawBlockFlash(heroChipEl(tgt));
   const prevHp = heroHp[tgt];
   heroHp[tgt] -= eff;
-  if(prevHp > 0 && heroHp[tgt] <= 0) addLog('💔 '+TYPES[tgt].hero+'이(가) 쓰러졌다!', 'boss'); // 강한 정보
+  if(heroHp[tgt] < 0) heroHp[tgt] = 0; // v0.19: 0 미만 유지 안 함 (이미 0이면 추가 피해 무의미)
+  if(prevHp > 0 && heroHp[tgt] <= 0){
+    addLog('💔 '+TYPES[tgt].hero+'이(가) 쓰러졌다!', 'boss'); // 강한 정보 (v0.14 토스트 정책 유지)
+    if(tgt===1 && mageCharge){ mageCharge = null; addLog('마법사의 집중이 흩어졌다...', 'sys'); } // v0.19
+  }
   // 일반 피해/막힘: 대상 플로팅("-N" / "🛡 raw→eff")이 전달 — 토스트 X
   renderParty();
   hurtHero(tgt);
@@ -2078,7 +2265,11 @@ async function bossBigAttack(e){
   hitList.forEach(t=>{
     const prev = heroHp[t];
     heroHp[t] -= eff;
-    if(prev > 0 && heroHp[t] <= 0) addLog('💔 '+TYPES[t].hero+'이(가) 쓰러졌다!', 'boss');
+    if(heroHp[t] < 0) heroHp[t] = 0; // v0.19: 클램프
+    if(prev > 0 && heroHp[t] <= 0){
+      addLog('💔 '+TYPES[t].hero+'이(가) 쓰러졌다!', 'boss');
+      if(t===1 && mageCharge){ mageCharge = null; addLog('마법사의 집중이 흩어졌다...', 'sys'); } // v0.19
+    }
   });
   addLog(blocked
     ? '방패 병사의 방패! 마왕의 일격, 전원 '+BOSS_BIG_EACH+' 피해가 '+eff+'로 감소.'
@@ -2123,6 +2314,7 @@ function updateGauges(){
 
 // 메인 틱: 게이지 진행/방패 만료/공격 트리거
 function tick(){
+  if(screen!=='battle') return;          // v0.20: battle 화면 밖에서는 전투 진행 정지
   if(state==='over' || showcase) return; // 승리/패배/전환·쇼케이스 중 정지
   const now = Date.now();
   if(shieldRed>0 && now >= shieldUntil){
@@ -2169,8 +2361,14 @@ async function resolveBoard(){
       floatBoard(txt, chain>=3 ? 'gold chainPop mega' : 'gold chainPop', slot++);
     }
     for(const g of groups){
-      queueAction(g.type, g.cells.length, chain);
       const t = TYPES[g.type];
+      if(isFallen(g.type)){
+        // v0.19: 쓰러진 영웅의 블록 — 매치/연쇄/낙하는 정상, 행동만 미발생 (봉인은 차기 R&D)
+        // "문장은 만들 수 있지만, 그 말을 해줄 동료가 쓰러져 있다"
+        floatBoard(t.sym+' '+t.hero+' 쓰러짐 — 행동 불가', 'sys', slot++, '#8d87a0');
+        continue;
+      }
+      queueAction(g.type, g.cells.length, chain);
       const txt = t.sym+' '+t.block+' '+g.cells.length+'개!'; // v0.15.5: '대검석 4개!'
       floatBoard(txt, 'sys', slot++, TYPE_COLORS[g.type]); // v0.15: 속성색 발광 — 힘 확보감
     }
@@ -2250,7 +2448,11 @@ async function onBattleWon(){
   addLog('── '+BATTLES[battleIdx].label+' 승리! ──', 'gold');
   await delay(500);
   if(battleIdx >= BATTLES.length-1){
-    showOverlay('전체 클리어!', '마왕을 물리쳤다. 다섯 영웅의 모험은 계속된다...', '처음부터 다시', resetGame);
+    // v0.20 result flow: 클리어 — 다시 도전 / 타이틀로
+    showOverlay('전체 클리어!', '마왕을 물리쳤다. 다섯 영웅의 모험은 계속된다...', [
+      {label:'다시 도전', onClick:startRun},
+      {label:'타이틀로', onClick:()=>showScreen('title')},
+    ]);
     return;
   }
   // 승리 회복 (v0.9 임시): 영웅 전원 각자 +15, 각자 최대 HP 초과 불가
@@ -2278,7 +2480,12 @@ function onDefeat(){
   updateQueueBadge();
   clearAimLines();
   addLog('파티가 쓰러졌다...', 'bad');
-  showOverlay('패배', '파티의 HP가 0이 되었다.\n블록을 다시 모아 도전하자.', '다시 시작', resetGame);
+  // v0.20 result flow: 패배 — "편성을 바꿔 다시 도전한다"의 자리 확보
+  showOverlay('패배', '파티의 HP가 0이 되었다.\n편성을 바꿔 다시 도전하자.', [
+    {label:'다시 도전', onClick:startRun},
+    {label:'편성으로', onClick:()=>showScreen('partySelect'), ghost:true},
+    {label:'타이틀로', onClick:()=>showScreen('title'), ghost:true},
+  ]);
 }
 
 function setupBattle(){
@@ -2308,11 +2515,89 @@ function setupBattle(){
   renderAll();
 }
 
-function showOverlay(title, text, btnLabel, onClick){
+/* ════ v0.20: 화면 상태 시스템 — title | partySelect | codex | battle (+ result는 overlay) ════ */
+let screen = 'title';
+function showScreen(name){
+  screen = name;
+  document.body.dataset.screen = name;
+  hideOverlay();
+  if(name === 'partySelect') renderPartySelect();
+  if(name === 'codex') renderCodex();
+  // battle 외 화면에서는 tick/입력이 screen 가드로 정지 — 전투 상태는 startRun이 항상 새로 구성
+}
+// 전투 시작 (편성 → 전투): 항상 깨끗한 상태로 — 타이머/큐/상태 꼬임 방지
+function startRun(){
+  attackQueue = [];
+  clearAimLines();
+  resetGame();         // battleIdx=0, HP 초기화, 큐 비움, state='idle'
+  showScreen('battle');
+}
+
+function renderPartySelect(){
+  const list = $('#slotList');
+  list.innerHTML = '';
+  JOB_SLOTS.forEach(slot=>{
+    const job = JOBS[equippedJobs[slot.id]];
+    const t = TYPES[slot.blockType];
+    const d = document.createElement('div');
+    d.className = 'slotCard';
+    d.innerHTML =
+      '<div class="sym" style="--tc:'+TYPE_COLORS[slot.blockType]+'">'+t.sym+'</div>'
+      + '<div class="info">'
+      +   '<div class="slotName">'+slot.name+' · '+slot.blockName+'</div>'
+      +   '<div class="jobName">'+job.name+'</div>'
+      +   '<div class="jobSummary">'+job.summary+'</div>'
+      +   '<div class="slotPicks"><i class="cur">'+job.name+'</i><i>준비 중</i><i>준비 중</i><i>준비 중</i></div>'
+      + '</div>'
+      + '<div class="stats">HP '+job.hp+'<br>Power '+job.power+'<br>Def '+job.defense+'</div>';
+    list.appendChild(d);
+  });
+}
+
+function renderCodex(){
+  const list = $('#codexList');
+  list.innerHTML = '';
+  JOB_SLOTS.forEach(slot=>{
+    SLOT_JOBS[slot.id].forEach(jobId=>{
+      if(!jobId){
+        const p = document.createElement('div');
+        p.className = 'codexCard pending';
+        p.textContent = slot.name+' 슬롯 — 준비 중';
+        list.appendChild(p);
+        return;
+      }
+      const job = JOBS[jobId];
+      const t = TYPES[job.blockType];
+      const d = document.createElement('div');
+      d.className = 'codexCard';
+      d.innerHTML =
+        '<div class="head"><span class="sym">'+t.sym+'</span><span class="nm">'+job.name+'</span>'
+        + '<span class="sl">'+slot.name+' · '+slot.blockName+'</span></div>'
+        + '<div class="desc">'+job.summary+'</div>'
+        + '<div class="statRow"><span>HP '+job.hp+'</span><span>Power '+job.power+'</span><span>Defense '+job.defense+'</span></div>'
+        + '<div class="tagRow">'+job.tags.map(x=>'<i>'+x+'</i>').join('')+'</div>'
+        + '<div class="mline"><b>3매치</b> '+matchDesc(job.blockType,1)+'<br>'
+        + '<b>4매치</b> '+matchDesc(job.blockType,2)+'<br>'
+        + '<b>5매치</b> '+matchDesc(job.blockType,3)+'</div>';
+      list.appendChild(d);
+    });
+  });
+}
+
+// v0.20: 다중 버튼 오버레이 — buttons: [{label, onClick, ghost?}] (단일 호출 호환 유지)
+function showOverlay(title, text, buttons, legacyOnClick){
   $('#ovTitle').textContent = title;
   $('#ovText').textContent = text;
-  $('#ovBtn').textContent = btnLabel;
-  $('#ovBtn').onclick = ()=>{ hideOverlay(); onClick(); };
+  const wrap = $('#ovBtns');
+  wrap.innerHTML = '';
+  const list = (typeof buttons === 'string') ? [{label:buttons, onClick:legacyOnClick}] : buttons;
+  list.forEach((b,i)=>{
+    const btn = document.createElement('button');
+    btn.textContent = b.label;
+    if(b.ghost || i>0) btn.className = 'ghost';
+    btn.onclick = ()=>{ hideOverlay(); b.onClick(); };
+    wrap.appendChild(btn);
+  });
   $('#overlay').classList.add('show');
 }
 function hideOverlay(){ $('#overlay').classList.remove('show'); }
@@ -2412,6 +2697,7 @@ boardEl.addEventListener('pointerup', e=>{
 boardEl.addEventListener('pointercancel', ()=>{ drag = null; });
 
 $('#showcaseBtn').addEventListener('click', ()=>{
+  if(screen!=='battle') return; // v0.20: 전투 화면 밖 입력 차단
   if((boardBusy || state==='over') && !showcase) return;
   showcase = !showcase;
   if(showcase){
@@ -2425,15 +2711,30 @@ $('#showcaseBtn').addEventListener('click', ()=>{
 });
 
 $('#restartBtn').addEventListener('click', ()=>{
-  if(boardBusy) return;
-  hideOverlay();
+  if(screen!=='battle' || boardBusy) return;
+  // v0.20: 의미 명확화 — 즉시 중단 후 행선지 선택 (일시정지 복잡도 없이 상태 꼬임 방지)
   attackQueue = [];
+  actionQueue = [];
+  updateQueueBadge();
   clearAimLines();
-  resetGame();
+  state = 'over'; // 게이지/큐 즉시 정지
+  showOverlay('전투 중단', '현재 전투를 중단했다.\n어디로 갈까?', [
+    {label:'처음부터 다시 도전', onClick:startRun},
+    {label:'편성으로', onClick:()=>showScreen('partySelect'), ghost:true},
+    {label:'타이틀로', onClick:()=>showScreen('title'), ghost:true},
+  ]);
 });
 
-/* ====================== 시작 ====================== */
-resetGame();
+/* ====================== 시작 (v0.20: 타이틀부터) ====================== */
+applyFxTune(); // 연출 상수 주입은 화면과 무관하게 1회
+$('#btnToParty').addEventListener('click', ()=>showScreen('partySelect'));
+$('#btnToCodex').addEventListener('click', ()=>showScreen('codex'));
+$('#btnStartRun').addEventListener('click', startRun);
+$('#btnPartyToCodex').addEventListener('click', ()=>showScreen('codex'));
+$('#btnPartyToTitle').addEventListener('click', ()=>showScreen('title'));
+$('#btnCodexToParty').addEventListener('click', ()=>showScreen('partySelect'));
+$('#btnCodexToTitle').addEventListener('click', ()=>showScreen('title'));
+showScreen('title'); // 게임은 타이틀에서 시작 — 전투는 편성의 [전투 시작]으로
 </script>
 </body>
 </html>
