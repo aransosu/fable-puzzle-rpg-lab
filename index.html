@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.37 — FABLE_TASK_037: Damage Readability & Signature Action FX Pass
+<!-- Emblem Quest Lab v0.38 — FABLE_TASK_038: Chain Momentum & Cascade Acceleration Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -10,7 +10,7 @@
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
            v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
-           v0.35: Stage Composition / v0.36: Readability Playtest -->
+           v0.35: Stage Composition / v0.36: Readability Playtest / v0.37: Damage & Signature FX -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -794,6 +794,14 @@
   /* v0.18B: 5연쇄+ 대연쇄 전용 럼블 — 좌우 덜컹 + 약한 상하 + 아주 미세한 회전, 감쇠하며 멎음
      강도 --rumble-k(OVERCHAIN_RUMBLE_STRENGTH), 길이는 JS가 OVERCHAIN_RUMBLE_MS로 주입 */
   .rumble{animation:boardRumble .32s ease-out;}
+  .surge{ /* v0.38: 5연쇄+ 마나 폭주 — 보드 외곽 보라 펄스 (단발) */
+    animation:boardRumble .32s ease-out, manaSurge .45s ease-out;
+  }
+  @keyframes manaSurge{
+    0%{box-shadow:0 0 0 rgba(184,138,255,0)}
+    30%{box-shadow:0 0 24px rgba(184,138,255,.5)}
+    100%{box-shadow:0 0 0 rgba(184,138,255,0)}
+  }
   @keyframes boardRumble{
     0%,100%{transform:translate(0,0) rotate(0deg)}
     12%{transform:translate(calc(-5px*var(--rumble-k,1)),calc(2px*var(--rumble-k,1))) rotate(calc(-.5deg*var(--rumble-k,1)))}
@@ -1637,7 +1645,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.37 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.38 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1708,6 +1716,15 @@ const SHARD_HOP            = 12;   // 파편이 위로 튀는 기준 px (×FAKE_
 /* ── v0.18B 추가 (FABLE_TASK_018B) ── */
 const BURST_DUST_MAX       = 20;   // 폭발 가루: 매치 스텝당 총량 상한
 const BURST_DUST_PER_TIER  = 2;    // 폭발 가루: 연쇄 단계당 그룹 증가량 (그룹당 4 + tier×이값)
+/* ── v0.38: Chain Momentum (FABLE_TASK_038) — 연쇄가 이어질수록 마나 엔진이 빨라진다.
+   배율은 보드 처리 템포(응축/팡/낙하/정착)에만 적용 — 전투 수치/행동 큐/상태 문법 무관.
+   최소 캡 0.80 근거: 팡(popOut)의 핵심 비트가 60% 지점(≈126ms)이라 0.8×210=168ms에서도
+   응축→팡 서사가 보존된다. 그 아래는 "빨라짐"이 아니라 "스킵"으로 읽혀 손맛이 사라짐 */
+const MOMENTUM_BY_CHAIN = [1, 1, 1, 0.95, 0.90, 0.85]; // index = chain (0 미사용, 1~5연쇄)
+const MOMENTUM_MIN = 0.80;                              // 6연쇄+ 캡
+function chainMomentum(ch){
+  return ch < MOMENTUM_BY_CHAIN.length ? MOMENTUM_BY_CHAIN[ch] : MOMENTUM_MIN;
+}
 const BOARD_RUMBLE_CHAIN_THRESHOLD = 5; // 대연쇄 럼블 발동 연쇄 수 (이상)
 const OVERCHAIN_RUMBLE_STRENGTH    = 1.0; // 대연쇄 럼블 강도 배율 (0=끔)
 const OVERCHAIN_RUMBLE_MS          = 320; // 대연쇄 럼블 길이 (260~360 권장)
@@ -2273,9 +2290,10 @@ function sceneText(text, opts){
   f.className = 'sceneText' + (o.big ? ' big' : '') + (o.small ? ' small' : ''); // v0.36: 3단 위계
   f.style.top = (7 + (sceneSlot++ % 2) * 14) + '%';
   if(o.color) f.style.setProperty('--sc', o.color);
+  if(o.dur){ f.style.animationDuration = o.dur + 'ms'; } // v0.38: 연쇄 자막 — 모멘텀과 같은 박자
   f.textContent = text;
   wrap.appendChild(f);
-  setTimeout(()=>f.remove(), 1080); // 단발 수명 — DOM 누적 없음
+  setTimeout(()=>f.remove(), (o.dur || 1050) + 30); // 단발 수명 — DOM 누적 없음 (수명도 동기)
 }
 
 /* ── v0.31: 도착 FX 프리미티브 (E항목) — 행동선 끝에서 "무슨 일이 일어났는지" 구분 ── */
@@ -3635,12 +3653,13 @@ async function resolveBoard(){
     const groups = findMatchGroups(board);
     if(groups.length===0) break;
     chain++;
+    const mo = chainMomentum(chain); // v0.38: 이번 스텝의 보드 템포 배율 (1.0 → … → 0.80 캡)
     /* v0.31 (B/C항목): 일반 획득 텍스트 폐지 — 3매치는 침묵 (가루 색/전달/흡수가 정보 전달).
        특수 순간만 연출 텍스트: 2연쇄+ "연쇄 증폭 ×N" / 4매치 "강한 문장" / 5매치 행동명 강조 */
     let slot = 0;
     if(chain>1){
       sceneText('연쇄 증폭 ×'+chain+'  (위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%)',
-                {big: chain>=3}); // 3연쇄+: 큰 자막 — 기존 럼블/흔들림과 합쳐져 "더!" 체감
+                {big: chain>=3, dur: Math.round(1080*mo)}); // v0.38: 자막도 같은 박자로 탄력 (최저 864ms — 읽힘 보호)
     }
     for(const g of groups){
       const t = TYPES[g.type];
@@ -3680,24 +3699,35 @@ async function resolveBoard(){
       const pT = cellTier.get(+c.dataset.i) || 1;
       c.classList.add('primed');
       if(pT>=2) c.classList.add(pT===3 ? 'p3' : 'p2');
+      if(mo < 1) c.style.animationDuration = Math.round(PRIME_MS*mo) + 'ms'; // v0.38: 응축도 같은 박자
     });
-    await delay(PRIME_MS);
+    await delay(Math.round(PRIME_MS * mo)); // v0.38: Chain Momentum — 응축 가속
     spawnBurstFX(groups, chain);              // 좌표는 셀 삭제 전에 채취
     spawnTrailFX(groups, chain);              // v0.17: 요정가루 발자취 → 해당 영웅 (비차단)
     if(chain >= BOARD_RUMBLE_CHAIN_THRESHOLD && OVERCHAIN_RUMBLE_STRENGTH > 0){
-      // v0.18B: 대연쇄 전용 럼블 — 보드판이 터덜터덜 (thump 대체, 보드판 한정)
+      // v0.18B: 대연쇄 전용 럼블 — v0.38: 연쇄 단계 차등 (5연쇄 1.0 → +0.15/단계, 캡 1.45 "마나 폭주")
       const bw = $('#boardWrap');
-      bw.style.animationDuration = OVERCHAIN_RUMBLE_MS+'ms';
+      const rk = Math.min(1.45, OVERCHAIN_RUMBLE_STRENGTH * (1 + (chain - BOARD_RUMBLE_CHAIN_THRESHOLD) * 0.15));
+      bw.style.setProperty('--rumble-k', rk.toFixed(2));
+      bw.style.animationDuration = OVERCHAIN_RUMBLE_MS+'ms, 450ms'; // v0.38: [럼블, 폭주 펄스] 각자 박자
       bw.classList.add('rumble');
-      setTimeout(()=>{ bw.classList.remove('rumble'); bw.style.animationDuration=''; }, OVERCHAIN_RUMBLE_MS + 40);
+      bw.classList.add('surge'); // v0.38: 마나 폭주 — 보드 외곽 보라 펄스 (단발)
+      setTimeout(()=>{
+        bw.classList.remove('rumble'); bw.classList.remove('surge');
+        bw.style.animationDuration=''; bw.style.removeProperty('--rumble-k'); // 상수 기본값 복원
+      }, Math.max(OVERCHAIN_RUMBLE_MS, 450) + 40);
     }
-    else if(BOARD_SHAKE_STRENGTH > 0 && (chain >= 3 || groups.some(g=>g.cells.length >= 5))){
-      const bw = $('#boardWrap'); // 묵직한 pop: 보드만 — 강도는 --shake-k 상수 (1~4연쇄 기존 유지)
+    else if(BOARD_SHAKE_STRENGTH > 0 && (chain >= 2 || groups.some(g=>g.cells.length >= 5))){
+      // v0.38: 2연쇄부터 "작게 통" — 연쇄가 붙기 시작했음을 몸으로 (3~4연쇄는 기존 thump 그대로)
+      const bw = $('#boardWrap');
       bw.classList.add('thump');
       setTimeout(()=>bw.classList.remove('thump'), 200);
     }
-    matchedEls.forEach(c=>c.classList.add('removing')); // 가중 클래스(p2/p3)는 그대로 → popOut2/3 적용
-    await delay(POP_MS);
+    matchedEls.forEach(c=>{
+      c.classList.add('removing'); // 가중 클래스(p2/p3)는 그대로 → popOut2/3 적용
+      if(mo < 1) c.style.animationDuration = Math.round(POP_MS*mo) + 'ms'; // v0.38: 팡도 같은 박자
+    });
+    await delay(Math.round(POP_MS * mo)); // v0.38: Chain Momentum — 팡 가속
 
     // 삭제 → 낙하 → 생성
     removeSet.forEach(i=>{ board[i]=null; });
@@ -3717,7 +3747,12 @@ async function resolveBoard(){
       }
     }
     renderBoard(spawnSet);
-    await delay(260);
+    if(mo < 1){ // v0.38: 새 블록 낙하(drop .25s)도 모멘텀 동기 — 셀은 다음 렌더에서 재생성되므로 잔존 없음
+      document.querySelectorAll('#board .cell.spawn').forEach(c=>{
+        c.style.animationDuration = Math.round(250*mo) + 'ms';
+      });
+    }
+    await delay(Math.round(260 * mo)); // v0.38: Chain Momentum — 정착→다음 판정 가속
   }
 
   // 보드 안정: 즉시 조작 해제 (v0.13 핵심 — 연출이 손을 막지 않는다)
