@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.32 — FABLE_TASK_032: 10 Job Roster Reframe / Aim Gem, Bard & Bulwark
+<!-- Emblem Quest Lab v0.33 — FABLE_TASK_033: Block Presence & Mana Carrier Hotfix
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
            v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run / v0.23: Boss Reaction /
            v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
-           v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX -->
+           v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
+           v0.32: 10 Job Roster -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -376,30 +377,69 @@
     transition:transform .15s, opacity .2s, border-color .1s;
     background:#171425; /* 빈 칸 (낙하 과도기) */
   }
-  .cell.jb-greatswordWarrior,.cell.jb-mage,.cell.jb-priest,.cell.jb-guardSoldier,.cell.jb-archer{
-    border-color:color-mix(in srgb,var(--tc) 42%,#06040c);
+  /* ⚠ v0.33 결함 수선: v0.32의 .tN→.jb-* 일괄 치환이 보드 셀 CSS까지 오염 — JS는 'cell t'+t를
+     부여하므로 v0.32 빌드에서 블록 배경/베벨/속성색이 전부 미적용(빈 칸 배경만)이었다.
+     이번 핫픽스("블록이 밋밋하다")의 주 원인. .t0~.t4로 원복 + B/C항 강화 통합 */
+  .cell.t0,.cell.t1,.cell.t2,.cell.t3,.cell.t4{
+    border-color:color-mix(in srgb,var(--tc) 48%,#06040c);
     background:
-      radial-gradient(circle at 32% 24%, rgba(255,255,255,.30), rgba(255,255,255,0) 46%),
+      radial-gradient(circle at 32% 22%, rgba(255,255,255,.32), rgba(255,255,255,0) 44%), /* 상단 글로스 */
       linear-gradient(168deg,
-        color-mix(in srgb,var(--tc) 58%,#332b4d) 0%,
-        color-mix(in srgb,var(--tc) 34%,#191427) 56%,
+        color-mix(in srgb,var(--tc) 60%,#332b4d) 0%,
+        color-mix(in srgb,var(--tc) 36%,#191427) 56%,
         color-mix(in srgb,var(--tc) 18%,#0d0a16) 100%);
     box-shadow:
-      inset 0 2px 2px rgba(255,255,255,.20),   /* 상단 유리 하이라이트 */
-      inset 1px 0 1px rgba(255,255,255,.06),   /* 좌측 미세 베벨 */
-      inset 0 -3px 4px rgba(0,0,0,.50),        /* 하단 두께/음영 */
-      0 2px 3px rgba(0,0,0,.38);               /* 보드에서 살짝 뜬 느낌 */
-    text-shadow:0 2px 3px rgba(0,0,0,.55);     /* 심볼도 조각처럼 박힌 인상 */
+      inset 0 2px 2.5px rgba(255,255,255,.24),  /* 상단 유리 하이라이트 */
+      inset 1.5px 0 1.5px rgba(255,255,255,.07),/* 좌측 미세 베벨 */
+      inset -1.5px 0 2px rgba(0,0,0,.30),       /* v0.33: 우측 음영 — 4면 볼륨 */
+      inset 0 -4px 5px rgba(0,0,0,.55),         /* 하단 두께/음영 */
+      inset 0 0 9px color-mix(in srgb,var(--tc) 36%,transparent), /* v0.33: 내부 발광 — 담긴 힘 (정적) */
+      0 2.5px 4px rgba(0,0,0,.42);              /* 보드에서 살짝 뜬 느낌 */
+    text-shadow:0 2px 3px rgba(0,0,0,.55);      /* 심볼도 조각처럼 박힌 인상 */
   }
-  .cell.jb-greatswordWarrior{--tc:var(--c-blade);}
-  .cell.jb-mage{--tc:var(--c-mana);}
-  .cell.jb-priest{--tc:var(--c-heal);}
-  .cell.jb-guardSoldier{--tc:var(--c-guard);}
-  .cell.jb-archer{--tc:var(--c-bow);}
+  /* v0.33 (C항목): 마나 코어 — 심볼 아래 깔리는 중심 발광. 정적 1레이어 ("몸체 + 그 안의 상징") */
+  .cell.t0::before,.cell.t1::before,.cell.t2::before,.cell.t3::before,.cell.t4::before{
+    content:'';position:absolute;inset:20% 17%;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,
+      color-mix(in srgb,var(--tc) 52%,#ffffff22) 0%,
+      color-mix(in srgb,var(--tc) 28%,transparent) 44%, transparent 70%);
+    opacity:.55;
+  }
+  .cell.t0{--tc:var(--c-blade);}
+  .cell.t1{--tc:var(--c-mana);}
+  .cell.t2{--tc:var(--c-heal);}
+  .cell.t3{--tc:var(--c-guard);}
+  .cell.t4{--tc:var(--c-bow);}
+  /* v0.33 (F항목): 타입별 몸체 개성 — "힘의 매개체" 공통 구조 위의 가벼운 차이 */
+  .cell.t0{border-radius:7px;} /* 대검석: 각진 단면 + 사선 빛줄기 — 날카로움 */
+  .cell.t0::after{
+    content:'';position:absolute;inset:0;border-radius:7px;pointer-events:none;
+    background:linear-gradient(135deg, transparent 44%, rgba(255,255,255,.15) 50%, transparent 56%);
+  }
+  .cell.t3{ /* 방패석: 매트 강철 — 금속 림 1줄, 글로스 절제 */
+    box-shadow:
+      inset 0 2px 2px rgba(255,255,255,.16),
+      inset 0 0 0 1.5px rgba(186,202,228,.22),
+      inset -1.5px 0 2px rgba(0,0,0,.30),
+      inset 0 -4px 5px rgba(0,0,0,.58),
+      inset 0 0 9px color-mix(in srgb,var(--tc) 32%,transparent),
+      0 2.5px 4px rgba(0,0,0,.42);
+  }
+  .cell.t2{border-radius:13px;} /* 치유석: 둥글고 부드러운 성질 */
+  .cell.t2::before{opacity:.7;inset:16% 13%;} /* 밝은 코어 */
+  .cell.t1::before{opacity:.75;} /* 마나석: 가장 짙은 코어 — 신비 */
+  .cell.t1{box-shadow:
+      inset 0 2px 2.5px rgba(255,255,255,.24), inset 1.5px 0 1.5px rgba(255,255,255,.07),
+      inset -1.5px 0 2px rgba(0,0,0,.30), inset 0 -4px 5px rgba(0,0,0,.55),
+      inset 0 0 11px color-mix(in srgb,var(--tc) 46%,transparent),
+      0 0 5px rgba(155,111,208,.28), 0 2.5px 4px rgba(0,0,0,.42);} /* 외광은 절제 수위 */
+  .cell.t4::before{ /* 조준석: 동심 링 1개 — 집중/정확 */
+    box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--tc) 55%,transparent);
+  }
   /* v0.15.5: 마나석(✦)/치유석(✚)은 텍스트 글리프 — 밝은 색 + 미세 발광으로 이모지급 가독 확보 */
-  .cell.jb-mage,.cell.jb-priest{font-weight:900;font-size:clamp(17px,6.1vw,27px);}
-  .cell.jb-mage{color:#efe6ff;text-shadow:0 0 6px rgba(190,150,255,.85),0 2px 3px rgba(0,0,0,.55);}
-  .cell.jb-priest{color:#fff6dc;text-shadow:0 0 6px rgba(240,210,130,.85),0 2px 3px rgba(0,0,0,.55);}
+  .cell.t1,.cell.t2{font-weight:900;font-size:clamp(17px,6.1vw,27px);}
+  .cell.t1{color:#efe6ff;text-shadow:0 0 6px rgba(190,150,255,.85),0 2px 3px rgba(0,0,0,.55);}
+  .cell.t2{color:#fff6dc;text-shadow:0 0 6px rgba(240,210,130,.85),0 2px 3px rgba(0,0,0,.55);}
   .cell:active{transform:scale(.94);} /* 누르는 손맛 */
   .cell.sel{
     border-color:var(--gold);transform:scale(1.08);
@@ -445,37 +485,41 @@
     100%{transform:translateY(calc(var(--lift,7px)*-1)) scale(calc(1 + .24*var(--prime-k,1)))}
   }
   /* v0.15: 팡! 터짐 — 한 번 부풀었다가 수축 소멸 (단순 fade 아님). v0.18: 가중 변형 추가 */
-  .cell.removing{animation:popOut .17s ease-in forwards;}
+  /* v0.33 (D항목): 파괴 = ①짧은 응축+증광 ②팡! ③수축 소멸 — "힘이 담긴 조각이 깨지며 방출" */
+  .cell.removing{animation:popOut .21s ease-in forwards;}
   @keyframes popOut{
-    0%{transform:scale(1.12);opacity:1}
-    45%{transform:scale(1.30);opacity:1}
-    100%{transform:scale(.15);opacity:0}
+    0%{transform:scale(1.06);opacity:1;filter:brightness(1.25)}
+    28%{transform:scale(.80);opacity:1;filter:brightness(1.8)}   /* 응축 — 힘이 안으로 모인다 */
+    60%{transform:scale(1.45);opacity:.95;filter:brightness(1.5)} /* 팡! */
+    100%{transform:scale(.12);opacity:0;filter:brightness(1)}
   }
-  .cell.removing.p2{animation:popOut2 .17s ease-in forwards;}
+  .cell.removing.p2{animation:popOut2 .21s ease-in forwards;}
   @keyframes popOut2{
-    0%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.17);opacity:1}
-    45%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.4);opacity:1}
-    100%{transform:scale(.12);opacity:0}
+    0%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.1);opacity:1;filter:brightness(1.4)}
+    28%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(.76);opacity:1;filter:brightness(2)}
+    60%{transform:translateY(calc(var(--lift,7px)*-.7)) scale(1.58);opacity:.95;filter:brightness(1.6)}
+    100%{transform:scale(.1);opacity:0;filter:brightness(1)}
   }
-  .cell.removing.p3{animation:popOut3 .18s ease-in forwards;}
+  .cell.removing.p3{animation:popOut3 .22s ease-in forwards;}
   @keyframes popOut3{
-    0%{transform:translateY(calc(var(--lift,7px)*-1)) scale(.86);opacity:1} /* 압축에서 */
-    40%{transform:translateY(calc(var(--lift,7px)*-1)) scale(1.52);opacity:1} /* 시원하게 팡 */
-    100%{transform:scale(.1);opacity:0}
+    0%{transform:translateY(calc(var(--lift,7px)*-1)) scale(.86);opacity:1;filter:brightness(1.6)} /* prime3 압축에서 */
+    26%{transform:translateY(calc(var(--lift,7px)*-1)) scale(.7);opacity:1;filter:brightness(2.2)} /* 한계 응축 */
+    58%{transform:translateY(calc(var(--lift,7px)*-1)) scale(1.7);opacity:.95;filter:brightness(1.7)} /* 대팡! */
+    100%{transform:scale(.08);opacity:0;filter:brightness(1)}
   }
   .cell.spawn{animation:drop .25s;}
   @keyframes drop{from{transform:translateY(-14px);opacity:.3}to{transform:translateY(0);opacity:1}}
   /* ---------- v0.15: 터짐 FX 레이어 (보드 위, 터치 통과, 연출 후 노드 즉시 제거) ---------- */
   #burstLayer{position:absolute;inset:0;pointer-events:none;z-index:24;overflow:hidden;border-radius:12px;}
-  .fxFlash{ /* 셀 중심 속성색 섬광 — v0.17: 더 짧고 강한 코어 플래시 */
-    position:absolute;width:18px;height:18px;border-radius:50%;
-    background:radial-gradient(circle,#fff 0%,#fff 22%,var(--fc,#fff) 46%,transparent 70%);
-    transform:translate(-50%,-50%) scale(.4);opacity:1;
-    animation:flashOut .18s ease-out forwards;
+  .fxFlash{ /* 셀 중심 속성색 섬광 — v0.33: 코어 더 크고 짧게 — "방출" 체감 */
+    position:absolute;width:20px;height:20px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#fff 24%,var(--fc,#fff) 48%,transparent 70%);
+    transform:translate(-50%,-50%) scale(.35);opacity:1;
+    animation:flashOut .2s ease-out forwards;
   }
   @keyframes flashOut{
-    35%{transform:translate(-50%,-50%) scale(1.9);opacity:.95}
-    100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}
+    32%{transform:translate(-50%,-50%) scale(2.1);opacity:1}
+    100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}
   }
   .fxRing{ /* v0.17: 평면 테두리 링 → 에너지 충격파 밴드 (radial 연성 + 살짝 눌린 타원) */
     position:absolute;width:16px;height:16px;border-radius:50%;
@@ -624,19 +668,22 @@
     45%{opacity:1;transform:translate(-50%,-50%) rotate(-26deg) scaleX(1.1)}
     100%{opacity:0;transform:translate(-44%,-58%) rotate(-26deg) scaleX(1)}
   }
-  .fxRing{ /* 효과 링 — outward: 정화(벗겨짐)/장갑 균열, .in: 독 침투/마력 주입 */
+  /* ⚠ v0.33 결함 수선: v0.31이 보드 충격파(.fxRing/@ringOut)와 동명의 도착 FX 링을 추가 —
+     뒤 정의가 이겨 보드 팡 링이 점선 링으로 오염되고 있었다 ("팡이 죽은" 두 번째 원인).
+     도착 FX를 fxAura/auraOut/auraIn으로 개명, 보드 fxRing/ringOut은 원형 복구 */
+  .fxAura{ /* 효과 링 — outward: 정화(벗겨짐)/장갑 균열, .in: 독 침투/마력 주입 */
     position:absolute;width:30px;height:30px;border-radius:50%;
     border:2.5px dashed var(--fc,#fff);
     transform:translate(-50%,-50%) scale(.5);opacity:0;
-    animation:ringOut .42s ease-out forwards;pointer-events:none;
+    animation:auraOut .42s ease-out forwards;pointer-events:none;
   }
-  .fxRing.in{animation:ringIn .42s ease-out forwards;}
-  @keyframes ringOut{
+  .fxAura.in{animation:auraIn .42s ease-out forwards;}
+  @keyframes auraOut{
     0%{transform:translate(-50%,-50%) scale(.5) rotate(0deg);opacity:0}
     25%{opacity:.95}
     100%{transform:translate(-50%,-50%) scale(1.5) rotate(50deg);opacity:0}
   }
-  @keyframes ringIn{
+  @keyframes auraIn{
     0%{transform:translate(-50%,-50%) scale(1.5) rotate(0deg);opacity:0}
     30%{opacity:.95}
     100%{transform:translate(-50%,-50%) scale(.4) rotate(-50deg);opacity:0}
@@ -1468,7 +1515,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.32 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.33 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1523,7 +1570,7 @@ const TYPE_COLORS = TYPE_CVARS.map(v=>{
 });
 // v0.15: 터짐 연출 타이밍/예산 (FABLE_TASK_015)
 const PRIME_MS = 200;      // 매치 직전 반응(응축) 시간
-const POP_MS   = 170;      // 팡 터짐 시간 (기존 일괄 300ms → 200+170으로 분리)
+const POP_MS   = 210;      // 팡 터짐 시간 (v0.33: 응축 비트 추가 — popOut .21s와 동기)
 const FX_MAX_SHARDS = 36;  // 한 번의 터짐에서 파편 총량 상한 — 모바일 보호
 const FX_LIFE_MS = 560;    // FX 노드 일괄 제거 시점 (최장 애니메이션 .5s + 여유)
 
@@ -2127,7 +2174,7 @@ function spawnFxNode(el, cls, color, opts){
 function spawnSlashFX(el, color, big){ spawnFxNode(el, 'fxSlash'+(big?' big':''), color, {angle: -30 - Math.random()*20}); } // 베기
 function spawnBlastFX(el, color, big){ spawnFxNode(el, 'fxBlast'+(big?' big':''), color); }                                   // 폭발
 function spawnPierceFX(el, color){ spawnFxNode(el, 'fxPierce', color); }                                                      // 관통
-function spawnRingFX(el, color, inward){ spawnFxNode(el, 'fxRing'+(inward?' in':''), color); }                                // 정화(밖)/침투·주입(안)
+function spawnRingFX(el, color, inward){ spawnFxNode(el, 'fxAura'+(inward?' in':''), color); }                                // 정화(밖)/침투·주입(안) — v0.33: 보드 fxRing과 충돌해 개명
 
 /* ── v0.15: 매치 터짐 FX — 팡! (섬광+링+파편+에너지 잔상), 연쇄 단계 강화 ──
    원칙: transform/opacity 애니메이션만 사용, 파편 총량 상한, 수명 후 노드 전부 제거 */
@@ -2138,7 +2185,7 @@ function spawnBurstFX(groups, chain){
   const tier = Math.min(chain, 3); // 1연쇄/2연쇄/3연쇄+ 3단계
   const cellCount = groups.reduce((s,g)=>s+g.cells.length, 0);
   // 파편 수: 연쇄가 높을수록 +, 단 동시 터짐이 많으면 자동 감축 (총량 ≤ FX_MAX_SHARDS)
-  const perCell = Math.max(1, Math.min(2 + tier, Math.floor(FX_MAX_SHARDS / Math.max(1, cellCount))));
+  const perCell = Math.max(1, Math.min(3 + tier, Math.floor(FX_MAX_SHARDS / Math.max(1, cellCount)))); // v0.33: 기본 파편 +1 (총량 상한은 그대로 — 다량 동시 터짐은 자동 감축)
   const nodes = [];
   const frag = document.createDocumentFragment();
   for(const g of groups){
@@ -2164,7 +2211,7 @@ function spawnBurstFX(groups, chain){
         const sh = document.createElement('div');
         sh.className = 'fxShard';
         const ang = Math.random()*Math.PI*2;
-        const dist = (16 + Math.random()*14) * (1 + tier*0.25);
+        const dist = (18 + Math.random()*15) * (1 + tier*0.3); // v0.33: 방출 반경 소폭 상향
         const sz = (4 + Math.random()*3.5).toFixed(1); // v0.18: 4~7.5px — 마나석 조각감 강화
         sh.style.left = x+'px'; sh.style.top = y+'px';
         sh.style.width = sz+'px'; sh.style.height = sz+'px';
@@ -2183,7 +2230,7 @@ function spawnBurstFX(groups, chain){
       ring.className = 'fxRing';
       ring.style.left = cx+'px'; ring.style.top = cy+'px';
       ring.style.setProperty('--fc', color);
-      ring.style.setProperty('--fs', (2.6 + tier*1.1).toFixed(2));
+      ring.style.setProperty('--fs', (3.0 + tier*1.2).toFixed(2)); // v0.33: 충격파 복구 + 반경 상향
       frag.appendChild(ring); nodes.push(ring);
       // ④ 에너지 발자취는 spawnTrailFX(전역 레이어)가 담당 (v0.17: 보드 경계를 넘어 영웅까지)
       // ⑤ v0.18B 폭발 가루: 팡 순간 그룹 셀들에서 사방으로 촤악 — 짧고 즉발 (.32s)
@@ -2283,7 +2330,7 @@ function spawnTrailFX(groups, chain){
       if(down) d.style.setProperty('--sx', (Math.random()*36 - 18).toFixed(1)+'px'); // v0.29: 갈 곳 잃은 산포
       const sz = (5 + Math.random()*3.5).toFixed(1); // v0.18: 5~8.5px — 가루 밀도/존재감 강화
       d.style.width = sz+'px'; d.style.height = sz+'px';
-      d.style.animationDelay = Math.floor(Math.random()*140)+'ms';
+      d.style.animationDelay = (40 + Math.floor(Math.random()*130))+'ms'; // v0.33: 팡(응축~방출) 직후 출발 — "터졌다 → 힘이 나왔다" 순서
       frag.appendChild(d); nodes.push(d);
     }
     // 도착: 별 십자 반짝임 + 영웅 짧은 흡수 바운스 (재렌더 대비 — 도착 시점에 칩을 다시 조회)
