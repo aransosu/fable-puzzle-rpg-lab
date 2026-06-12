@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.33 — FABLE_TASK_033: Block Presence & Mana Carrier Hotfix
+<!-- Emblem Quest Lab v0.34 — FABLE_TASK_034: Weapon Grip, Rear-Line Perspective & Prop Anchoring
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -9,7 +9,7 @@
            v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
-           v0.32: 10 Job Roster -->
+           v0.32: 10 Job Roster / v0.33: Block Presence Hotfix -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -750,8 +750,8 @@
     background:linear-gradient(90deg, transparent, rgba(154,147,181,.30) 16%,
                rgba(154,147,181,.30) 84%, transparent);
   }
-  #partyArea::before{ /* v0.30: 후열 전장선 — 더 옅고 짧게, 앞줄/뒷줄 단차 암시 (정적) */
-    content:'';position:absolute;left:14%;right:14%;bottom:38px;height:1.5px;
+  #partyArea::before{ /* v0.30: 후열 전장선 — v0.34: 단차 28px에 맞춰 상향 */
+    content:'';position:absolute;left:14%;right:14%;bottom:44px;height:1.5px;
     border-radius:2px;pointer-events:none;z-index:0;
     background:linear-gradient(90deg, transparent, rgba(154,147,181,.15) 22%,
                rgba(154,147,181,.15) 78%, transparent);
@@ -768,7 +768,7 @@
      formation(.front/.back) 클래스가 결정. "한 파티 안의 앞줄/뒷줄" — 멀리 흩어지지 않게 22px 단차 */
   #heroes{
     display:flex;justify-content:space-evenly;align-items:flex-end;
-    min-height:138px; /* v0.30: 후열 단차(22px) 수용 */
+    min-height:144px; /* v0.34: 후열 단차 28px 수용 */
     position:relative;z-index:1; /* 바닥선 위 */
   }
   .ally{
@@ -786,8 +786,11 @@
     width:62px;height:11px;
     background:radial-gradient(ellipse, rgba(0,0,0,.52) 0%, rgba(0,0,0,0) 74%);
   }
-  .ally.back{z-index:2;margin-bottom:22px;}
-  .ally.back .shadow{opacity:.8;}
+  /* v0.34 (D항목): 후열 원근 — 22→28px 더 위로 + 0.9배 축소 (bob 합성 변수 — 레이아웃 박스 불변:
+     HP바/배지는 비축소라 가독 유지, 시각 폭이 줄어 인접 간섭도 감소). 전열 1.05 대비 ≈1.17:1 원근 */
+  .ally.back{z-index:2;margin-bottom:28px;}
+  .ally.back .av{--bobScale:.9;}
+  .ally.back .shadow{opacity:.7;width:44px;} /* 축소된 시각 폭에 맞춘 접지 */
   .ally.act{z-index:9;}
   .ally.act .av{ /* v0.17: 행동 시 앞으로(위로) 튀어나가는 런지 후 정착 */
     filter:drop-shadow(0 0 10px var(--gold)) brightness(1.3);
@@ -869,8 +872,8 @@
   .jb-greatswordWarrior .armL,.jb-greatswordWarrior .armR{ /* 어깨 장갑: 어깨선만 진한 적갈 */
     border-top:5px solid #7e2e29;
   }
-  .jb-greatswordWarrior .gear{ /* 어깨에 걸친 대검: 도신 + 뾰족 검끝 */
-    right:-7px;top:-12px;width:11px;height:62px;
+  .jb-greatswordWarrior .gear{ /* 어깨에 걸친 대검 — v0.34: 손 위치로 6px 당김 (자루가 오른손에 옴) */
+    right:-1px;top:-14px;width:11px;height:62px;
     background:linear-gradient(#f4f8fe,#a9b9d4);
     clip-path:polygon(50% 0,100% 12%,100% 100%,0 100%,0 12%);
     transform:rotate(9deg);border-radius:0 0 3px 3px;
@@ -879,6 +882,10 @@
     content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
     width:23px;height:6px;background:#caa54a;border-radius:3px;
     box-shadow:0 7px 0 -1px #6e4a2d;
+  }
+  .jb-greatswordWarrior .gear::before{ /* v0.34: 자루를 쥔 손 — 손잡이가 손 안쪽으로 */
+    content:'';position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
+    width:11px;height:10px;background:#e6c699;border-radius:50%;z-index:1;
   }
   .jb-greatswordWarrior .gear2{ /* 이마 붉은 머리띠 */
     top:15px;left:50%;transform:translateX(-50%);
@@ -910,9 +917,13 @@
     content:'';position:absolute;top:21px;left:50%;transform:translateX(-50%);
     width:48px;height:7px;background:#51309a;border-radius:4px;
   }
-  .jb-mage .gear{ /* 마나 보주 지팡이 (오른손 쪽) */
-    right:1px;top:8px;width:6px;height:58px;
+  .jb-mage .gear{ /* 마나 보주 지팡이 (오른손 쪽) — v0.34: 몸에 2px 더 밀착 */
+    right:3px;top:8px;width:6px;height:58px;
     background:#6e4a2d;border-radius:3px;
+  }
+  .jb-mage .gear::before{ /* v0.34: 지팡이를 쥔 손 — 오른손 높이 */
+    content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+    width:10px;height:9px;background:#e6c699;border-radius:50%;
   }
   .jb-mage .gear::after{ /* 별빛 마나 보주 */
     content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
@@ -963,10 +974,14 @@
     content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
     width:6px;height:9px;background:#9aa7bc;border-radius:0 0 3px 3px;
   }
-  .jb-guardSoldier .gear{ /* 대형 탑방패: 몸 앞 왼편 — 탱커가 한눈에 */
-    left:-13px;top:30px;width:32px;height:46px;
+  .jb-guardSoldier .gear{ /* 대형 탑방패 — v0.34: 4px 몸쪽으로 + 팔 높이 정렬 (분리된 판 → 든 방패) */
+    left:-9px;top:32px;width:32px;height:46px;
     background:linear-gradient(#6f93d2,#42639e);
     border:3px solid #2c3e66;border-radius:10px 10px 16px 16px;z-index:7;
+  }
+  .jb-guardSoldier .gear::before{ /* v0.34: 방패 모서리를 잡은 손 — 팔이 뒤에 연결됨 */
+    content:'';position:absolute;top:10px;right:-4px;
+    width:9px;height:9px;background:#e6c699;border-radius:50%;
   }
   .jb-guardSoldier .gear::after{ /* 방패 문장: 강철 보스 2점 */
     content:'';position:absolute;top:11px;left:50%;transform:translateX(-50%);
@@ -991,10 +1006,14 @@
     content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
     width:10px;height:8px;background:#2e6b58;border-radius:4px 4px 0 0;
   }
-  .jb-archer .gear{ /* 활 (왼손 쪽 세로 활대 + 시위) */
-    left:-10px;top:24px;width:22px;height:52px;
+  .jb-archer .gear{ /* 활 — v0.34: 3px 몸쪽으로 (왼팔과 활대가 맞닿게) */
+    left:-7px;top:24px;width:22px;height:52px;
     border:4px solid #8a5a2d;border-right:none;
     border-radius:24px 0 0 24px;z-index:6;
+  }
+  .jb-archer .gear::before{ /* v0.34: 활대 중앙을 쥔 손 */
+    content:'';position:absolute;top:50%;left:-4px;transform:translateY(-50%);
+    width:9px;height:10px;background:#e6c699;border-radius:50%;
   }
   .jb-archer .gear::after{ /* 시위 */
     content:'';position:absolute;top:-2px;right:-2px;
@@ -1010,9 +1029,13 @@
     content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
     width:32px;height:11px;background:linear-gradient(#b8c2d4,#8a96ac);border-radius:4px;
   }
-  .jb-crusher .gear{ /* 대형 망치: 굵은 자루 + 강철 머리 (어깨 위) */
-    right:-9px;top:-8px;width:8px;height:58px;
-    background:#5a4226;border-radius:4px;transform:rotate(12deg);
+  .jb-crusher .gear{ /* 대형 망치 — v0.34: 6px 안쪽 + 파지각 완화 (몸에 기대 든 무게감) */
+    right:-3px;top:-8px;width:8px;height:58px;
+    background:#5a4226;border-radius:4px;transform:rotate(8deg);
+  }
+  .jb-crusher .gear::before{ /* v0.34: 자루 중단을 쥔 손 */
+    content:'';position:absolute;bottom:13px;left:50%;transform:translateX(-50%);
+    width:11px;height:10px;background:#e6c699;border-radius:50%;
   }
   .jb-crusher .gear::after{ /* 망치 머리 — 묵직한 사각 강철 */
     content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
@@ -1035,8 +1058,8 @@
     width:44px;height:17px;background:#39422a;
     border-radius:13px 13px 5px 5px;z-index:6;
   }
-  .jb-trapper .gear{ /* 허리 독병 — 녹색 발광 (정적) */
-    left:-4px;top:58px;width:12px;height:15px;
+  .jb-trapper .gear{ /* 허리 독병 — v0.34: 허리띠에 밀착 (붕 뜬 부착물 → 찬 물건) */
+    left:1px;top:58px;width:12px;height:15px;
     background:linear-gradient(#9fe07a,#5d8a4a);
     border:2px solid #2e3a22;border-radius:4px 4px 6px 6px;
     box-shadow:0 0 6px rgba(140,220,100,.65);
@@ -1061,10 +1084,14 @@
     content:'';position:absolute;top:-9px;right:3px;
     width:5px;height:13px;background:#e2c878;border-radius:3px 3px 0 0;transform:rotate(18deg);
   }
-  .jb-bard .gear{ /* 류트: 타원 바디 + 넥 (왼손 쪽) */
-    left:-9px;top:38px;width:18px;height:24px;
+  .jb-bard .gear{ /* 류트 — v0.34: 4px 몸쪽으로 (가슴에 안은 악기) */
+    left:-5px;top:38px;width:18px;height:24px;
     background:linear-gradient(#caa54a,#8a6a2d);
     border:2px solid #5e4420;border-radius:50% 50% 46% 46%;z-index:7;
+  }
+  .jb-bard .gear::before{ /* v0.34: 현 위를 짚은 손 — "연주 중" */
+    content:'';position:absolute;top:3px;right:-2px;
+    width:9px;height:9px;background:#e6c699;border-radius:50%;z-index:2;
   }
   .jb-bard .gear::after{ /* 넥 + 헤드 */
     content:'';position:absolute;top:-15px;left:50%;transform:translateX(-50%) rotate(-9deg);
@@ -1087,9 +1114,13 @@
     width:42px;height:13px;background:#d4dcd0;
     border-bottom:2px solid #9aa896;border-radius:12px 12px 4px 4px;z-index:6;
   }
-  .jb-purifier .gear{ /* 정화장: 은 지팡이 + 연녹 별 */
-    right:0;top:10px;width:5px;height:56px;
+  .jb-purifier .gear{ /* 정화장: 은 지팡이 + 연녹 별 — v0.34: 몸에 2px 밀착 */
+    right:2px;top:10px;width:5px;height:56px;
     background:#b8c2b4;border-radius:3px;
+  }
+  .jb-purifier .gear::before{ /* v0.34: 정화장을 쥔 손 */
+    content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+    width:10px;height:9px;background:#e6c699;border-radius:50%;
   }
   .jb-purifier .gear::after{
     content:'✦';position:absolute;top:-13px;left:50%;transform:translateX(-50%);
@@ -1112,10 +1143,14 @@
     content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
     width:26px;height:5px;background:#2a3450;border-radius:2px;
   }
-  .jb-bulwark .gear{ /* 전신 타워 실드 — 방패 병사보다 크고 평평, 몸 절반을 가림 */
-    left:-16px;top:24px;width:38px;height:58px;
+  .jb-bulwark .gear{ /* 전신 타워 실드 — v0.34: 4px 몸쪽으로 (벽이되 몸의 일부로) */
+    left:-12px;top:24px;width:38px;height:58px;
     background:linear-gradient(#5d7ab4,#36497a);
     border:3px solid #1f2a48;border-radius:7px 7px 11px 11px;z-index:7;
+  }
+  .jb-bulwark .gear2::before{ /* v0.34: 방패 윗모서리를 잡은 손 (gear::after는 보강대 사용 중) */
+    content:'';position:absolute;bottom:-22px;left:-9px;
+    width:9px;height:9px;background:#e6c699;border-radius:50%;z-index:8;
   }
   .jb-bulwark .gear::after{ /* 방패 중앙 세로 보강대 + 리벳 */
     content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
@@ -1515,7 +1550,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.33 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.34 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
