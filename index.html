@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.39B — FABLE_HOTFIX_040PRE: Float Visibility / Air-Rise / Chain Tiers
+<!-- Emblem Quest Lab v0.40A — FABLE_TASK_040PRE: Combat Grammar & Rhythm Rule Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -11,7 +11,8 @@
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
            v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
            v0.35: Stage Composition / v0.36: Readability Playtest / v0.37: Damage & Signature FX /
-           v0.38: Chain Momentum / v0.39: Shield Gem 4 Jobs / v0.39A: Float Anchor & Banner -->
+           v0.38: Chain Momentum / v0.39: Shield Gem 4 Jobs / v0.39A: Float Anchor & Banner /
+           v0.39B: Float Visibility & Air-Rise / v0.40: Greatsword 4 Jobs -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -390,6 +391,19 @@
   }
   .float.heal{color:#7df0a0;}
   .float.guard{color:#ffd97a;}
+  .float.shout{ /* v0.40A (B항목): 액터 머리 위 "대사 외침" — 4블록 타이틀/스킬 발동.
+     피해 숫자(floatUp 상승)와 모션 분리: 살짝 튀어올랐다 제자리 소멸 + 같은 스태거 큐로 비겹침 */
+    color:#ffe9b0;font-size:16.5px;font-weight:900;letter-spacing:.5px;
+    text-shadow:0 0 8px rgba(232,179,75,.8), 0 1px 3px rgba(0,0,0,.8);
+    animation:shoutPop .75s cubic-bezier(.2,.9,.3,1) forwards;
+  }
+  @keyframes shoutPop{
+    0%{opacity:0;transform:translate(-50%,6px) scale(.6)}
+    18%{opacity:1;transform:translate(-50%,-7px) scale(1.18)} /* 외침 — 튀어오름 */
+    34%{transform:translate(-50%,-4px) scale(1)}
+    78%{opacity:1;transform:translate(-50%,-6px) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-12px) scale(.92)}
+  }
   @keyframes floatUp{ /* v0.39B Air-Rise: 머리 위 출발 → 공중 -36px */
     0%{opacity:0;transform:translate(-50%,4px) scale(.7)}
     16%{opacity:1;transform:translate(-50%,-3px) scale(1.14)} /* 팟! */
@@ -673,13 +687,17 @@
   }
   .sceneText.big{font-size:21px;letter-spacing:2px;}
   .sceneText.small{font-size:14.5px;letter-spacing:.5px;opacity:.95;} /* v0.36: 4매치 — 위계 최하단 (small < 기본 < big) */
-  /* v0.39B (D항목): 연쇄 단계감 — 숫자가 커질수록 자막도 단계적으로 커지고 빛난다 */
-  .sceneText.c2{font-size:18px;}
-  .sceneText.c3{font-size:21px;letter-spacing:2px;}
-  .sceneText.c4{font-size:24px;letter-spacing:2.5px;
+  /* v0.39B → v0.40A (A항목): 연쇄 단계 — 2연쇄 "오, 붙었다" 강화(기존 대비 ≈1.5배 강도),
+     3~6연쇄 단계 상승, 6연쇄 = max 도달, 이후 동일 max 유지 (c6이 상한 클래스) */
+  .sceneText.c2{font-size:19.5px;letter-spacing:1.5px;
+    text-shadow:0 2px 6px rgba(0,0,0,.9), 0 0 12px var(--sc,rgba(232,179,75,.6));}
+  .sceneText.c3{font-size:22px;letter-spacing:2px;}
+  .sceneText.c4{font-size:24.5px;letter-spacing:2.5px;
     text-shadow:0 2px 7px rgba(0,0,0,.9), 0 0 18px var(--sc,rgba(232,179,75,.75));}
   .sceneText.c5{font-size:27px;letter-spacing:3px;color:#e8d4ff;
-    text-shadow:0 2px 8px rgba(0,0,0,.9), 0 0 24px rgba(184,138,255,.9);} /* 마나 폭주 — 보라 발광 */
+    text-shadow:0 2px 8px rgba(0,0,0,.9), 0 0 24px rgba(184,138,255,.9);} /* 마나 폭주 */
+  .sceneText.c6{font-size:29px;letter-spacing:3.5px;color:#f0e4ff;     /* max — 6연쇄+ 동일 유지 */
+    text-shadow:0 2px 9px rgba(0,0,0,.95), 0 0 30px rgba(184,138,255,1);}
   @keyframes scenePop{
     0%{opacity:0;transform:translateX(-50%) scale(.6)}
     14%{opacity:1;transform:translateX(-50%) scale(1.12)}
@@ -746,6 +764,20 @@
     0%{transform:translate(-50%,-50%) scale(1.5) rotate(0deg);opacity:0}
     30%{opacity:.95}
     100%{transform:translate(-50%,-50%) scale(.4) rotate(-50deg);opacity:0}
+  }
+  .fxRowSlash{ /* v0.40: 선봉대장 가로 검기 — 줄의 높이에서 전장을 좌→우로 가른다 */
+    position:absolute;left:4%;right:4%;height:3px;border-radius:2px;
+    background:linear-gradient(90deg, transparent, #fff 18%, var(--fc,#fff) 55%, transparent);
+    box-shadow:0 0 9px var(--fc,#fff);
+    transform:translateY(-50%) scaleX(0);transform-origin:left center;opacity:0;
+    animation:rowSlash .42s cubic-bezier(.2,.85,.3,1) forwards;pointer-events:none;
+  }
+  .fxRowSlash.big{height:5px;box-shadow:0 0 14px var(--fc,#fff), 0 0 26px var(--fc,#fff);}
+  @keyframes rowSlash{
+    0%{opacity:0;transform:translateY(-50%) scaleX(0)}
+    14%{opacity:1}
+    52%{opacity:1;transform:translateY(-50%) scaleX(1)} /* 슈악 — 끝까지 가른다 */
+    100%{opacity:0;transform:translateY(-50%) scaleX(1)}
   }
   .fxScope{ /* v0.37: 궁수 5매치 조준 — 십자선 링이 "찌이잉" 수축 잠금 */
     position:absolute;width:34px;height:34px;border-radius:50%;
@@ -1284,6 +1316,58 @@
     box-shadow:-9px 8px 0 -2px #8a9cc0, 9px 8px 0 -2px #8a9cc0, -9px 28px 0 -2px #8a9cc0, 9px 28px 0 -2px #8a9cc0;
   }
   /* v0.32: 전열 보호(fortified) 강조 — 철벽 수호자의 가호가 전열 칩에 보인다 */
+  /* ── 선봉대장 · 근접 — 짧은 망토의 지휘관: 긴 검을 높이 들고 전장을 가른다 ── */
+  .jb-vanguard{--leg:#2a3a52;--arm:#4a6088;}
+  .jb-vanguard .torso{background:linear-gradient(#5878a8,#37507a);width:46px;}
+  .jb-vanguard .torso::before{ /* 가슴의 지휘 문장 */
+    content:'★';position:absolute;top:3px;left:50%;transform:translateX(-50%);
+    font-size:12px;color:#ffd97a;text-shadow:0 0 5px rgba(255,217,122,.85);
+  }
+  .jb-vanguard .torso::after{ /* 짧은 지휘 망토 — 왼쪽 어깨에서 흘러내림 */
+    content:'';position:absolute;top:-3px;left:-7px;
+    width:16px;height:36px;background:linear-gradient(#c8533f,#8a3026);
+    border-radius:3px 8px 10px 4px;transform:rotate(7deg);z-index:-1;
+  }
+  .jb-vanguard .gear{ /* 긴 지휘검 — 높이 치켜든 가는 장검 (오른쪽) */
+    right:-7px;top:-18px;width:6px;height:60px;
+    background:linear-gradient(#f4f8ff,#9fb6d8 70%,#5a4226 86%,#5a4226);
+    border-radius:3px 3px 2px 2px;transform:rotate(9deg);
+    box-shadow:0 0 5px rgba(190,215,255,.5);
+  }
+  .jb-vanguard .gear::before{ /* 검 자루를 쥔 손 */
+    content:'';position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+    width:10px;height:9px;background:#e6c699;border-radius:50%;
+  }
+  .jb-vanguard .gear::after{ /* 크로스가드 */
+    content:'';position:absolute;bottom:13px;left:50%;transform:translateX(-50%);
+    width:16px;height:4px;background:#caa54a;border-radius:2px;
+  }
+  .jb-vanguard .gear2{ /* 견장 달린 지휘 투구 */
+    top:9px;left:50%;transform:translateX(-50%);
+    width:40px;height:7px;background:linear-gradient(#caa54a,#8a6a2d);border-radius:5px;z-index:6;
+  }
+  /* ── 돌파자 · 근접 — 앞으로 기운 돌격병: 전방 돌출 창검 + 뒤로 흐르는 스카프 ── */
+  .jb-breaker{--leg:#3a2a1c;--arm:#7a5a38;}
+  .jb-breaker .torso{background:linear-gradient(#a87838,#7a5226);width:42px;} /* 날렵한 폭 */
+  .jb-breaker .torso::before{ /* 가슴의 돌파 문양 — 전방 화살촉 */
+    content:'»';position:absolute;top:1px;left:50%;transform:translateX(-50%);
+    font-size:16px;font-weight:900;color:#ffe9b0;text-shadow:0 0 5px rgba(255,210,120,.8);
+  }
+  .jb-breaker .gear{ /* 전방 돌출 창검 — 거의 수평으로 내지른 찌르기 자세 */
+    right:-22px;top:44px;width:52px;height:5px;
+    background:linear-gradient(90deg,#5a4226 0%,#5a4226 24%,#cfd9ea 30%,#fff 92%);
+    border-radius:2px;transform:rotate(-8deg);
+    box-shadow:0 0 5px rgba(210,225,250,.55);z-index:7;
+  }
+  .jb-breaker .gear::before{ /* 창대를 쥔 손 */
+    content:'';position:absolute;left:9px;top:50%;transform:translateY(-50%);
+    width:10px;height:9px;background:#e6c699;border-radius:50%;
+  }
+  .jb-breaker .gear2{ /* 뒤로 흐르는 스카프 — 돌진의 궤적 */
+    top:18px;left:-15px;width:20px;height:7px;
+    background:linear-gradient(270deg,#d84838,#8a3026 80%,transparent);
+    border-radius:5px 2px 2px 6px;transform:rotate(-16deg);z-index:4;
+  }
   /* ── 맹세의 수호자 · 탱커 — 흰+금 서약 기사: 금색 어깨띠 + 가슴 서약 문양 + 둥근 빛방패 ── */
   .jb-oathGuardian{--leg:#6a6050;--arm:#9a8d72;}
   .jb-oathGuardian .torso{background:linear-gradient(#efe8d8,#c2b698);width:46px;}
@@ -1410,7 +1494,8 @@
   .ally.t3{--aura:rgba(93,131,196,.6);}
   .ally.t4{--aura:rgba(79,174,142,.55);}
   /* 직업별 흡수 액센트 (CSS class 기반 — 로직 없음, 전부 0.3s 단발) */
-  .ally.gain.jb-greatswordWarrior .torso, .ally.gain.jb-crusher .torso{animation:leanFwd .3s ease-out;} /* 대검 전사/분쇄자: 붉은 힘 — 앞으로 기울었다 복귀 */
+  .ally.gain.jb-greatswordWarrior .torso, .ally.gain.jb-crusher .torso,
+  .ally.gain.jb-vanguard .torso, .ally.gain.jb-breaker .torso{animation:leanFwd .3s ease-out;} /* v0.40: 대검석 4직업 — 붉은 힘에 앞으로 기울었다 복귀 */
   @keyframes leanFwd{40%{transform:translateX(-50%) rotate(-4deg) translateY(-2px)}100%{transform:translateX(-50%)}}
   .ally.gain.jb-mage .gear::after{animation:orbSurge .3s ease-out;} /* 마법사: 별빛이 보주에 모임 */
   .ally.gain.jb-bard .gear{animation:orbSurge .3s ease-out;}        /* 바드: 류트가 공명 (키프레임 재사용) */
@@ -1511,7 +1596,22 @@
     z-index:20;
   }
   #banner.show{opacity:1;transform:translateX(-50%) scale(1);}
-  #banner.boss{border-color:#c84a3a;}
+  /* v0.40A (D항목): 보스 위협 = "플레이어인 내가" 위협받는 경고 — 보드 상단 강한 경고 띠지.
+     영웅 필살기(전장 왼쪽 속성색 띠지)와 문법 분리: 위협은 중앙 상단 + 붉은 경고 + 짧은 떨림 */
+  #banner.boss{
+    border:2px solid #e0504a;
+    background:linear-gradient(rgba(70,18,16,.96), rgba(40,10,9,.96));
+    color:#ffd0c8;font-size:14.5px;letter-spacing:1px;
+    box-shadow:0 0 16px rgba(224,80,74,.5);
+  }
+  #banner.boss.show{animation:threatShake .4s ease-out;} /* 경고의 떨림 — 단발 */
+  @keyframes threatShake{
+    0%{transform:translateX(-50%) scale(.9)}
+    25%{transform:translateX(calc(-50% - 4px)) scale(1.04)}
+    50%{transform:translateX(calc(-50% + 3px)) scale(1)}
+    75%{transform:translateX(calc(-50% - 2px))}
+    100%{transform:translateX(-50%) scale(1)}
+  }
   /* ---------- 행동선 레이어: 영웅→적 연결, 조작 방해 금지 ---------- */
   #fxLayer{
     position:absolute;inset:0;
@@ -1750,7 +1850,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.39B — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.40A — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1854,7 +1954,7 @@ function applyFxTune(){
    - 매치 설명은 JOBS.actions + actionValue 공식에서 생성 — 도감과 전투의 단일 진실 소스 */
 const JOB_SLOTS = [ // v0.30: line = 슬롯의 기본 진형 (front 전열 / back 후열) — 배치 UI 도입 대비 데이터화
   { id:'tank',    blockType:3, line:'front', name:'탱커',        blockName:'방패석', desc:'위험을 어떻게 받아낼까 — 지킬까, 버틸까, 나눌까, 끌어올까' },
-  { id:'melee',   blockType:0, line:'front', name:'근접 딜러',   blockName:'대검석', desc:'전열에서 적을 부수는 역할 — 베어낼까, 장갑을 깨뜨릴까' },
+  { id:'melee',   blockType:0, line:'front', name:'근접 딜러',   blockName:'대검석', desc:'적을 어떻게 무너뜨릴까 — 벨까, 깨뜨릴까, 가를까, 이어갈까' },
   { id:'ranged',  blockType:4, line:'back',  name:'원거리 딜러', blockName:'조준석', desc:'멀리서 적에게 힘을 겨누는 역할 — 하나를 끝낼까, 여럿을 칠까' },
   { id:'support', blockType:1, line:'back',  name:'서포터',      blockName:'마나석', desc:'전장을 기울이는 역할 — 적을 독으로 압박할까, 아군을 강화할까' },
   { id:'healer',  blockType:2, line:'back',  name:'힐러',        blockName:'치유석', desc:'파티를 살리는 역할 — 크게 회복할까, 해로운 효과를 끊을까' },
@@ -1972,11 +2072,31 @@ const JOBS = {
       2:{type:'strikeFront', armorBreak:4, label:'장갑 분쇄', desc:'선두 적 피해 + 큰 방어 균열'},
       3:{type:'strikeFront', armorBreak:6, label:'필살·파갑', desc:'선두 적 큰 피해 + 방어 대균열'},
     }},
+  // ── v0.40 (FABLE_TASK_040): 대검석 4직업 확장 — "적을 어떻게 무너뜨릴 것인가?"
+  //    전사(여러 번) / 분쇄자(장갑을 깨고) / 선봉대장(한 줄을 갈라) / 돌파자(처치로 이어가) — 상위호환 없는 4방식
+  vanguard: { slot:'melee', blockType:0, name:'선봉대장', hp:42, power:7, defense:2,
+    // 줄 공격: 적 데이터의 row('front'/'mid'/'back')가 줄 판정의 단일 소스 —
+    // 전체 공격(마법사)과 구조적으로 구분. 단일전 효율은 낮다 (전사 10/16/26 vs 7/11/15)
+    summary:'한 줄을 가른다 — 대상이 속한 줄 전체를 베는 선봉 지휘관', tags:['전열','줄 공격','다수전'],
+    actions:{
+      1:{type:'rowCleave', mult:1.0, label:'전열 베기',     desc:'선두 적이 속한 줄 전체에 피해'},
+      2:{type:'rowCleave', mult:1.5, label:'횡참',          desc:'선두 적이 속한 줄 전체에 큰 피해'},
+      3:{type:'rowCleave', mult:2.2, label:'전장 가르기',   desc:'선두 적이 속한 줄 전체에 매우 큰 피해'},
+    }},
+  breaker: { slot:'melee', blockType:0, name:'돌파자', hp:40, power:7, defense:2,
+    // 처치 연쇄: "돌파자 자신의 직접 타격"으로 처치했을 때만 추가 공격 (독 틱/타 직업 처치 비발동).
+    // cap 필수 — 무한 연쇄 금지. 기본 피해는 전사보다 낮다 (연쇄 프리미엄 반영)
+    summary:'쓰러뜨리면 멈추지 않는다 — 처치 시 다음 적에게 이어 돌진하는 근접 딜러', tags:['전열','처치 연쇄','마무리'],
+    actions:{
+      1:{type:'breakthrough', mult:1.0, cap:1, label:'돌격',        desc:'선두 적 피해 · 처치 시 1회 추가 돌진'},
+      2:{type:'breakthrough', mult:1.5, cap:1, label:'관통 돌파',   desc:'선두 적 큰 피해 · 처치 시 1회 추가 돌진'},
+      3:{type:'breakthrough', mult:2.2, cap:3, label:'혈로 개척',   desc:'선두 적 매우 큰 피해 · 처치마다 이어 돌진 (최대 3회)'},
+    }},
 };
 // v0.32: 5역할 × 2직업 = 10직업 체계 (FABLE_TASK_032). 4칸 프레임은 20직업 확장 대비 보존 ('준비 중')
 const SLOT_JOBS = { // v0.39: 방패석 4 / 4 — 20직업 확장 1단계 (다른 역할군은 2 / 4 유지)
   tank:['guardSoldier','bulwark','oathGuardian','tauntKnight'],
-  melee:['greatswordWarrior','crusher',null,null],
+  melee:['greatswordWarrior','crusher','vanguard','breaker'], // v0.40: 대검석 4 / 4 — 확장 2단계
   ranged:['archer','mage',null,null],       // 조준석: 단일 저격 vs 범위 폭발
   support:['trapper','bard',null,null],     // 마나석: 적 중독 압박 vs 아군 강화
   healer:['priest','purifier',null,null],
@@ -2190,7 +2310,7 @@ function checkBossReaction(e){
   const before = e.defense || 0;
   e.defense = before + 1;
   addLog('🛡 '+e.name+'이(가) 장갑을 조인다! (방어 '+before+' → '+e.defense+')', 'boss');
-  banner('🛡 '+e.name+' 장갑 강화!', 'boss'); // 기존 보스 의지 채널(강공 예고와 동일) 재활용
+  floatText(enemyEl(enemies.indexOf(e)), '🛡 장갑 강화!', 'shout'); // v0.40A (C항목): 몬스터 개별 스킬 = 몬스터 머리 위
   const ei = enemies.indexOf(e);
   renderEnemies(ei);
   const el = enemyEl(ei);
@@ -2231,6 +2351,8 @@ function actionDesc(job, tier){
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
     case 'frontGuard':  return act.label+' — '+((act.dur||6000)/1000)+'초간 전열 피해 '+Math.round(act.red*100)+'% 감소 (앞줄 한정)'; // v0.32
+    case 'rowCleave':   return act.label+' — 선두 적이 속한 줄 전체에 피해 (위력 ×'+act.mult+')'; // v0.40
+    case 'breakthrough':return act.label+' — 선두 적 피해 · 직접 처치 시 추가 돌진 ×'+act.cap; // v0.40
     case 'oath':        return act.label+' — '+(act.dur/1000)+'초간 가장 위험한 아군의 피해 '+Math.round(act.share*100)+'%를 나눠 받음'; // v0.39
     case 'taunt':       return act.label+' — '+(act.dur/1000)+'초간 적의 공격을 자신에게 + 보호막 '+act.shield; // v0.39
     case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 10초간 2초마다 '+act.tickDmg+' (방어 무시)';
@@ -2471,6 +2593,17 @@ function spawnFxNode(el, cls, color, opts){
   setTimeout(()=>d.remove(), 480);
 }
 function spawnSlashFX(el, color, big){ spawnFxNode(el, 'fxSlash'+(big?' big':''), color, {angle: -30 - Math.random()*20}); } // 베기
+function spawnRowSlashFX(el, color, big){ // v0.40: 선봉대장 — 전장을 가로로 가르는 검기 (줄의 y 높이에서 좌→우)
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [, y] = centerOf(el);
+  const d = document.createElement('div');
+  d.className = 'fxRowSlash' + (big ? ' big' : '');
+  d.style.top = y + 'px';
+  if(color) d.style.setProperty('--fc', color);
+  layer.appendChild(d);
+  setTimeout(()=>d.remove(), 460);
+}
 function spawnHealSparkles(el, n){ // v0.37: 치유 분수 — 머리 위에서 솟았다 떨어지는 금빛 입자 (순차 = "촤라라랑")
   const layer = $('#trailLayer');
   if(!layer || !el) return;
@@ -3162,7 +3295,7 @@ function renderEnemies(hitIdx, hitAll){
     const d = document.createElement('div');
     d.className = 'mob kind-'+e.kind
       + (e.hp<=0?' dead':'')
-      + ((hitIdx===i || (hitAll && e.hp>0))?' hit':'')
+      + (((Array.isArray(hitIdx) ? hitIdx.includes(i) : hitIdx===i) || (hitAll && e.hp>0))?' hit':'') // v0.40: 줄 공격 — 다중 피격 동박자
       + (e.charging?' charge':'')
       + (e.boss?' boss':'')
       + (e.venom?' venom':'') // v0.27: 독성 표식
@@ -3311,8 +3444,10 @@ async function performHeroAction(a){
     const OFFENSIVE = ['strikeFront','snipeWeak','novaAll','poison'];
     if(aliveEnemies().length===0 && OFFENSIVE.includes(act.type)) return;
     // v0.39B (E항목): 5매치(필살) 행동이 실행되는 바로 그 순간 띠지 배너 — 행동 큐와 완전 동기.
-    // (v0.39A의 매치 감지 시점 호출에서 이관 — "배너가 해당 행동 시점에 맞춰 뜬다")
     if(a.tier === 3) queueUltBanner(act.label + '!', TYPE_COLORS[a.type]);
+    // v0.40A (B항목): 4블록 = 영웅이 기술명을 외친다 — 머리 위 타이틀 (보드 자막에서 이관).
+    // "필살기"가 아니라 "강한 기술 발동" — 5블록 배너와 위계 분리
+    else if(a.tier === 2) floatText(heroChipEl(a.type), act.label + '!', 'shout');
     renderParty(a.type); // 행동하는 영웅 칩 강조 (act 클래스)
     // v0.21: 행동값 = Power × 매치계수 × 연쇄계수 (FABLE_TASK_021 — ACTS 폐지, JOBS 단일 소스)
     let val = actionValue(job, a.tier, a.mult);
@@ -3323,7 +3458,7 @@ async function performHeroAction(a){
       if(m > 1){
         val = Math.round(val * m); // 반올림 정책: 기존 전투 숫자와 동일 (Math.round)
         empowered = true;
-        sceneText('✦ '+heroNameOf(a.type)+' — 강화된 일격! ×'+m, {color:'#caa6ff'}); // v0.31: 로그→자막
+        floatText(heroChipEl(a.type), '✦ 강화된 일격! ×'+m, 'shout'); // v0.40A: 보드 자막 → 영웅 머리 위 (B항목)
         spawnRingFX(heroChipEl(a.type), '#caa6ff', false); // v0.36: 저장된 힘의 방출 — 주입(in)과 대칭(out)
         renderParty(a.type); // 배지 소거 즉시 반영
       }
@@ -3370,6 +3505,54 @@ async function performHeroAction(a){
         renderEnemies(ti0);
       }
     }
+    else if(act.type==='rowCleave'){ // v0.40 선봉대장: 한 줄을 가른다 — row가 줄 판정의 단일 소스
+      const tgt = aliveEnemies()[0]; // 근접 문법: 전열 우선 선두 — 그 적이 속한 줄을 공격
+      if(tgt){
+        const ti0 = enemies.indexOf(tgt);
+        drawLine(heroChipEl(a.type), enemyEl(ti0), TYPE_COLORS[a.type], {width:6, bend:6, duration:150});
+        await delay(160); // 선이 닿는 텀
+        const live = aliveEnemies().filter(e => e.row === tgt.row); // 텀 사이 사망 — 시체 베기 방지
+        if(!live.length){ renderEnemies(); return; }
+        spawnRowSlashFX(enemyEl(enemies.indexOf(live[0])), TYPE_COLORS[a.type], a.tier===3); // 가로 검기 — 줄을 가른다
+        const hitIdxs = [];
+        live.forEach(e=>{
+          hitIdxs.push(enemies.indexOf(e));
+          spawnImpact(enemyEl(enemies.indexOf(e)), TYPE_COLORS[a.type], a.tier===3);
+          hitEnemy(e, val); // 피해 숫자는 v0.39B 스태거가 유닛별 좌표키로 처리 — 줄 다발과 비충돌
+        });
+        renderEnemies(hitIdxs); // v0.40: 줄 전체가 같은 박자로 흔들림
+        if(aliveEnemies().length===0){ await onBattleWon(); return; }
+      }
+    }
+    else if(act.type==='breakthrough'){ // v0.40 돌파자: 쓰러뜨리면 멈추지 않는다
+      let tgt = aliveEnemies()[0];
+      let extra = act.cap; // 추가 돌진 잔여 (무한 연쇄 금지 — cap 필수)
+      let first = true;
+      while(tgt){
+        const ti = enemies.indexOf(tgt);
+        // 돌진선: 곧고 굵게 — "찌르고 지나간다" (전사의 휘어지는 베기선과 구분)
+        drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type], {width:5, bend:0, duration:130, linger:260});
+        await delay(first ? 160 : 150);
+        if(tgt.hp <= 0){ renderEnemies(); break; } // 텀 사이 사망(독 틱 등) — 직접 처치 아님: 연쇄 비발동
+        spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]);
+        if(a.tier===3 && first) spawnImpact(enemyEl(ti), TYPE_COLORS[a.type], true);
+        const before = tgt.hp;
+        hitEnemy(tgt, val); // 추가 타격도 독립 타격 — 피해 숫자 매번 Air-Rise
+        renderEnemies(ti);
+        const killedByMe = before > 0 && tgt.hp <= 0; // ★ 돌파자의 직접 타격 처치만 연쇄 조건
+        if(!killedByMe || extra <= 0) break;
+        if(aliveEnemies().length===0){ await onBattleWon(); return; }
+        extra--;
+        // 다음 대상: HP 최저 생존 적 — 약한 적을 마무리하며 휩쓰는 정체성
+        const pool = aliveEnemies();
+        tgt = pool.length ? pool.reduce((m,e)=> e.hp < m.hp ? e : m, pool[0]) : null;
+        if(!tgt) break;
+        floatText(heroChipEl(a.type), '⚔ 돌파!', 'guard'); // "계속 간다"
+        first = false;
+        await delay(120);
+      }
+      if(aliveEnemies().length===0 && state!=='over'){ await onBattleWon(); return; }
+    }
     else if(act.type==='novaAll' || act.type==='charge'){ // 마법사: 집중 → 예고 → 원형 파동
       const targets = aliveEnemies();
       if(act.type==='novaAll' && mageCharge){
@@ -3379,13 +3562,13 @@ async function performHeroAction(a){
         drawWave(); // 원형 확산 폭발 연출 (구조 불변)
         targets.forEach((e,k)=>setTimeout(()=>     // v0.31: 파동이 닿는 순서로 폭발 FX
           spawnBlastFX(enemyEl(enemies.indexOf(e)), '#b88aff', true), 140 + k*45));
-        banner('💥 원형 파동! 적 전체에 '+total+' 위력', 'boss'); // 자막은 banner가 담당 — 로그 제거 (v0.31 F항목)
+        floatText(heroChipEl(a.type), '💥 원형 파동! ×'+total, 'shout'); // v0.40A: 영웅 스킬은 영웅 머리 위 (보스 위협 채널과 분리)
         targets.forEach(e=>hitEnemy(e, total));
         renderEnemies(null, true);
       } else if(act.type==='charge'){
         // 4매치 이상: 즉시 공격 대신 집중 (마력 비축)
         mageCharge = { dmg: val };
-        banner('🔮 '+job.name+' 집중! 다음 마나석 매치에 원형 파동', 'shield'); // v0.31: 로그 제거 — banner+링이 자막
+        floatText(heroChipEl(a.type), '🔮 집중 — 다음 매치에 해방!', 'shout'); // v0.40A: 영웅 머리 위 (B항목)
         renderParty(a.type);   // 집중 링 표시
         renderEnemies();       // 적 진영에 예고 원 표시
         floatText(heroChipEl(a.type), '🔮 집중', 'guard'); // v0.32: a.type 일반화 (충전 시스템 휴면 — 부활 시 owner 필요)
@@ -3450,7 +3633,7 @@ async function performHeroAction(a){
           spawnAbsorb(heroChipEl(t), TYPE_COLORS[2], 1.05);
         });
         renderParty(a.type);
-        if(removed) sceneText('✦ 대정화!', {color:'#9fe07a', big:true}); // v0.31: 특수 순간 자막
+        // v0.40A: 보드 자막 폐지 — 기술명은 4블록 shout/5블록 배너가, 효과는 대상별 '✦ 정화!' 플로팅이 전달
         addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?' ('+removed+'개 해제)':'')+' + 각 '+val+' 회복', 'gold');
       } else {
         // v0.27 정화(4매치) 대상 선정: poison 보유 아군 우선 → 그중 HP 비율 최저 (태스크 추천안).
@@ -3752,6 +3935,7 @@ async function enemyAttack(e){
   }
   // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
   if(e.venom && heroHp[tgt] > 0){
+    floatText(enemyEl(ei), '☠ 독침!', 'shout'); // v0.40A (C항목): 행동 주체(박쥐) 머리 위 — "누가 했는지"
     applyHeroPoison(tgt, 1, 'venomBat'); // v0.28: 10초간 2초마다 1 — 총 5, 방어 무시 (구 6초/2×3=6)
     // v0.31: 매 공격 반복 로그 폐지 — ☠ 플로팅 + 배지 + 림라이트가 정보 전달
     floatText(heroChipEl(tgt), '☠ 중독!', 'dmg');
@@ -3921,7 +4105,7 @@ async function resolveBoard(){
     if(chain>1){
       // v0.39A: 보드 = 연쇄/마나 엔진의 영역. v0.39B (D항목): cN 단계 위계 — 점점 커지고 빛난다
       sceneText(chain>=5 ? '⚡ '+chain+'연쇄 — 마나 폭주!' : '⚡ '+chain+'연쇄!',
-                {tier: Math.min(chain, 5), dur: Math.round(1080*mo)}); // v0.38: 모멘텀 박자 동기 유지
+                {tier: Math.min(chain, 6), dur: Math.round(1080*mo)}); // v0.40A: 6연쇄 = max 클래스(c6), 이후 동일 유지
     }
     for(const g of groups){
       const t = TYPES[g.type];
@@ -3938,9 +4122,9 @@ async function resolveBoard(){
       if(g.cells.length >= 5){
         // v0.39B (E항목): 배너는 행동 실행 시점(performHeroAction)으로 이관 —
         // 매치 감지 즉시가 아니라 "그 행동이 실제로 나가는 순간" 뜬다 (큐 순서 = 배너 순서)
-      } else if(g.cells.length === 4){
-        sceneText(t.block+' — 강한 문장!', {color: TYPE_COLORS[g.type], small:true}); // v0.36: 가장 흔한 자막 — 작게
       }
+      // v0.40A (B항목): 4블록 보드 자막 폐지 — 보드는 연쇄 전담. 4블록 타이틀은
+      // 행동 실행 시점에 영웅 머리 위 외침(shout)으로 (performHeroAction에서)
       // 3매치: 침묵
     }
 
@@ -3969,9 +4153,10 @@ async function resolveBoard(){
     if(chain >= BOARD_RUMBLE_CHAIN_THRESHOLD && OVERCHAIN_RUMBLE_STRENGTH > 0){
       // v0.18B: 대연쇄 전용 럼블 — v0.38: 연쇄 단계 차등 (5연쇄 1.0 → +0.15/단계, 캡 1.45 "마나 폭주")
       const bw = $('#boardWrap');
-      const rk = Math.min(1.45, OVERCHAIN_RUMBLE_STRENGTH * (1 + (chain - BOARD_RUMBLE_CHAIN_THRESHOLD) * 0.15));
+      // v0.40A (A항목): 5연쇄 1.0 → 6연쇄+ max 1.3 도달·유지 (더 강해지지 않는다 — 통제감 보호)
+      const rk = OVERCHAIN_RUMBLE_STRENGTH * (chain >= 6 ? 1.3 : 1.0);
       bw.style.setProperty('--rumble-k', rk.toFixed(2));
-      bw.style.setProperty('--surge-k', chain >= 7 ? '1.6' : '1'); // v0.39B: 7연쇄+ 폭주 펄스 강화
+      bw.style.setProperty('--surge-k', chain >= 6 ? '1.5' : '1'); // 폭주 펄스도 6+ max 고정
       bw.style.animationDuration = OVERCHAIN_RUMBLE_MS+'ms, 450ms'; // v0.38: [럼블, 폭주 펄스] 각자 박자
       bw.classList.add('rumble');
       bw.classList.add('surge'); // v0.38: 마나 폭주 — 보드 외곽 보라 펄스 (단발)
