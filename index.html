@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.35 — FABLE_TASK_035: Party Stage Composition & Grip Perspective Hotfix
+<!-- Emblem Quest Lab v0.36 — FABLE_TASK_036: Status & Role Readability Playtest Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -9,7 +9,8 @@
            v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
-           v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective -->
+           v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
+           v0.35: Stage Composition -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -621,6 +622,7 @@
     animation:scenePop 1s ease-out forwards;
   }
   .sceneText.big{font-size:21px;letter-spacing:2px;}
+  .sceneText.small{font-size:14.5px;letter-spacing:.5px;opacity:.95;} /* v0.36: 4매치 — 위계 최하단 (small < 기본 < big) */
   @keyframes scenePop{
     0%{opacity:0;transform:translateX(-50%) scale(.6)}
     14%{opacity:1;transform:translateX(-50%) scale(1.12)}
@@ -1563,7 +1565,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.35 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.36 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1736,7 +1738,7 @@ const JOBS = {
     // 덫꾼과의 양자택일: 덫꾼 = 적에게 독을 / 바드 = 아군에게 힘을
     summary:'아군을 강화한다 — 다음 행동에 힘을 싣는 팀 시너지 서포터', tags:['강화','팀 시너지','action 버프'],
     actions:{ // heroBuffs/applyEmpower/consumeEmpower 구조 그대로 재사용 (신규 버프 시스템 없음)
-      1:{type:'empower', targets:1, dmgMult:1.3, label:'전투가',      desc:'공격 아군 1명의 다음 피해 행동 ×1.3'},
+      1:{type:'empower', targets:1, dmgMult:1.35, label:'전투가',     desc:'공격 아군 1명의 다음 피해 행동 ×1.35'}, // v0.36: 1.3→1.35 — 3매치 체감 보강 (전사 기준 +0.5)
       2:{type:'empower', targets:1, dmgMult:1.5, label:'용기의 노래', desc:'공격 아군 1명의 다음 피해 행동 ×1.5'},
       3:{type:'empower', targets:2, dmgMult:1.4, label:'승전가',      desc:'공격 아군 2명의 다음 피해 행동 ×1.4'},
     }},
@@ -2196,7 +2198,7 @@ function sceneText(text, opts){
   if(!wrap) return;
   const o = opts || {};
   const f = document.createElement('div');
-  f.className = 'sceneText' + (o.big ? ' big' : '');
+  f.className = 'sceneText' + (o.big ? ' big' : '') + (o.small ? ' small' : ''); // v0.36: 3단 위계
   f.style.top = (7 + (sceneSlot++ % 2) * 14) + '%';
   if(o.color) f.style.setProperty('--sc', o.color);
   f.textContent = text;
@@ -3008,6 +3010,7 @@ async function performHeroAction(a){
         val = Math.round(val * m); // 반올림 정책: 기존 전투 숫자와 동일 (Math.round)
         empowered = true;
         sceneText('✦ '+heroNameOf(a.type)+' — 강화된 일격! ×'+m, {color:'#caa6ff'}); // v0.31: 로그→자막
+        spawnRingFX(heroChipEl(a.type), '#caa6ff', false); // v0.36: 저장된 힘의 방출 — 주입(in)과 대칭(out)
         renderParty(a.type); // 배지 소거 즉시 반영
       }
     }
@@ -3016,6 +3019,7 @@ async function performHeroAction(a){
     const hitEnemy = (e, raw, opts)=>{
       const r = dealDamage(e, raw, opts);
       // v0.31: 틈(armorDown) 이용 타격 — ✂ 마커 (피해가 커진 이유가 읽힌다)
+      if(r.brokeArmor) spawnRingFX(enemyEl(enemies.indexOf(e)), '#bcd0ec', false); // v0.36: 틈이 벌어지는 강철 링
       floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
       if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
       else checkBossReaction(e); // v0.23: 피해 적용 후 보스 반응 검사
@@ -3209,9 +3213,12 @@ async function performHeroAction(a){
         spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]); // v0.31: 관통/박힘 (v0.32: 속성색 일반화)
         if(a.tier===3) spawnImpact(enemyEl(ti), TYPE_COLORS[a.type], true);
         const r = dealDamage(tgt, val);
+        if(r.brokeArmor) spawnRingFX(enemyEl(ti), '#bcd0ec', false); // v0.36: 틈 이용 가시화 (저격 경로도 동일 언어)
         floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
-        if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
-        else checkBossReaction(tgt); // v0.23
+        if(tgt.hp<=0){
+          floatText(enemyEl(ti), '🎯 마무리!', 'guard'); // v0.36: 궁수 정체성 — 저격으로 끝냈다
+          addLog(tgt.name+' 처치!', 'gold');
+        } else { checkBossReaction(tgt); } // v0.23
         renderEnemies(ti);
       }
     }
@@ -3318,7 +3325,8 @@ async function enemyAttack(e){
   let shielded = Math.round(raw * (1 - shieldRed));
   if(frontRed > 0 && heroLine(tgt) === 'front') shielded = Math.round(shielded * (1 - frontRed));
   const eff = Math.max(1, shielded - heroDefOf(tgt));
-  const blocked = (shieldRed>0 || (frontRed>0 && heroLine(tgt)==='front') || heroDefOf(tgt)>0) && eff<raw;
+  const frontHit = frontRed > 0 && heroLine(tgt) === 'front'; // v0.36: 철벽 감산 기여 — 피격 표기 구분용
+  const blocked = (shieldRed>0 || frontHit || heroDefOf(tgt)>0) && eff<raw;
   drawStrikeLine(enemyEl(ei), heroChipEl(tgt), '#e0504a', blocked);
   await delay(160);
   if(blocked) drawBlockFlash(heroChipEl(tgt));
@@ -3333,7 +3341,9 @@ async function enemyAttack(e){
   renderParty();
   hurtHero(tgt);
   spawnImpact(heroChipEl(tgt), blocked ? '#ffd97a' : '#e0504a', false); // v0.17: 피격 스파크
-  floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+  // v0.36 (D-5항목): 무엇이 막았는지 구분 — 철벽(전열 한정)은 🧱, 방패/방어는 🛡.
+  // "철벽은 앞줄을 버틴다"가 매 피격 플로팅에서 읽힌다
+  floatText(heroChipEl(tgt), blocked ? (frontHit ? '🧱 ' : '🛡 ')+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
   // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
   if(e.venom && heroHp[tgt] > 0){
     applyHeroPoison(tgt, 1, 'venomBat'); // v0.28: 10초간 2초마다 1 — 총 5, 방어 무시 (구 6초/2×3=6)
@@ -3389,8 +3399,10 @@ async function bossBigAttack(e){
   hitList.forEach(t=>{
     const prev = heroHp[t];
     // v0.32: 전열 보호 — 강공도 전열에게는 감산 (배너 기준치 eff는 파티 공통 표기 유지)
-    const base = (frontRed > 0 && heroLine(t) === 'front') ? Math.round(eff * (1 - frontRed)) : eff;
+    const frontHit = frontRed > 0 && heroLine(t) === 'front';
+    const base = frontHit ? Math.round(eff * (1 - frontRed)) : eff;
     const fin = Math.max(1, base - heroDefOf(t)); // v0.21: 영웅 방어 감산
+    if(frontHit) floatText(heroChipEl(t), '🧱 '+eff+'→'+fin, 'guard'); // v0.36: 전열만 덜 맞는 게 보인다
     heroHp[t] -= fin;
     if(heroHp[t] < 0) heroHp[t] = 0; // v0.19: 클램프
     if(prev > 0 && heroHp[t] <= 0){
@@ -3513,7 +3525,7 @@ async function resolveBoard(){
         // 5매치: 직업 행동명이 자막으로 — "장갑 분쇄!" "전투 증폭!" "대정화!" 등
         sceneText('✦ '+jobOf(g.type).actions[3].label+'!', {color: TYPE_COLORS[g.type], big:true});
       } else if(g.cells.length === 4){
-        sceneText(t.block+' — 강한 문장!', {color: TYPE_COLORS[g.type]});
+        sceneText(t.block+' — 강한 문장!', {color: TYPE_COLORS[g.type], small:true}); // v0.36: 가장 흔한 자막 — 작게
       }
       // 3매치: 침묵
     }
