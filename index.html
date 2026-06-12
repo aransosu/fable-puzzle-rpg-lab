@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.30 — FABLE_TASK_030: Ally Formation Sample / Frontline & Backline
+<!-- Emblem Quest Lab v0.31 — FABLE_TASK_031: Combat Exchange FX & Feedback Language Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
            v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run / v0.23: Boss Reaction /
            v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
-           v0.29: Presence & Space Expansion -->
+           v0.29: Presence & Space Expansion / v0.30: Ally Formation -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -530,14 +530,15 @@
     }
     100%{transform:translate(calc(-50% + var(--tx,0px)),calc(-50% + var(--ty,0px))) scale(.25);opacity:0}
   }
-  /* v0.29: 쓸쓸한 산화 (v0.19 dying 강화) — ① 생긴다 ② 잠깐 반짝인다 ③ 갈 곳을 잃고 흩어지며
-     가라앉는다 ④ 잔불처럼 한 번 더 깜빡이고 산화한다. 글로우 제거(빛을 잃은 가루) + 산포(--sx) */
+  /* v0.29: 쓸쓸한 산화 → v0.31: 제자리 산화 — 좌표(--mx/--tx)가 매치 자리 주변의 작은 터짐/흩어짐으로
+     바뀌어 "받아줄 대상이 처음부터 없다"로 읽힌다. ① 생긴다 ② 잠깐 반짝 ③ 힘을 잃고 흩어지며
+     ④ 잔불 깜빡 후 가라앉아 산화. 글로우 제거(빛을 잃은 가루) + 산포(--sx) */
   .fxDust.dying{animation:dustDie .82s ease-out forwards;box-shadow:none;}
   @keyframes dustDie{
     0%{transform:translate(-50%,-50%) scale(.5);opacity:0}
     12%{transform:translate(-50%,-50%) scale(1.12);opacity:.95}
     40%{transform:translate(calc(-50% + var(--mx,0px)),calc(-50% + var(--my,0px))) scale(.95);opacity:.62}
-    62%{ /* 종점(74% 지점) 못 미쳐 힘이 빠짐 — 좌우로 흩어지기 시작 */
+    62%{ /* 힘이 빠짐 — 좌우로 흩어지기 시작 (v0.31: 종점 = 제자리 주변) */
       transform:translate(calc(-50% + var(--tx,0px)*.92 + var(--sx,0px)*.45),calc(-50% + var(--ty,0px)*.92 + 4px)) scale(.74);
       opacity:.42;
     }
@@ -563,6 +564,82 @@
     0%{transform:translate(-50%,-50%) scale(.3) rotate(0deg);opacity:0}
     30%{opacity:1}
     100%{transform:translate(-50%,-50%) scale(var(--as,1)) rotate(45deg);opacity:0}
+  }
+  /* ════ v0.31: 연출 텍스트 — 로그가 아니라 "전투 장면의 자막" (FABLE_TASK_031 C항목)
+     보드 상단 중앙, 짧게 떴다 사라짐. 특수 순간(4/5매치·연쇄·강화·대정화)에만 — 3매치는 침묵 */
+  .sceneText{
+    position:absolute;left:50%;top:8%;
+    transform:translateX(-50%) scale(.7);
+    font-size:17px;font-weight:900;letter-spacing:1px;
+    color:var(--sc,#ffe9b8);
+    text-shadow:0 2px 6px rgba(0,0,0,.85), 0 0 13px var(--sc,rgba(232,179,75,.6));
+    pointer-events:none;z-index:24;white-space:nowrap;
+    animation:scenePop 1s ease-out forwards;
+  }
+  .sceneText.big{font-size:21px;letter-spacing:2px;}
+  @keyframes scenePop{
+    0%{opacity:0;transform:translateX(-50%) scale(.6)}
+    14%{opacity:1;transform:translateX(-50%) scale(1.12)}
+    27%{transform:translateX(-50%) scale(1)}
+    76%{opacity:1;transform:translateX(-50%) scale(1)}
+    100%{opacity:0;transform:translateX(-50%) translateY(-11px) scale(.96)}
+  }
+  /* ════ v0.31: 도착 FX 프리미티브 (E항목) — 직업 행동의 결과가 도착 지점에서 구분된다.
+     전부 단발 forwards, transform/opacity(+정적 그림자) — 무한 총량 불변 */
+  .fxSlash{ /* 베기 궤적 — 대검 전사/분쇄자 */
+    position:absolute;width:34px;height:5px;border-radius:3px;
+    background:linear-gradient(90deg,transparent,#fff 28%,var(--fc,#fff) 55%,transparent);
+    box-shadow:0 0 7px var(--fc,#fff);
+    transform:translate(-50%,-50%) rotate(var(--ra,-38deg)) scaleX(.2);opacity:0;
+    animation:slashSweep .3s ease-out forwards;pointer-events:none;
+  }
+  .fxSlash.big{width:48px;height:6px;}
+  @keyframes slashSweep{
+    0%{transform:translate(-58%,-50%) rotate(var(--ra,-38deg)) scaleX(.25);opacity:0}
+    28%{opacity:1;transform:translate(-50%,-50%) rotate(var(--ra,-38deg)) scaleX(1.15)}
+    100%{transform:translate(-40%,-50%) rotate(var(--ra,-38deg)) scaleX(1.3);opacity:0}
+  }
+  .fxBlast{ /* 폭발 — 마법사 화염탄/원형 파동 도착점 */
+    position:absolute;width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, var(--fc,#fff) 36%, transparent 68%);
+    transform:translate(-50%,-50%) scale(.25);opacity:0;
+    animation:blastPop .36s ease-out forwards;pointer-events:none;
+  }
+  .fxBlast::after{content:'';position:absolute;inset:-4px;border:2px solid var(--fc,#fff);border-radius:50%;opacity:.8;}
+  .fxBlast.big{width:44px;height:44px;}
+  @keyframes blastPop{
+    0%{transform:translate(-50%,-50%) scale(.25);opacity:0}
+    22%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}
+  }
+  .fxPierce{ /* 관통/화살 박힘 — 궁수 */
+    position:absolute;width:20px;height:2.5px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,#fff 40%,var(--fc,#fff));
+    box-shadow:0 0 5px var(--fc,#fff);
+    transform:translate(-50%,-50%) rotate(-26deg);opacity:0;
+    animation:piercePop .2s ease-out forwards;pointer-events:none;
+  }
+  @keyframes piercePop{
+    0%{opacity:0;transform:translate(-95%,-6%) rotate(-26deg) scaleX(.5)}
+    45%{opacity:1;transform:translate(-50%,-50%) rotate(-26deg) scaleX(1.1)}
+    100%{opacity:0;transform:translate(-44%,-58%) rotate(-26deg) scaleX(1)}
+  }
+  .fxRing{ /* 효과 링 — outward: 정화(벗겨짐)/장갑 균열, .in: 독 침투/마력 주입 */
+    position:absolute;width:30px;height:30px;border-radius:50%;
+    border:2.5px dashed var(--fc,#fff);
+    transform:translate(-50%,-50%) scale(.5);opacity:0;
+    animation:ringOut .42s ease-out forwards;pointer-events:none;
+  }
+  .fxRing.in{animation:ringIn .42s ease-out forwards;}
+  @keyframes ringOut{
+    0%{transform:translate(-50%,-50%) scale(.5) rotate(0deg);opacity:0}
+    25%{opacity:.95}
+    100%{transform:translate(-50%,-50%) scale(1.5) rotate(50deg);opacity:0}
+  }
+  @keyframes ringIn{
+    0%{transform:translate(-50%,-50%) scale(1.5) rotate(0deg);opacity:0}
+    30%{opacity:.95}
+    100%{transform:translate(-50%,-50%) scale(.4) rotate(-50deg);opacity:0}
   }
   .fxImpact{ /* 타격 스파크: 명중 지점의 짧은 십자 섬광 (D항목) */
     position:absolute;width:22px;height:22px;
@@ -1256,7 +1333,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.30 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.31 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1480,6 +1557,7 @@ function effDef(e){
 }
 function dealDamage(e, raw, opts){
   const pierce = opts && opts.pierce;
+  const brokeArmor = !pierce && !!(e.status && e.status.armorDown); // v0.31: 이번 타격이 "틈"을 이용했는가
   const def = pierce ? 0 : effDef(e);
   const eff = Math.max(1, raw - def);
   e.hp -= eff;
@@ -1489,7 +1567,7 @@ function dealDamage(e, raw, opts){
     e.status.armorDown.uses--;
     if(e.status.armorDown.uses <= 0) delete e.status.armorDown; // 틈이 닫힘 — 조용히 제거 (로그 없음)
   }
-  return { eff, reduced: def > 0 && eff < raw };
+  return { eff, reduced: def > 0 && eff < raw, brokeArmor }; // v0.31: brokeArmor — 호출자가 ✂ 표기/FX
 }
 function applyPoison(e, damage){ // v0.24: 시간 기반 중독 (instant 부여 → time 진행)
   const now = Date.now();
@@ -1543,6 +1621,7 @@ function updateStatusEffects(now){
       floatText(enemyEl(i), '☠ -'+p.damage, 'dmg');
       if(e.hp <= 0){
         addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
+        floatText(enemyEl(i), '☠ 중독 처치!', 'guard'); // v0.31: 특수 순간 — 전장 위에서도 읽힌다
         delete e.status.poison;
         someoneKilled = true;
       } else {
@@ -1657,6 +1736,7 @@ function checkBossReaction(e){
 
 // 아군 상태이상 자리 (F항목 cleanse 골격) — 현재 아군에게 디버프를 거는 적은 없음
 let heroStatus = {}; // {typeId: {poison:{...}, ...}}
+let fallenNoticed = new Set(); // v0.31: "쓰러짐 — 행동 불가" 안내 — 전투당 영웅별 1회
 function cleanseHero(typeId, count){ // 해제한 효과 수 반환
   const st = heroStatus[typeId];
   if(!st) return 0;
@@ -1853,6 +1933,43 @@ function floatBoard(text, cls, slot, color){
   setTimeout(()=>f.remove(), 950);
 }
 
+/* ── v0.31: 연출 텍스트 (sceneText) — 로그가 아니라 전투 장면의 자막 (C항목) ──
+   특수 순간 선별: 4매치(강한 문장)/5매치(행동명)/2연쇄+(연쇄 증폭)/강화 일격/대정화.
+   3매치·일반 획득은 침묵 — 가루 색/전달/흡수 연출이 정보를 대신한다 */
+let sceneSlot = 0; // 동시 다발 시 2단 순환 — 겹침 회피
+function sceneText(text, opts){
+  const wrap = $('#boardWrap');
+  if(!wrap) return;
+  const o = opts || {};
+  const f = document.createElement('div');
+  f.className = 'sceneText' + (o.big ? ' big' : '');
+  f.style.top = (7 + (sceneSlot++ % 2) * 14) + '%';
+  if(o.color) f.style.setProperty('--sc', o.color);
+  f.textContent = text;
+  wrap.appendChild(f);
+  setTimeout(()=>f.remove(), 1080); // 단발 수명 — DOM 누적 없음
+}
+
+/* ── v0.31: 도착 FX 프리미티브 (E항목) — 행동선 끝에서 "무슨 일이 일어났는지" 구분 ── */
+function spawnFxNode(el, cls, color, opts){
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [x,y] = centerOf(el);
+  const o = opts || {};
+  const d = document.createElement('div');
+  d.className = cls;
+  d.style.left = (x + (o.dx||0)) + 'px';
+  d.style.top  = (y - 8 + (o.dy||0)) + 'px';
+  d.style.setProperty('--fc', color || '#fff');
+  if(o.angle != null) d.style.setProperty('--ra', o.angle + 'deg');
+  layer.appendChild(d);
+  setTimeout(()=>d.remove(), 480);
+}
+function spawnSlashFX(el, color, big){ spawnFxNode(el, 'fxSlash'+(big?' big':''), color, {angle: -30 - Math.random()*20}); } // 베기
+function spawnBlastFX(el, color, big){ spawnFxNode(el, 'fxBlast'+(big?' big':''), color); }                                   // 폭발
+function spawnPierceFX(el, color){ spawnFxNode(el, 'fxPierce', color); }                                                      // 관통
+function spawnRingFX(el, color, inward){ spawnFxNode(el, 'fxRing'+(inward?' in':''), color); }                                // 정화(밖)/침투·주입(안)
+
 /* ── v0.15: 매치 터짐 FX — 팡! (섬광+링+파편+에너지 잔상), 연쇄 단계 강화 ──
    원칙: transform/opacity 애니메이션만 사용, 파편 총량 상한, 수명 후 노드 전부 제거 */
 function spawnBurstFX(groups, chain){
@@ -1978,18 +2095,30 @@ function spawnTrailFX(groups, chain){
       d.className = down ? 'fxDust dying'
                   : (k % sparkEvery === 0 ? 'fxDust spark' : 'fxDust');
       // v0.18: 종점은 영웅 정중앙 정밀 — 흩어진 가루가 도착 직전 한 점으로 모여드는 흡인 (산포는 경유점이 담당)
-      // v0.19: 쓰러진 영웅이면 종점을 74% 지점으로 — 닿지 못하고 영웅 근처에서 꺼짐
-      const reach = down ? 0.74 : 1;
-      const tx = (hx - sx) * reach;
-      const ty = (hy - sy) * reach;
-      const L = Math.hypot(tx, ty) || 1;
-      // 경유점: 직선 절반 + 수직 흔들림 — 가루마다 다른 곡선으로 "스르륵"
-      const sway = (Math.random()*30 - 15) * (1 + tier*0.12);
+      // v0.31: 쓰러진 영웅 — "이동하다 실패"가 아니라 처음부터 받아줄 대상이 없다.
+      //   가루는 영웅으로 향하지 않고 매치 자리에서 작게 터져(위로 살짝) 주변으로 낮게 흩어지며 산화
+      let tx, ty, mxv, myv;
+      if(down){
+        d.dataset.fxMode = 'oxidize'; // 비전달형 마커 (테스트/디버그)
+        const ang = Math.random()*Math.PI*2;
+        mxv = Math.cos(ang)*(7 + Math.random()*9);   // 작은 터짐의 경유점
+        myv = -(7 + Math.random()*9);                //   — 위로 살짝 떴다가
+        tx  = Math.cos(ang)*(13 + Math.random()*15); // 제자리 주변으로
+        ty  = 4 + Math.random()*8;                   //   낮게 가라앉는 종점 (+키프레임 18px 침강)
+      } else {
+        tx = hx - sx;
+        ty = hy - sy;
+        const L = Math.hypot(tx, ty) || 1;
+        // 경유점: 직선 절반 + 수직 흔들림 — 가루마다 다른 곡선으로 "스르륵"
+        const sway = (Math.random()*30 - 15) * (1 + tier*0.12);
+        mxv = tx*0.5 + (-ty/L)*sway;
+        myv = ty*0.5 + ( tx/L)*sway;
+      }
       d.style.left = (sx + Math.random()*16 - 8) + 'px';
       d.style.top  = (sy + Math.random()*10 - 5) + 'px';
       d.style.setProperty('--fc', color);
-      d.style.setProperty('--mx', (tx*0.5 + (-ty/L)*sway).toFixed(1)+'px');
-      d.style.setProperty('--my', (ty*0.5 + ( tx/L)*sway).toFixed(1)+'px');
+      d.style.setProperty('--mx', mxv.toFixed(1)+'px');
+      d.style.setProperty('--my', myv.toFixed(1)+'px');
       d.style.setProperty('--tx', tx.toFixed(1)+'px');
       d.style.setProperty('--ty', ty.toFixed(1)+'px');
       if(down) d.style.setProperty('--sx', (Math.random()*36 - 18).toFixed(1)+'px'); // v0.29: 갈 곳 잃은 산포
@@ -2099,8 +2228,11 @@ function drawLine(fromEl, toEl, color, opts){
     ln.animate([{strokeDashoffset:len},{strokeDashoffset:0}],
                {duration:o.duration || 200, fill:'forwards'});
   }
-  ln.animate([{opacity:alpha},{opacity:0}], {duration:250, delay:280, fill:'forwards'});
-  setTimeout(()=>ln.remove(), 560); // 짧게 사라짐 — 다음 조작 방해 금지
+  // v0.31: 생명주기 연장 — "누가 누구에게"가 읽힐 시간 (전투 텀이 있는 실시간이므로 가능).
+  // 기본 잔류 420ms 후 페이드. 과밀은 위 children 10개 상한이 차단, pointer-events 영향 없음(svg 레이어)
+  const linger = (o.linger != null) ? o.linger : 420;
+  ln.animate([{opacity:alpha},{opacity:0}], {duration:280, delay:linger, fill:'forwards'});
+  setTimeout(()=>ln.remove(), linger + 320);
 }
 
 // 방패 병사: 파티를 감싸는 보호 링 펄스
@@ -2618,7 +2750,7 @@ async function performHeroAction(a){
       if(m > 1){
         val = Math.round(val * m); // 반올림 정책: 기존 전투 숫자와 동일 (Math.round)
         empowered = true;
-        addLog('✦ '+heroNameOf(a.type)+'의 강화된 일격! (×'+m+')', 'gold');
+        sceneText('✦ '+heroNameOf(a.type)+' — 강화된 일격! ×'+m, {color:'#caa6ff'}); // v0.31: 로그→자막
         renderParty(a.type); // 배지 소거 즉시 반영
       }
     }
@@ -2626,7 +2758,8 @@ async function performHeroAction(a){
     // 공통 피해 처리: 방어 공식 + 플로팅/로그 (reduced면 🛡 표기)
     const hitEnemy = (e, raw, opts)=>{
       const r = dealDamage(e, raw, opts);
-      floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.reduced?' 🛡':''), 'dmg');
+      // v0.31: 틈(armorDown) 이용 타격 — ✂ 마커 (피해가 커진 이유가 읽힌다)
+      floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
       if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
       else checkBossReaction(e); // v0.23: 피해 적용 후 보스 반응 검사
       return r;
@@ -2636,8 +2769,11 @@ async function performHeroAction(a){
       const tgt = aliveEnemies()[0];
       if(tgt){
         const ti0 = enemies.indexOf(tgt);
-        // v0.17: 짧고 굵은 베기 — 빠른 드로잉 + 살짝 휘는 궤적 + 타격 스파크
-        drawLine(heroChipEl(0), enemyEl(ti0), TYPE_COLORS[0], {width:6, bend:10, duration:120});
+        // v0.31 (D항목): 공방 시퀀스 — ①행동자 강조(act) ②행동선 ③도착 ④베기 FX ⑤피해/피격 반응
+        drawLine(heroChipEl(0), enemyEl(ti0), TYPE_COLORS[0], {width:6, bend:10, duration:150});
+        await delay(160); // 선이 닿는 텀 — "공방"이 보인다
+        if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망(독 틱 등) — 헛스윙 처리
+        spawnSlashFX(enemyEl(ti0), TYPE_COLORS[0], a.tier===3); // v0.31: 베기 궤적 (5매치는 큼)
         spawnImpact(enemyEl(ti0), TYPE_COLORS[0], a.tier===3);
         hitEnemy(tgt, val);
         if(act.armorBreak && tgt.hp > 0){
@@ -2646,8 +2782,8 @@ async function performHeroAction(a){
           applyArmorDown(tgt, act.armorBreak);
           const ad = tgt.status.armorDown;
           if(ad){
+            spawnRingFX(enemyEl(enemies.indexOf(tgt)), '#9fb0cc', false); // v0.31: 장갑 파편/균열 링
             floatText(enemyEl(enemies.indexOf(tgt)), '🛡 장갑 균열! -'+ad.amount+'×'+ad.uses, 'guard');
-            addLog(tgt.name+'의 장갑에 균열! 🛡-'+ad.amount+' — 다음 '+ad.uses+'회 피격까지 (유효 방어 '+effDef(tgt)+')', 'sys');
           }
         }
         renderEnemies(ti0);
@@ -2660,27 +2796,28 @@ async function performHeroAction(a){
         const total = mageCharge.dmg + val;
         mageCharge = null;
         drawWave(); // 원형 확산 폭발 연출 (구조 불변)
-        targets.forEach((e,k)=>setTimeout(()=>     // v0.17 보강: 파동이 닿는 순서로 강 스파크
-          spawnImpact(enemyEl(enemies.indexOf(e)), '#b88aff', true), 140 + k*45));
-        banner('💥 원형 파동! 적 전체에 '+total+' 위력', 'boss');
-        addLog('원형 파동! 적 전체에 위력 '+total, 'gold');
+        targets.forEach((e,k)=>setTimeout(()=>     // v0.31: 파동이 닿는 순서로 폭발 FX
+          spawnBlastFX(enemyEl(enemies.indexOf(e)), '#b88aff', true), 140 + k*45));
+        banner('💥 원형 파동! 적 전체에 '+total+' 위력', 'boss'); // 자막은 banner가 담당 — 로그 제거 (v0.31 F항목)
         targets.forEach(e=>hitEnemy(e, total));
         renderEnemies(null, true);
       } else if(act.type==='charge'){
         // 4매치 이상: 즉시 공격 대신 집중 (마력 비축)
         mageCharge = { dmg: val };
-        banner('🔮 '+job.name+' 집중! 다음 마나석 매치에 원형 파동', 'shield');
-        addLog(job.name+'이(가) 마력을 모은다... ('+act.label+' 비축 '+val+')', 'gold');
+        banner('🔮 '+job.name+' 집중! 다음 마나석 매치에 원형 파동', 'shield'); // v0.31: 로그 제거 — banner+링이 자막
         renderParty(a.type);   // 집중 링 표시
         renderEnemies();       // 적 진영에 예고 원 표시
         floatText(heroChipEl(1), '🔮 집중', 'guard');
       } else {
-        // 3매치: 즉시 광역
+        // 3매치: 즉시 광역 — v0.31: 선 → (텀) → 도착 폭발 → 피해 (공방 시퀀스)
         targets.forEach((e,k)=>{
-          // v0.17: 마나 별빛의 완만한 곡선
           drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
                    {width:3, bend:26 + k*4, alpha:.8, duration:220});
-          spawnImpact(enemyEl(enemies.indexOf(e)), TYPE_COLORS[1], false);
+        });
+        await delay(220);
+        targets.forEach((e,k)=>{
+          if(e.hp <= 0) return; // v0.31: 텀 사이 사망 — 시체 타격/중복 처치 로그 방지
+          setTimeout(()=>spawnBlastFX(enemyEl(enemies.indexOf(e)), TYPE_COLORS[1], false), k*55); // 닿는 순서
           hitEnemy(e, val);
         });
         renderEnemies(null, true);
@@ -2697,13 +2834,18 @@ async function performHeroAction(a){
         }, pool[0]) : null;
         targets = tgt ? [tgt] : [];
       }
+      // v0.31: 선 → (텀) → 침투 링 + ☠ — "독이 스며든다". 반복 로그 제거 (배지+림라이트가 정보)
       targets.forEach((e,k)=>{
-        applyPoison(e, act.tickDmg); // v0.24: 시간 기반 — 연쇄 무관 고정 수치 (단독 승리 엔진 방지)
-        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
+        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#7cc25a',
                  {width:2.6, bend:18 + k*5, alpha:.75, duration:200});
+      });
+      await delay(200);
+      targets.forEach((e,k)=>{
+        if(e.hp <= 0) return; // v0.31: 텀 사이 사망 — 시체 중독 방지
+        applyPoison(e, act.tickDmg); // v0.24: 시간 기반 — 연쇄 무관 고정 수치 (단독 승리 엔진 방지)
+        spawnRingFX(enemyEl(enemies.indexOf(e)), '#9fe07a', true); // 침투 — 안으로 감기는 링
         floatText(enemyEl(enemies.indexOf(e)), '☠ 중독!', 'guard');
       });
-      if(targets.length) addLog(job.name+'의 '+act.label+'! 독이 시간에 따라 퍼진다 (2초마다 '+act.tickDmg+', 방어 무시)', 'sys');
       renderEnemies();
     }
     else if(act.type==='healSingle' || act.type==='cleanseHeal' || act.type==='cleanseAll'){ // 사제/정화사
@@ -2716,11 +2858,15 @@ async function performHeroAction(a){
           const r = cleanseHero(t); removed += r;
           heroHp[t] = Math.min(heroMaxOf(t), heroHp[t] + val);
           floatText(heroChipEl(t), '+'+val+' ✨', 'heal');
-          if(r) floatText(heroChipEl(t), '✦ 정화!', 'guard'); // v0.27: 해제된 아군에게만
+          if(r){
+            floatText(heroChipEl(t), '✦ 정화!', 'guard'); // v0.27: 해제된 아군에게만
+            spawnRingFX(heroChipEl(t), '#9fe07a', false); // v0.31: 해로운 효과가 벗겨지는 소거 링
+          }
           spawnAbsorb(heroChipEl(t), TYPE_COLORS[2], 1.05);
         });
         renderParty(a.type);
-        addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?' ('+removed+'개 해제 — 중독을 걷어냈다!)':'')+' + 각 '+val+' 회복', 'gold');
+        if(removed) sceneText('✦ 대정화!', {color:'#9fe07a', big:true}); // v0.31: 특수 순간 자막
+        addLog(job.name+'의 대정화! 아군 전체 정화'+(removed?' ('+removed+'개 해제)':'')+' + 각 '+val+' 회복', 'gold');
       } else {
         // v0.27 정화(4매치) 대상 선정: poison 보유 아군 우선 → 그중 HP 비율 최저 (태스크 추천안).
         // poison이 없으면 기존 규칙(최저 HP 비율) 그대로 — 회복만 조용히 수행
@@ -2734,12 +2880,14 @@ async function performHeroAction(a){
         let cleansed = 0;
         if(act.type==='cleanseHeal') cleansed = cleanseHero(tgt, 1); // 해로운 효과 1개 해제
         renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달 (☠ 배지도 즉시 소거)
-        // v0.17: 위로 부드럽게 감기는 회복 아치 + 도착 금빛 반짝임
+        // v0.31: 회복 아치 → (텀) → 도착 금빛 반짝임 — 회복선이 닿는 게 보인다
         drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2],
                  {width:3.5, bend:-24, alpha:.9, duration:260});
+        await delay(240);
         spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
         floatText(heroChipEl(tgt), '+'+gained+(cleansed?' ✨':''), 'heal');
         if(cleansed){ // v0.27: 정화 성공은 반드시 읽혀야 한다
+          spawnRingFX(heroChipEl(tgt), '#9fe07a', false); // v0.31: 벗겨지는 소거 링
           floatText(heroChipEl(tgt), '✦ 정화!', 'guard');
           addLog(job.name+'이(가) '+heroNameOf(tgt)+'의 중독을 걷어냈다!', 'gold');
         }
@@ -2750,19 +2898,24 @@ async function performHeroAction(a){
       // 결과적으로 근딜(10) → 원딜/분쇄자(8) 순이 되어 태스크 권장 우선순위와 일치
       const pool = aliveHeroes().filter(t=>t!==a.type && canDealDamage(t));
       const targets = pool.slice().sort((x,y)=>jobOf(y).power - jobOf(x).power).slice(0, act.targets||1);
+      // v0.31: 주입선 → (텀) → 보라 주입 링 — "스며드는 강화". 반복 로그 제거 (✦N 배지가 정보)
       targets.forEach((t,k)=>{
-        applyEmpower(t, act.dmgMult, job.name);
         drawLine(heroChipEl(a.type), heroChipEl(t), TYPE_COLORS[1],
                  {width:3, bend:-20 - k*6, alpha:.85, duration:240});
+      });
+      if(targets.length) await delay(230);
+      targets.forEach(t=>{
+        if(isFallen(t)) return; // v0.31: 텀 사이 쓰러짐 — 쓰러진 아군에게 버프 비부여
+        applyEmpower(t, act.dmgMult, job.name);
+        spawnRingFX(heroChipEl(t), '#b88aff', true); // 안으로 감기는 주입
         spawnAbsorb(heroChipEl(t), '#b88aff', 1.1);
         floatText(heroChipEl(t), '✦ 다음 행동 강화!', 'guard');
       });
       renderParty(a.type); // ✦N 배지 즉시 표시
-      if(targets.length){
-        addLog(job.name+'이(가) 마력을 주입한다! '+targets.map(heroNameOf).join(', ')+'의 다음 피해 행동 ×'+act.dmgMult, 'gold');
-      } else {
+      if(!targets.length){
         floatText(heroChipEl(a.type), '대상 없음', 'guard'); // 공격 아군 전멸 등 — 헛발 안내
       }
+      // (v0.31: 주입 addLog 폐지 — 연출+배지로 대체)
     }
     else if(act.type==='guard'){ // 방패 병사: 피해 감소 — v0.12: 6초 지속 창
       shieldRed = Math.max(shieldRed, act.red);
@@ -2780,14 +2933,17 @@ async function performHeroAction(a){
       if(tgt){
         const ti = enemies.indexOf(tgt);
         // v0.17: 얇고 빠른 화살 점선 — 4매치+(연속 사격)는 90ms 간격 2발 잔상
-        drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4], {dashed:true, width:2.2});
+        drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4], {dashed:true, width:2.2, linger:300}); // 점선 조준은 짧게
         if(a.tier >= 2){
           setTimeout(()=>drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4],
-                                  {dashed:true, width:2.2, bend:9, alpha:.7}), 90);
+                                  {dashed:true, width:2.2, bend:9, alpha:.7, linger:300}), 90);
         }
-        spawnImpact(enemyEl(ti), TYPE_COLORS[4], a.tier===3);
+        await delay(110); // v0.31: 화살이 닿는 짧은 텀 — 저격은 빠르다
+        if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망 — 헛발
+        spawnPierceFX(enemyEl(ti), TYPE_COLORS[4]); // v0.31: 관통/박힘
+        if(a.tier===3) spawnImpact(enemyEl(ti), TYPE_COLORS[4], true);
         const r = dealDamage(tgt, val);
-        floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.reduced?' 🛡':''), 'dmg');
+        floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
         else checkBossReaction(tgt); // v0.23
         renderEnemies(ti);
@@ -2908,8 +3064,9 @@ async function enemyAttack(e){
   // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
   if(e.venom && heroHp[tgt] > 0){
     applyHeroPoison(tgt, 1, 'venomBat'); // v0.28: 10초간 2초마다 1 — 총 5, 방어 무시 (구 6초/2×3=6)
-    addLog(e.name+'이(가) '+heroNameOf(tgt)+'에게 독침을 쏜다!', 'boss');
+    // v0.31: 매 공격 반복 로그 폐지 — ☠ 플로팅 + 배지 + 림라이트가 정보 전달
     floatText(heroChipEl(tgt), '☠ 중독!', 'dmg');
+    spawnRingFX(heroChipEl(tgt), '#9fe07a', true); // 침투 링 (덫꾼 독과 동일 언어)
     renderParty(); // ☠ 배지 즉시 표시
   }
   if(shieldCounter>0){
@@ -3054,24 +3211,32 @@ async function resolveBoard(){
     const groups = findMatchGroups(board);
     if(groups.length===0) break;
     chain++;
-    // 매치/연쇄 정보: 보드 위 플로팅 + 티커 (로그 패널 없음)
+    /* v0.31 (B/C항목): 일반 획득 텍스트 폐지 — 3매치는 침묵 (가루 색/전달/흡수가 정보 전달).
+       특수 순간만 연출 텍스트: 2연쇄+ "연쇄 증폭 ×N" / 4매치 "강한 문장" / 5매치 행동명 강조 */
     let slot = 0;
     if(chain>1){
-      const txt = chain+'연쇄! 위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%';
-      // v0.18: 3연쇄+는 "더! 더! 더!" 메가 팝
-      floatBoard(txt, chain>=3 ? 'gold chainPop mega' : 'gold chainPop', slot++);
+      sceneText('연쇄 증폭 ×'+chain+'  (위력 +'+Math.round(CHAIN_BONUS*100*(chain-1))+'%)',
+                {big: chain>=3}); // 3연쇄+: 큰 자막 — 기존 럼블/흔들림과 합쳐져 "더!" 체감
     }
     for(const g of groups){
       const t = TYPES[g.type];
       if(isFallen(g.type)){
         // v0.19: 쓰러진 영웅의 블록 — 매치/연쇄/낙하는 정상, 행동만 미발생 (봉인은 차기 R&D)
-        // "문장은 만들 수 있지만, 그 말을 해줄 동료가 쓰러져 있다"
-        floatBoard(t.sym+' '+heroNameOf(g.type)+' 쓰러짐 — 행동 불가', 'sys', slot++, '#8d87a0');
+        // v0.31: 반복 안내 축소 — 전투당 영웅별 1회만 (이후는 제자리 산화 연출이 정보를 대신)
+        if(!fallenNoticed.has(g.type)){
+          fallenNoticed.add(g.type);
+          floatBoard(t.sym+' '+heroNameOf(g.type)+' 쓰러짐 — 행동 불가', 'sys', slot++, '#8d87a0');
+        }
         continue;
       }
       queueAction(g.type, g.cells.length, chain);
-      const txt = t.sym+' '+t.block+' '+g.cells.length+'개!'; // v0.15.5: '대검석 4개!'
-      floatBoard(txt, 'sys', slot++, TYPE_COLORS[g.type]); // v0.15: 속성색 발광 — 힘 확보감
+      if(g.cells.length >= 5){
+        // 5매치: 직업 행동명이 자막으로 — "장갑 분쇄!" "전투 증폭!" "대정화!" 등
+        sceneText('✦ '+jobOf(g.type).actions[3].label+'!', {color: TYPE_COLORS[g.type], big:true});
+      } else if(g.cells.length === 4){
+        sceneText(t.block+' — 강한 문장!', {color: TYPE_COLORS[g.type]});
+      }
+      // 3매치: 침묵
     }
 
     // 삭제 연출 (v0.15): ① 응축 반응(primed) → ② 팡 터짐(removing + 버스트 FX)
@@ -3209,6 +3374,7 @@ function setupBattle(){
   mageCharge = null; // 전투 간 집중 미이월 (v0.25: 집중 발동 직업은 없으나 시스템 보존)
   heroBuffs = {};    // v0.25: action 버프 전투 간 미이월 — 다시 도전 초기화 보장
   heroStatus = {};   // v0.27: 아군 상태이상(중독) 전투 간 미이월 — 다시 도전 초기화 보장
+  fallenNoticed = new Set(); // v0.31: 쓰러짐 안내 1회 카운터 리셋
   showcase = false;
   board = genBoard();
   if(!hasValidMove(board)) board = genBoard();
