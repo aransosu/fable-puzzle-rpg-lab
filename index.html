@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.31 — FABLE_TASK_031: Combat Exchange FX & Feedback Language Pass
+<!-- Emblem Quest Lab v0.32 — FABLE_TASK_032: 10 Job Roster Reframe / Aim Gem, Bard & Bulwark
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
            v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run / v0.23: Boss Reaction /
            v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
-           v0.29: Presence & Space Expansion / v0.30: Ally Formation -->
+           v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -29,7 +29,7 @@
     --c-mana:#9b6fd0;   /* 마나석 · 서포터 — 보라/별빛 */
     --c-heal:#e2c878;   /* 치유석 · 힐러 — 금/크림 */
     --c-guard:#5d83c4;  /* 방패석 · 탱커 — 강철 남청 */
-    --c-bow:#4fae8e;    /* 활석 · 원거리 딜러 — 청록/바람 */
+    --c-bow:#4fae8e;    /* 조준석 · 원거리 딜러 — 청록/바람 (v0.32: 활석→조준석, 내부 변수명은 보존) */
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -376,7 +376,7 @@
     transition:transform .15s, opacity .2s, border-color .1s;
     background:#171425; /* 빈 칸 (낙하 과도기) */
   }
-  .cell.t0,.cell.t1,.cell.t2,.cell.t3,.cell.t4{
+  .cell.jb-greatswordWarrior,.cell.jb-mage,.cell.jb-priest,.cell.jb-guardSoldier,.cell.jb-archer{
     border-color:color-mix(in srgb,var(--tc) 42%,#06040c);
     background:
       radial-gradient(circle at 32% 24%, rgba(255,255,255,.30), rgba(255,255,255,0) 46%),
@@ -391,15 +391,15 @@
       0 2px 3px rgba(0,0,0,.38);               /* 보드에서 살짝 뜬 느낌 */
     text-shadow:0 2px 3px rgba(0,0,0,.55);     /* 심볼도 조각처럼 박힌 인상 */
   }
-  .cell.t0{--tc:var(--c-blade);}
-  .cell.t1{--tc:var(--c-mana);}
-  .cell.t2{--tc:var(--c-heal);}
-  .cell.t3{--tc:var(--c-guard);}
-  .cell.t4{--tc:var(--c-bow);}
+  .cell.jb-greatswordWarrior{--tc:var(--c-blade);}
+  .cell.jb-mage{--tc:var(--c-mana);}
+  .cell.jb-priest{--tc:var(--c-heal);}
+  .cell.jb-guardSoldier{--tc:var(--c-guard);}
+  .cell.jb-archer{--tc:var(--c-bow);}
   /* v0.15.5: 마나석(✦)/치유석(✚)은 텍스트 글리프 — 밝은 색 + 미세 발광으로 이모지급 가독 확보 */
-  .cell.t1,.cell.t2{font-weight:900;font-size:clamp(17px,6.1vw,27px);}
-  .cell.t1{color:#efe6ff;text-shadow:0 0 6px rgba(190,150,255,.85),0 2px 3px rgba(0,0,0,.55);}
-  .cell.t2{color:#fff6dc;text-shadow:0 0 6px rgba(240,210,130,.85),0 2px 3px rgba(0,0,0,.55);}
+  .cell.jb-mage,.cell.jb-priest{font-weight:900;font-size:clamp(17px,6.1vw,27px);}
+  .cell.jb-mage{color:#efe6ff;text-shadow:0 0 6px rgba(190,150,255,.85),0 2px 3px rgba(0,0,0,.55);}
+  .cell.jb-priest{color:#fff6dc;text-shadow:0 0 6px rgba(240,210,130,.85),0 2px 3px rgba(0,0,0,.55);}
   .cell:active{transform:scale(.94);} /* 누르는 손맛 */
   .cell.sel{
     border-color:var(--gold);transform:scale(1.08);
@@ -813,61 +813,61 @@
   .ally .mini i{display:block;height:100%;background:var(--hp);border-radius:3px;transition:width .3s;}
 
   /* ── t0 대검 전사 · 근접 딜러 · ⚔️ 대검석(적/주홍) — 큰 대검을 어깨에, 방패 없음 ── */
-  .t0{--leg:#6e2a25;--arm:#a8453a;}
-  .t0 .torso{background:linear-gradient(#cf5b45,#9e3c30);}
-  .t0 .torso::after{ /* 가슴 흉갑 라인 */
+  .jb-greatswordWarrior{--leg:#6e2a25;--arm:#a8453a;}
+  .jb-greatswordWarrior .torso{background:linear-gradient(#cf5b45,#9e3c30);}
+  .jb-greatswordWarrior .torso::after{ /* 가슴 흉갑 라인 */
     content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
     width:30px;height:9px;background:#e07a5e;border-radius:5px;
   }
-  .t0 .armL,.t0 .armR{ /* 어깨 장갑: 어깨선만 진한 적갈 */
+  .jb-greatswordWarrior .armL,.jb-greatswordWarrior .armR{ /* 어깨 장갑: 어깨선만 진한 적갈 */
     border-top:5px solid #7e2e29;
   }
-  .t0 .gear{ /* 어깨에 걸친 대검: 도신 + 뾰족 검끝 */
+  .jb-greatswordWarrior .gear{ /* 어깨에 걸친 대검: 도신 + 뾰족 검끝 */
     right:-7px;top:-12px;width:11px;height:62px;
     background:linear-gradient(#f4f8fe,#a9b9d4);
     clip-path:polygon(50% 0,100% 12%,100% 100%,0 100%,0 12%);
     transform:rotate(9deg);border-radius:0 0 3px 3px;
   }
-  .t0 .gear::after{ /* 십자 손잡이 + 자루 */
+  .jb-greatswordWarrior .gear::after{ /* 십자 손잡이 + 자루 */
     content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
     width:23px;height:6px;background:#caa54a;border-radius:3px;
     box-shadow:0 7px 0 -1px #6e4a2d;
   }
-  .t0 .gear2{ /* 이마 붉은 머리띠 */
+  .jb-greatswordWarrior .gear2{ /* 이마 붉은 머리띠 */
     top:15px;left:50%;transform:translateX(-50%);
     width:38px;height:6px;background:#9e3c30;border-radius:3px;z-index:6;
   }
 
   /* ── t1 마법사 · 서포터 · ✦ 마나석(보라/별빛) — 로브 ✦ 문장 + 마나 보주 지팡이 ── */
-  .t1{--leg:#3c2470;--arm:#5a36a8;}
-  .t1 .torso{
+  .jb-mage{--leg:#3c2470;--arm:#5a36a8;}
+  .jb-mage .torso{
     background:linear-gradient(#7e54d4,#5a36a8);width:48px;
     clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);border-radius:0;
   }
-  .t1 .torso::before{ /* 로브 가슴의 별빛 문장 ✦ */
+  .jb-mage .torso::before{ /* 로브 가슴의 별빛 문장 ✦ */
     content:'✦';position:absolute;top:4px;left:50%;transform:translateX(-50%);
     font-size:14px;font-weight:900;color:#efe6ff;
     text-shadow:0 0 5px rgba(190,150,255,.9);
   }
-  .t1 .torso::after{ /* 로브 단 금장식 */
+  .jb-mage .torso::after{ /* 로브 단 금장식 */
     content:'';position:absolute;bottom:3px;left:10%;width:80%;height:4px;
     background:#caa54a;opacity:.85;
   }
-  .t1 .gear2{ /* 뾰족 모자 + 챙 (정면) */
+  .jb-mage .gear2{ /* 뾰족 모자 + 챙 (정면) */
     top:-8px;left:50%;transform:translateX(-50%) rotate(-4deg);
     width:0;height:0;z-index:7;
     border-left:16px solid transparent;border-right:16px solid transparent;
     border-bottom:23px solid #51309a;
   }
-  .t1 .gear2::after{ /* 모자 챙 */
+  .jb-mage .gear2::after{ /* 모자 챙 */
     content:'';position:absolute;top:21px;left:50%;transform:translateX(-50%);
     width:48px;height:7px;background:#51309a;border-radius:4px;
   }
-  .t1 .gear{ /* 마나 보주 지팡이 (오른손 쪽) */
+  .jb-mage .gear{ /* 마나 보주 지팡이 (오른손 쪽) */
     right:1px;top:8px;width:6px;height:58px;
     background:#6e4a2d;border-radius:3px;
   }
-  .t1 .gear::after{ /* 별빛 마나 보주 */
+  .jb-mage .gear::after{ /* 별빛 마나 보주 */
     content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
     width:16px;height:16px;border-radius:50%;
     background:radial-gradient(circle at 38% 32%, #f2e8ff, #a06ae8);
@@ -877,23 +877,23 @@
   @keyframes orbGlow{0%,100%{box-shadow:0 0 6px rgba(180,135,255,.7)}50%{box-shadow:0 0 13px rgba(195,155,255,1)}}
 
   /* ── t2 사제 · 힐러 · ✚ 치유석(금/크림) — 크림 로브 + 금 ✚ + 후광 (무기 없음) ── */
-  .t2{--leg:#b8ae96;--arm:#e6dcc4;}
-  .t2 .torso{
+  .jb-priest{--leg:#b8ae96;--arm:#e6dcc4;}
+  .jb-priest .torso{
     background:linear-gradient(#f6f0e0,#ddd2ba);width:46px;
     clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);border-radius:0;
   }
-  .t2 .torso::before{ /* 가슴의 금색 치유 문장 ✚ */
+  .jb-priest .torso::before{ /* 가슴의 금색 치유 문장 ✚ */
     content:'✚';position:absolute;top:5px;left:50%;transform:translateX(-50%);
     font-size:15px;font-weight:900;color:#c89a3a;
   }
-  .t2 .gear{ /* 후광 */
+  .jb-priest .gear{ /* 후광 */
     top:1px;left:50%;transform:translateX(-50%);
     width:36px;height:11px;border:3px solid #e8c860;border-radius:50%;
     box-shadow:0 0 10px rgba(232,200,96,.8);
     animation:halo 2.4s ease-in-out infinite;z-index:7;
   }
   @keyframes halo{0%,100%{opacity:.8}50%{opacity:1}}
-  .t2 .gear2{ /* 머리 베일: 크림 두건 + 금 테 */
+  .jb-priest .gear2{ /* 머리 베일: 크림 두건 + 금 테 */
     top:10px;left:50%;transform:translateX(-50%);
     width:42px;height:14px;background:#f0e8d2;
     border-bottom:2px solid #c8b890;border-radius:12px 12px 4px 4px;z-index:6;
@@ -901,57 +901,189 @@
 
   /* ── t3 방패 병사 · 탱커 · 🛡️ 방패석(남청/강철) — 대형 방패 정면 + 넓은 체격 ── */
   /* v0.16: 구 금색 갑주 → 방패석과 동일한 남청/강철 계열로 정리 (블록↔아바타 1:1) */
-  .t3{--leg:#2c3e66;--arm:#46659e;}
-  .t3 .torso{background:linear-gradient(#5d83c4,#3a5a94);width:50px;height:36px;}
-  .t3 .torso::after{ /* 흉갑 강철 리벳 라인 */
+  .jb-guardSoldier{--leg:#2c3e66;--arm:#46659e;}
+  .jb-guardSoldier .torso{background:linear-gradient(#5d83c4,#3a5a94);width:50px;height:36px;}
+  .jb-guardSoldier .torso::after{ /* 흉갑 강철 리벳 라인 */
     content:'';position:absolute;top:7px;left:50%;transform:translateX(-50%);
     width:34px;height:7px;background:#7fa2d8;border-radius:4px;
   }
-  .t3 .gear2{ /* 강철 투구 + 면갑 */
+  .jb-guardSoldier .gear2{ /* 강철 투구 + 면갑 */
     top:9px;left:50%;transform:translateX(-50%);
     width:42px;height:15px;background:linear-gradient(#cdd6e4,#9aa7bc);
     border-radius:12px 12px 4px 4px;z-index:6;
   }
-  .t3 .gear2::after{ /* 면갑 코가리개 */
+  .jb-guardSoldier .gear2::after{ /* 면갑 코가리개 */
     content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
     width:6px;height:9px;background:#9aa7bc;border-radius:0 0 3px 3px;
   }
-  .t3 .gear{ /* 대형 탑방패: 몸 앞 왼편 — 탱커가 한눈에 */
+  .jb-guardSoldier .gear{ /* 대형 탑방패: 몸 앞 왼편 — 탱커가 한눈에 */
     left:-13px;top:30px;width:32px;height:46px;
     background:linear-gradient(#6f93d2,#42639e);
     border:3px solid #2c3e66;border-radius:10px 10px 16px 16px;z-index:7;
   }
-  .t3 .gear::after{ /* 방패 문장: 강철 보스 2점 */
+  .jb-guardSoldier .gear::after{ /* 방패 문장: 강철 보스 2점 */
     content:'';position:absolute;top:11px;left:50%;transform:translateX(-50%);
     width:9px;height:9px;background:#bcd0ec;border-radius:50%;
     box-shadow:0 13px 0 -2px #bcd0ec;
   }
 
-  /* ── t4 궁수 · 원거리 딜러 · 🏹 활석(청록/바람) — 청록 후드 + 활 + 날렵한 실루엣 ── */
-  .t4{--leg:#1f4a40;--arm:#3a8a72;}
-  .t4 .torso{background:linear-gradient(#4fae8e,#357a62);width:40px;}
-  .t4 .torso::after{ /* 가슴 가죽 스트랩 (사선) */
+  /* ── 궁수 · 원거리 딜러 · 🎯 조준석(청록/바람) — 청록 후드 + 활 + 날렵한 실루엣 ── */
+  .jb-archer{--leg:#1f4a40;--arm:#3a8a72;}
+  .jb-archer .torso{background:linear-gradient(#4fae8e,#357a62);width:40px;}
+  .jb-archer .torso::after{ /* 가슴 가죽 스트랩 (사선) */
     content:'';position:absolute;top:2px;left:6px;
     width:7px;height:32px;background:#6e4a2d;border-radius:3px;
     transform:rotate(18deg);
   }
-  .t4 .gear2{ /* 청록 후드 (정면 개구부로 얼굴 보임) */
+  .jb-archer .gear2{ /* 청록 후드 (정면 개구부로 얼굴 보임) */
     top:8px;left:50%;transform:translateX(-50%);
     width:44px;height:17px;background:#2e6b58;
     border-radius:13px 13px 5px 5px;z-index:6;
   }
-  .t4 .gear2::after{ /* 후드 꼭지 */
+  .jb-archer .gear2::after{ /* 후드 꼭지 */
     content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
     width:10px;height:8px;background:#2e6b58;border-radius:4px 4px 0 0;
   }
-  .t4 .gear{ /* 활 (왼손 쪽 세로 활대 + 시위) */
+  .jb-archer .gear{ /* 활 (왼손 쪽 세로 활대 + 시위) */
     left:-10px;top:24px;width:22px;height:52px;
     border:4px solid #8a5a2d;border-right:none;
     border-radius:24px 0 0 24px;z-index:6;
   }
-  .t4 .gear::after{ /* 시위 */
+  .jb-archer .gear::after{ /* 시위 */
     content:'';position:absolute;top:-2px;right:-2px;
     width:2px;height:50px;background:#e8e4f2;opacity:.65;border-radius:1px;
+  }
+  /* ════ v0.32: 신규 5조형 (FABLE_TASK_032 H항목) — 같은 역할군 안의 두 직업은 실루엣이 다르다.
+     원칙: 기존 파츠 구조(head/torso/arm/leg/gear/gear2) 재사용, 큰 실루엣 차이 + 상징 파츠 우선,
+     무한 애니메이션 추가 없음 (전부 정적 조형) ════ */
+  /* ── 분쇄자 · 근접 딜러 — 어두운 적갈 + 강철, 대형 망치 = "장갑을 깬다" ── */
+  .jb-crusher{--leg:#4a2420;--arm:#7e3a30;}
+  .jb-crusher .torso{background:linear-gradient(#9e4a3a,#6e2e26);width:48px;height:36px;}
+  .jb-crusher .torso::after{ /* 강철 가슴판 — 분쇄 장비의 무게 */
+    content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
+    width:32px;height:11px;background:linear-gradient(#b8c2d4,#8a96ac);border-radius:4px;
+  }
+  .jb-crusher .gear{ /* 대형 망치: 굵은 자루 + 강철 머리 (어깨 위) */
+    right:-9px;top:-8px;width:8px;height:58px;
+    background:#5a4226;border-radius:4px;transform:rotate(12deg);
+  }
+  .jb-crusher .gear::after{ /* 망치 머리 — 묵직한 사각 강철 */
+    content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:26px;height:17px;background:linear-gradient(#cdd6e4,#8a96ac);
+    border:2px solid #4a5468;border-radius:4px;
+  }
+  .jb-crusher .gear2{ /* 강철 어깨 보호구 (오른쪽) */
+    right:2px;top:42px;width:16px;height:10px;
+    background:#8a96ac;border-radius:6px 6px 3px 3px;z-index:5;
+  }
+  /* ── 덫꾼 · 서포터 — 카키 가죽 + 어두운 후드 + 독병 = "독으로 압박한다" ── */
+  .jb-trapper{--leg:#2e3a22;--arm:#4a5a32;}
+  .jb-trapper .torso{background:linear-gradient(#6e7a4a,#4a5532);width:42px;}
+  .jb-trapper .torso::after{ /* 가죽 탄띠 (사선) */
+    content:'';position:absolute;top:1px;left:7px;
+    width:6px;height:31px;background:#3a2c1e;border-radius:3px;transform:rotate(-20deg);
+  }
+  .jb-trapper .gear2{ /* 어두운 후드 — 그늘진 얼굴 */
+    top:8px;left:50%;transform:translateX(-50%);
+    width:44px;height:17px;background:#39422a;
+    border-radius:13px 13px 5px 5px;z-index:6;
+  }
+  .jb-trapper .gear{ /* 허리 독병 — 녹색 발광 (정적) */
+    left:-4px;top:58px;width:12px;height:15px;
+    background:linear-gradient(#9fe07a,#5d8a4a);
+    border:2px solid #2e3a22;border-radius:4px 4px 6px 6px;
+    box-shadow:0 0 6px rgba(140,220,100,.65);
+  }
+  .jb-trapper .gear::after{ /* 병목 마개 */
+    content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+    width:6px;height:5px;background:#3a2c1e;border-radius:2px;
+  }
+  /* ── 바드 · 서포터 — 와인빛 옷 + 깃털 모자 + 류트 = "아군을 강화한다" ── */
+  .jb-bard{--leg:#5e2a4a;--arm:#94476e;}
+  .jb-bard .torso{background:linear-gradient(#b85a8a,#8a3a62);width:42px;}
+  .jb-bard .torso::before{ /* 가슴의 음표 문장 ♪ */
+    content:'♪';position:absolute;top:4px;left:50%;transform:translateX(-50%);
+    font-size:15px;font-weight:900;color:#ffe2f0;
+    text-shadow:0 0 5px rgba(255,170,220,.9);
+  }
+  .jb-bard .gear2{ /* 깃털 베레모 */
+    top:7px;left:50%;transform:translateX(-50%) rotate(-7deg);
+    width:40px;height:11px;background:#6e3052;border-radius:10px 10px 4px 4px;z-index:7;
+  }
+  .jb-bard .gear2::after{ /* 깃털 */
+    content:'';position:absolute;top:-9px;right:3px;
+    width:5px;height:13px;background:#e2c878;border-radius:3px 3px 0 0;transform:rotate(18deg);
+  }
+  .jb-bard .gear{ /* 류트: 타원 바디 + 넥 (왼손 쪽) */
+    left:-9px;top:38px;width:18px;height:24px;
+    background:linear-gradient(#caa54a,#8a6a2d);
+    border:2px solid #5e4420;border-radius:50% 50% 46% 46%;z-index:7;
+  }
+  .jb-bard .gear::after{ /* 넥 + 헤드 */
+    content:'';position:absolute;top:-15px;left:50%;transform:translateX(-50%) rotate(-9deg);
+    width:4px;height:17px;background:#5e4420;border-radius:2px;
+    box-shadow:0 -2px 0 1px #3a2c1e;
+  }
+  /* ── 정화사 · 힐러 — 은백 로브 + 연녹 별 문장 + 정화장 = "해로운 효과를 끊는다" ── */
+  .jb-purifier{--leg:#5a6258;--arm:#8a948a;}
+  .jb-purifier .torso{
+    background:linear-gradient(#e8ece4,#b8c2b4);width:46px;
+    clip-path:polygon(10% 0,90% 0,100% 100%,0 100%);border-radius:0;
+  }
+  .jb-purifier .torso::before{ /* 정화 문장 ✧ — 연녹 별빛 */
+    content:'✧';position:absolute;top:4px;left:50%;transform:translateX(-50%);
+    font-size:14px;font-weight:900;color:#6ea85a;
+    text-shadow:0 0 5px rgba(140,220,100,.8);
+  }
+  .jb-purifier .gear2{ /* 은빛 두건 */
+    top:10px;left:50%;transform:translateX(-50%);
+    width:42px;height:13px;background:#d4dcd0;
+    border-bottom:2px solid #9aa896;border-radius:12px 12px 4px 4px;z-index:6;
+  }
+  .jb-purifier .gear{ /* 정화장: 은 지팡이 + 연녹 별 */
+    right:0;top:10px;width:5px;height:56px;
+    background:#b8c2b4;border-radius:3px;
+  }
+  .jb-purifier .gear::after{
+    content:'✦';position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+    font-size:13px;color:#9fe07a;text-shadow:0 0 7px rgba(140,220,100,.95);
+  }
+  /* ── 철벽 수호자 · 탱커 — 거대 강철 갑주 + 전신 타워 실드 = "앞줄을 버틴다" ── */
+  .jb-bulwark{--leg:#2a3450;--arm:#3e5278;}
+  .jb-bulwark .torso{background:linear-gradient(#4a608a,#2e3e60);width:54px;height:38px;}
+  .jb-bulwark .torso::after{ /* 겹강철 흉갑 — 가로 판금 2줄 */
+    content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:40px;height:6px;background:#8a9cc0;border-radius:3px;
+    box-shadow:0 10px 0 0 #6a7ea8;
+  }
+  .jb-bulwark .gear2{ /* 풀헬름 — 면갑이 더 내려옴 (벽의 무표정) */
+    top:8px;left:50%;transform:translateX(-50%);
+    width:44px;height:17px;background:linear-gradient(#aab8d0,#7a8aa8);
+    border-radius:12px 12px 5px 5px;z-index:6;
+  }
+  .jb-bulwark .gear2::after{ /* 면갑 가로 슬릿 */
+    content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
+    width:26px;height:5px;background:#2a3450;border-radius:2px;
+  }
+  .jb-bulwark .gear{ /* 전신 타워 실드 — 방패 병사보다 크고 평평, 몸 절반을 가림 */
+    left:-16px;top:24px;width:38px;height:58px;
+    background:linear-gradient(#5d7ab4,#36497a);
+    border:3px solid #1f2a48;border-radius:7px 7px 11px 11px;z-index:7;
+  }
+  .jb-bulwark .gear::after{ /* 방패 중앙 세로 보강대 + 리벳 */
+    content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:7px;height:44px;background:#8a9cc0;border-radius:3px;
+    box-shadow:-9px 8px 0 -2px #8a9cc0, 9px 8px 0 -2px #8a9cc0, -9px 28px 0 -2px #8a9cc0, 9px 28px 0 -2px #8a9cc0;
+  }
+  /* v0.32: 전열 보호(fortified) 강조 — 철벽 수호자의 가호가 전열 칩에 보인다 */
+  .ally.fortified .mini{box-shadow:0 0 7px rgba(110,160,230,.85), 0 0 0 1.5px #46659e;}
+  .ally.fortified .shadow{
+    background:radial-gradient(ellipse, rgba(70,110,180,.55) 0%, rgba(0,0,0,0) 74%);
+  }
+  #partyArea.frontShield::after{ /* 전열 바닥선 강철화 — "앞줄에 벽이 섰다" */
+    background:linear-gradient(90deg, transparent, rgba(111,147,210,.6) 16%,
+               rgba(111,147,210,.6) 84%, transparent);
+    box-shadow:0 0 8px rgba(111,147,210,.45);
   }
   /* 마법사 집중 상태: 점선 회전 링 */
   .ally.charged .av::after{
@@ -998,15 +1130,17 @@
   .ally.t3{--aura:rgba(93,131,196,.6);}
   .ally.t4{--aura:rgba(79,174,142,.55);}
   /* 직업별 흡수 액센트 (CSS class 기반 — 로직 없음, 전부 0.3s 단발) */
-  .ally.gain.t0 .torso{animation:leanFwd .3s ease-out;}      /* 대검 전사: 붉은 힘 — 앞으로 기울었다 복귀 */
+  .ally.gain.jb-greatswordWarrior .torso, .ally.gain.jb-crusher .torso{animation:leanFwd .3s ease-out;} /* 대검 전사/분쇄자: 붉은 힘 — 앞으로 기울었다 복귀 */
   @keyframes leanFwd{40%{transform:translateX(-50%) rotate(-4deg) translateY(-2px)}100%{transform:translateX(-50%)}}
-  .ally.gain.t1 .gear::after{animation:orbSurge .3s ease-out;} /* 마법사: 별빛이 보주에 모임 */
+  .ally.gain.jb-mage .gear::after{animation:orbSurge .3s ease-out;} /* 마법사: 별빛이 보주에 모임 */
+  .ally.gain.jb-bard .gear{animation:orbSurge .3s ease-out;}        /* 바드: 류트가 공명 (키프레임 재사용) */
+  .ally.gain.jb-trapper .gear{animation:haloSurge .3s ease-out;}    /* 덫꾼: 독병이 일렁 (키프레임 재사용) */
   @keyframes orbSurge{45%{box-shadow:0 0 17px rgba(205,165,255,1);transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1)}}
-  .ally.gain.t2 .gear{animation:haloSurge .3s ease-out;}      /* 사제: 금빛이 후광에 스며듦 */
+  .ally.gain.jb-priest .gear, .ally.gain.jb-purifier .gear{animation:haloSurge .3s ease-out;} /* 사제/정화사: 금빛·은빛이 스며듦 */
   @keyframes haloSurge{45%{box-shadow:0 0 16px rgba(240,210,110,1);opacity:1}}
-  .ally.gain.t3 .gear{animation:shieldGlint .3s ease-out;}    /* 방패 병사: 남청 막이 방패에 번쩍 */
+  .ally.gain.jb-guardSoldier .gear, .ally.gain.jb-bulwark .gear{animation:shieldGlint .3s ease-out;} /* 방패 병사/철벽: 남청 막이 방패에 번쩍 */
   @keyframes shieldGlint{45%{filter:brightness(1.6);box-shadow:0 0 12px rgba(120,165,230,.95)}100%{filter:brightness(1)}}
-  .ally.gain.t4 .gear::after{animation:stringFlash .3s ease-out;} /* 궁수: 청록 빛이 시위를 스침 */
+  .ally.gain.jb-archer .gear::after{animation:stringFlash .3s ease-out;} /* 궁수: 청록 빛이 시위를 스침 */
   @keyframes stringFlash{45%{opacity:1;box-shadow:0 0 8px rgba(120,230,195,.95)}100%{opacity:.65}}
   /* HP 0: 쓰러진 상태 (사망/봉인 시스템은 미도입 — 시각 표현만) */
   /* v0.19: 쓰러짐(전투 불능) 표현 강화 — 귀여움 유지, 상태는 명확하게 */
@@ -1050,6 +1184,7 @@
     margin-left:3px;vertical-align:1.5px;
   }
   .lineTag.front{color:#e8b34b;border-color:#6e5a23;}
+  .slotAsk{font-size:10px;color:#8a83a8;margin:1px 0 2px;} /* v0.32: 슬롯 양자택일 질문 한 줄 */
   /* 방패 상태 배지: 진영 우상단 부유 (공간 점유 없음) */
   #shieldTag{
     position:absolute;top:-9px;right:10px;z-index:8;
@@ -1333,7 +1468,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.31 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.32 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1356,7 +1491,7 @@
         <button id="codexBack" style="display:none">← 직업 도감</button>
         <span class="ttl" id="codexTitle">직업 도감</span>
       </div>
-      <div class="sub" id="codexSub">5개의 직업 카테고리 — 앞으로 카테고리당 4직업, 총 20직업으로 확장</div>
+      <div class="sub" id="codexSub">5개의 역할군 × 2직업 = 10직업 — 역할군마다 양자택일 (장기: 카테고리당 4직업)</div>
     </div>
     <div id="codexBody"></div>
     <div id="codexNav">
@@ -1373,12 +1508,12 @@ const COLS = 7;       // 가로 7칸
 const ROWS = 7;       // 세로 7칸 (v0.6: 7×7 정사각 "전장" 보드 실험)
 // v0.15.5: 5계열 = 5블록 = 5기본 직업 확정 (FABLE_TASK_015B)
 // cls=계열, block=블록명(문장석), hero=기본 직업명. 인덱스/PARTY 구조는 불변. (행동은 v0.21부터 JOBS 기반)
-const TYPES = [
+const TYPES = [ // v0.32: 활석 → 조준석 (원거리 딜러 전체를 포괄 — 화살도, 마력도 "겨눈다")
   {sym:'⚔️', block:'대검석', hero:'대검 전사', cls:'근접 딜러',   role:'전열 공격'},
-  {sym:'✦',  block:'마나석', hero:'마법사',    cls:'서포터',     role:'집중·광역 파동'},
+  {sym:'✦',  block:'마나석', hero:'바드',      cls:'서포터',     role:'아군 강화·적 압박'},
   {sym:'✚',  block:'치유석', hero:'사제',      cls:'힐러',       role:'치유·생존 보조'},
   {sym:'🛡️', block:'방패석', hero:'방패 병사', cls:'탱커',       role:'보호·버티기'},
-  {sym:'🏹', block:'활석',   hero:'궁수',      cls:'원거리 딜러', role:'후열 저격'},
+  {sym:'🎯', block:'조준석', hero:'궁수',      cls:'원거리 딜러', role:'원거리 공격'},
 ];
 // v0.15: FX용 속성색 — CSS 변수에서 1회 추출 (블록/플로팅/버스트 색 일원화)
 const TYPE_CVARS = ['--c-blade','--c-mana','--c-heal','--c-guard','--c-bow'];
@@ -1427,11 +1562,11 @@ function applyFxTune(){
    - hp는 HERO_MAX와 동일값 표시용. power/defense는 v0.21 스탯 프레임워크용 자리 (전투 미적용)
    - 매치 설명은 JOBS.actions + actionValue 공식에서 생성 — 도감과 전투의 단일 진실 소스 */
 const JOB_SLOTS = [ // v0.30: line = 슬롯의 기본 진형 (front 전열 / back 후열) — 배치 UI 도입 대비 데이터화
-  { id:'tank',    blockType:3, line:'front', name:'탱커',        blockName:'방패석', desc:'피해를 막고 아군을 지키는 역할' },
-  { id:'melee',   blockType:0, line:'front', name:'근접 딜러',   blockName:'대검석', desc:'전열에서 적을 베어내는 역할' },
-  { id:'ranged',  blockType:4, line:'back',  name:'원거리 딜러', blockName:'활석',   desc:'후열에서 약한 적을 노리는 역할' },
-  { id:'support', blockType:1, line:'back',  name:'서포터',      blockName:'마나석', desc:'마나를 다뤄 전장을 뒤흔드는 역할' },
-  { id:'healer',  blockType:2, line:'back',  name:'힐러',        blockName:'치유석', desc:'아군을 회복하고 상태 이상을 관리하는 역할' },
+  { id:'tank',    blockType:3, line:'front', name:'탱커',        blockName:'방패석', desc:'피해를 받아내는 역할 — 모두를 지킬까, 앞줄을 버틸까' },
+  { id:'melee',   blockType:0, line:'front', name:'근접 딜러',   blockName:'대검석', desc:'전열에서 적을 부수는 역할 — 베어낼까, 장갑을 깨뜨릴까' },
+  { id:'ranged',  blockType:4, line:'back',  name:'원거리 딜러', blockName:'조준석', desc:'멀리서 적에게 힘을 겨누는 역할 — 하나를 끝낼까, 여럿을 칠까' },
+  { id:'support', blockType:1, line:'back',  name:'서포터',      blockName:'마나석', desc:'전장을 기울이는 역할 — 적을 독으로 압박할까, 아군을 강화할까' },
+  { id:'healer',  blockType:2, line:'back',  name:'힐러',        blockName:'치유석', desc:'파티를 살리는 역할 — 크게 회복할까, 해로운 효과를 끊을까' },
 ];
 /* ════ v0.30: 아군 진형 (FABLE_TASK_030 — 고정 진형 샘플, 배치 선택 UI는 차기) ════
    화면 좌→우: 서포터(후) / 근접(전) / 힐러(후) / 탱커(전) / 원거리(후) — 지그재그.
@@ -1449,35 +1584,37 @@ const BLOCK_SLOT = {3:'tank', 0:'melee', 4:'ranged', 1:'support', 2:'healer'}; /
 const JOBS = {
   // ── 기본 5직업 (B항목 권장 스탯 — 기존 손맛과 거의 동일: 궁수는 수치 완전 일치) ──
   guardSoldier: { slot:'tank', blockType:3, name:'방패 병사', hp:48, power:6, defense:4,
-    summary:'일정 시간 파티 전체의 피해를 줄이는 기본 탱커', tags:['보호','피해감소','버티기'],
+    summary:'모두를 지킨다 — 파티 전체의 피해를 줄이고 반격하는 범용 수호자', tags:['파티 보호','피해감소','반격'],
     actions:{
       1:{type:'guard', red:0.5,  label:'방어 태세', desc:'6초간 파티 피해 50% 감소'},
       2:{type:'guard', red:0.75, label:'철벽',      desc:'6초간 파티 피해 75% 감소'},
       3:{type:'guard', red:0.75, counter:6, label:'필살·성역', desc:'6초간 75% 감소 + 반격'},
     }},
   greatswordWarrior: { slot:'melee', blockType:0, name:'대검 전사', hp:40, power:10, defense:2,
-    summary:'전열의 적을 안정적으로 베어내는 기본 근접 딜러', tags:['전열','단일 공격'],
+    summary:'베어낸다 — 선두를 안정적으로 끊어내는 근접 딜러', tags:['전열','단일 공격','안정'],
     actions:{
       1:{type:'strikeFront', label:'베기',        desc:'선두 적 피해'},
       2:{type:'strikeFront', label:'강타',        desc:'선두 적 큰 피해'},
       3:{type:'strikeFront', label:'필살·일섬',   desc:'선두 적 매우 큰 피해'},
     }},
   archer: { slot:'ranged', blockType:4, name:'궁수', hp:34, power:8, defense:1,
-    summary:'약한 적을 노려 마무리하는 기본 원거리 딜러 (장기적으로 후열 저격 정체성으로 조정 예정)', tags:['저격','마무리'],
+    summary:'하나를 정확히 끝낸다 — 약한 적을 저격해 마무리하는 단일 원거리 딜러', tags:['저격','단일','마무리'],
     actions:{
       1:{type:'snipeWeak', label:'사격',          desc:'약한 적 피해'},
       2:{type:'snipeWeak', label:'연속 사격',     desc:'약한 적 큰 피해'},
       3:{type:'snipeWeak', label:'필살·관통시',   desc:'약한 적 매우 큰 피해'},
     }},
-  mage: { slot:'support', blockType:1, name:'마법사', hp:28, power:5, defense:0,
-    summary:'전장에 마력을 불어넣어 아군의 다음 일격을 키우는 서포터', tags:['광역','강화','마나'],
-    actions:{ // v0.25: 4/5매치 = action 버프 샘플 (마력 주입/전투 증폭) — 덫꾼(time 독)과의 역할 대비
-      1:{type:'novaAll', label:'화염탄', desc:'적 전체 피해'},
-      2:{type:'empower', targets:1, dmgMult:1.5, label:'마력 주입', desc:'아군 1명의 다음 피해 행동 강화'},
-      3:{type:'empower', targets:2, dmgMult:1.4, label:'전투 증폭', desc:'아군 2명의 다음 피해 행동 강화'},
+  mage: { slot:'ranged', blockType:4, name:'마법사', hp:28, power:5, defense:0,
+    // v0.32: 서포터 → 원거리 딜러 이동 (FABLE_TASK_032 D항목). empower 정체성은 바드에게 이관.
+    // 궁수와의 양자택일: 궁수 = 하나를 정확히 / 마법사 = 여럿을 한꺼번에
+    summary:'여럿을 한꺼번에 친다 — 마력을 겨누어 전장을 흔드는 범위 원거리 딜러', tags:['범위','폭발','전장 공격'],
+    actions:{
+      1:{type:'novaAll', label:'마력탄',     desc:'적 전체 약한 피해'},
+      2:{type:'novaAll', label:'화염 폭발',  desc:'적 전체 피해'},
+      3:{type:'novaAll', label:'유성 낙하',  desc:'적 전체 큰 피해'},
     }},
   priest: { slot:'healer', blockType:2, name:'사제', hp:32, power:9, defense:1,
-    summary:'가장 위험한 아군 하나를 크게 회복하는 기본 힐러', tags:['회복','단일','안정'],
+    summary:'크게 회복한다 — 가장 위험한 아군을 살려내는 힐러', tags:['회복','단일','생존 유지'],
     actions:{
       1:{type:'healSingle', label:'치유',        desc:'가장 위험한 아군 회복'},
       2:{type:'healSingle', label:'대치유',      desc:'가장 위험한 아군 큰 회복'},
@@ -1485,38 +1622,58 @@ const JOBS = {
     }},
   // ── 샘플 신규 3직업 (G항목): 상태이상/방어 체계 검증용 ──
   purifier: { slot:'healer', blockType:2, name:'정화사', hp:30, power:5, defense:1,
-    summary:'낮은 회복과 함께 해로운 효과를 정화하는 힐러', tags:['회복','정화','상태이상 대응'],
+    summary:'해로운 효과를 끊는다 — 정화와 소량 회복의 상태 대응 힐러', tags:['정화','상태 대응','회복'],
     actions:{
       1:{type:'healSingle', label:'정화의 손길', desc:'가장 위험한 아군 소량 회복'},
       2:{type:'cleanseHeal', label:'정화',       desc:'아군 회복 + 해로운 효과 1개 해제'},
       3:{type:'cleanseAll', label:'대정화',      desc:'아군 전체 정화 + 소량 회복'},
     }},
   trapper: { slot:'support', blockType:1, name:'덫꾼', hp:32, power:6, defense:1,
-    summary:'방어를 무시하는 독으로 철갑을 녹이는 서포터', tags:['독','지속피해','방어무시'],
+    summary:'독으로 적을 압박한다 — 방어를 무시하는 지속 피해 서포터', tags:['독','지속피해','적 압박'],
     actions:{ // v0.24 시간 기반 독 → v0.28: 10초/5틱 재조정 — tickDmg는 2초당 피해 (총량 = ×5틱, 연쇄 무관 고정)
       1:{type:'poison', target:'one', tickDmg:2, label:'독침',   desc:'적 1명 중독 — 10초간 퍼짐'},
       2:{type:'poison', target:'one', tickDmg:3, label:'맹독침', desc:'적 1명에게 강한 중독'},
       3:{type:'poison', target:'all', tickDmg:2, label:'독안개', desc:'적 전체 중독'},
     }},
+  // ── v0.32 신규 2직업 (FABLE_TASK_032 E/F항목): 5역할 × 2직업 = 10직업 체계 완성 ──
+  bard: { slot:'support', blockType:1, name:'바드', hp:30, power:4, defense:1,
+    // 마법사의 empower/action 버프 정체성을 승계 — "강화는 저장된다" 문법의 대표 직업.
+    // 덫꾼과의 양자택일: 덫꾼 = 적에게 독을 / 바드 = 아군에게 힘을
+    summary:'아군을 강화한다 — 다음 행동에 힘을 싣는 팀 시너지 서포터', tags:['강화','팀 시너지','action 버프'],
+    actions:{ // heroBuffs/applyEmpower/consumeEmpower 구조 그대로 재사용 (신규 버프 시스템 없음)
+      1:{type:'empower', targets:1, dmgMult:1.3, label:'전투가',      desc:'공격 아군 1명의 다음 피해 행동 ×1.3'},
+      2:{type:'empower', targets:1, dmgMult:1.5, label:'용기의 노래', desc:'공격 아군 1명의 다음 피해 행동 ×1.5'},
+      3:{type:'empower', targets:2, dmgMult:1.4, label:'승전가',      desc:'공격 아군 2명의 다음 피해 행동 ×1.4'},
+    }},
+  bulwark: { slot:'tank', blockType:3, name:'철벽 수호자', hp:52, power:4, defense:5,
+    // 방패 병사와의 양자택일: 방패 병사 = 모두를(파티 전체+반격) / 철벽 수호자 = 앞줄을(전열 한정, 더 강하게).
+    // v0.30 전열/후열 구조 활용 — 도발/어그로 없음, pickDefender 무변경 (K항목 준수)
+    summary:'앞줄을 버틴다 — 전열만 단단히 감싸는 묵직한 벽', tags:['전열 보호','버티기','벽'],
+    actions:{
+      1:{type:'frontGuard', red:0.4,            label:'전열 보호', desc:'6초간 전열 피해 40% 감소'},
+      2:{type:'frontGuard', red:0.6,            label:'전열 방벽', desc:'6초간 전열 피해 60% 감소'},
+      3:{type:'frontGuard', red:0.6, dur:9000,  label:'철벽 진형', desc:'9초간 전열 피해 60% 감소 — 더 오래 버틴다'},
+    }},
   crusher: { slot:'melee', blockType:0, name:'분쇄자', hp:44, power:8, defense:3,
-    summary:'장갑에 균열을 내 후속타의 틈을 여는 철갑 대응 근접 딜러', tags:['전열','방어력 감소','장갑 대응'],
+    summary:'장갑을 깨뜨린다 — 방어 균열로 후속타의 틈을 여는 근접 딜러', tags:['전열','방어력 감소','후속타'],
     actions:{ // v0.26: 방깎 = hit 기반 — 다음 3회 피격까지 (피해/amount 수치는 불변)
       1:{type:'strikeFront', armorBreak:2, label:'분쇄',      desc:'선두 적 피해 + 방어 균열'},
       2:{type:'strikeFront', armorBreak:4, label:'장갑 분쇄', desc:'선두 적 피해 + 큰 방어 균열'},
       3:{type:'strikeFront', armorBreak:6, label:'필살·파갑', desc:'선두 적 큰 피해 + 방어 대균열'},
     }},
 };
-// 슬롯별 직업 풀 (H항목): 근딜/서포터/힐러에 샘플 2번째 직업 — 나머지는 준비 중
+// v0.32: 5역할 × 2직업 = 10직업 체계 (FABLE_TASK_032). 4칸 프레임은 20직업 확장 대비 보존 ('준비 중')
 const SLOT_JOBS = {
-  tank:['guardSoldier',null,null,null],
+  tank:['guardSoldier','bulwark',null,null],
   melee:['greatswordWarrior','crusher',null,null],
-  ranged:['archer',null,null,null],
-  support:['mage','trapper',null,null],
+  ranged:['archer','mage',null,null],       // 조준석: 단일 저격 vs 범위 폭발
+  support:['trapper','bard',null,null],     // 마나석: 적 중독 압박 vs 아군 강화
   healer:['priest','purifier',null,null],
 };
-// 현재 장착 직업 — v0.21: 편성 화면에서 교체 가능, 전투가 이 값을 직접 읽는다
+// 현재 장착 직업 — v0.21: 편성 화면에서 교체 가능, 전투가 이 값을 직접 읽는다.
+// v0.32: support 기본 = 바드 (마법사 empower 승계 — 기본 파티 손맛 보존)
 const equippedJobs = {
-  tank:'guardSoldier', melee:'greatswordWarrior', ranged:'archer', support:'mage', healer:'priest',
+  tank:'guardSoldier', melee:'greatswordWarrior', ranged:'archer', support:'bard', healer:'priest',
 };
 // v0.21: 블록 타입 → 장착 직업/스탯 조회 (전투·UI 공용)
 function jobOf(typeId){ return JOBS[equippedJobs[BLOCK_SLOT[typeId]]]; }
@@ -1762,6 +1919,7 @@ function actionDesc(job, tier){
     case 'cleanseHeal': return act.label+' — 가장 위험한 아군 '+v+' 회복 + 해로운 효과 1개 해제';
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
+    case 'frontGuard':  return act.label+' — '+((act.dur||6000)/1000)+'초간 전열 피해 '+Math.round(act.red*100)+'% 감소 (앞줄 한정)'; // v0.32
     case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 10초간 2초마다 '+act.tickDmg+' (방어 무시)';
     case 'empower':     return act.label+' — 공격 아군 '+act.targets+'명의 다음 피해 행동 ×'+act.dmgMult+' (행동까지 보존, 최대 20초)';
   }
@@ -1864,6 +2022,7 @@ function resumeGame(){
   }
   for(const t in heroBuffs){ heroBuffs[t].expiresAt += dt; }
   if(shieldRed > 0) shieldUntil += dt;
+  if(frontRed > 0) frontUntil += dt; // v0.32: 전열 보호도 정지분 연장
   paused = false;
 }
 // async 큐 경계 게이트: 일시정지면 대기, 풀리면 "아직 같은 런/전투인가"를 반환
@@ -2672,7 +2831,9 @@ function renderParty(actType){
     const ratio = cur / max;
     const d = document.createElement('div');
     d.className = 'ally t'+typeId
+      + ' jb-'+equippedJobs[BLOCK_SLOT[typeId]] // v0.32: 직업별 고유 조형 (10직업 아바타)
       + ' '+heroLine(typeId) // v0.30: front/back — 위치·z-index·접지를 CSS가 결정
+      + (heroLine(typeId)==='front' && frontRed>0 ? ' fortified' : '') // v0.32: 전열 보호 중 강조
       + (actType===typeId?' act':'')
       + (mageCharge && typeId===1 ? ' charged':'')
       + (cur<=0 ? ' down' : ratio<=0.3 ? ' warn' : ''); // 쓰러짐 / 저체력 경고
@@ -2697,6 +2858,7 @@ function renderParty(actType){
   const tag = $('#shieldTag');
   // 방패 효과(임시 정책: 파티 전체 보호) 가시화
   $('#partyArea').classList.toggle('shielded', shieldRed>0);
+  $('#partyArea').classList.toggle('frontShield', frontRed>0); // v0.32: 전열 바닥선 강철화
   if(shieldRed>0){
     tag.style.display='inline-block';
     tag.textContent = '방어 중 · 피해 '+Math.round(shieldRed*100)+'% 감소';
@@ -2770,7 +2932,7 @@ async function performHeroAction(a){
       if(tgt){
         const ti0 = enemies.indexOf(tgt);
         // v0.31 (D항목): 공방 시퀀스 — ①행동자 강조(act) ②행동선 ③도착 ④베기 FX ⑤피해/피격 반응
-        drawLine(heroChipEl(0), enemyEl(ti0), TYPE_COLORS[0], {width:6, bend:10, duration:150});
+        drawLine(heroChipEl(a.type), enemyEl(ti0), TYPE_COLORS[a.type], {width:6, bend:10, duration:150}); // v0.32: a.type 일반화
         await delay(160); // 선이 닿는 텀 — "공방"이 보인다
         if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망(독 틱 등) — 헛스윙 처리
         spawnSlashFX(enemyEl(ti0), TYPE_COLORS[0], a.tier===3); // v0.31: 베기 궤적 (5매치는 큼)
@@ -2807,17 +2969,17 @@ async function performHeroAction(a){
         banner('🔮 '+job.name+' 집중! 다음 마나석 매치에 원형 파동', 'shield'); // v0.31: 로그 제거 — banner+링이 자막
         renderParty(a.type);   // 집중 링 표시
         renderEnemies();       // 적 진영에 예고 원 표시
-        floatText(heroChipEl(1), '🔮 집중', 'guard');
+        floatText(heroChipEl(a.type), '🔮 집중', 'guard'); // v0.32: a.type 일반화 (충전 시스템 휴면 — 부활 시 owner 필요)
       } else {
         // 3매치: 즉시 광역 — v0.31: 선 → (텀) → 도착 폭발 → 피해 (공방 시퀀스)
         targets.forEach((e,k)=>{
-          drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), TYPE_COLORS[1],
+          drawLine(heroChipEl(a.type), enemyEl(enemies.indexOf(e)), TYPE_COLORS[a.type], // v0.32: a.type — 마법사는 이제 조준석(t4)
                    {width:3, bend:26 + k*4, alpha:.8, duration:220});
         });
         await delay(220);
         targets.forEach((e,k)=>{
           if(e.hp <= 0) return; // v0.31: 텀 사이 사망 — 시체 타격/중복 처치 로그 방지
-          setTimeout(()=>spawnBlastFX(enemyEl(enemies.indexOf(e)), TYPE_COLORS[1], false), k*55); // 닿는 순서
+          setTimeout(()=>spawnBlastFX(enemyEl(enemies.indexOf(e)), TYPE_COLORS[a.type], a.tier>=3), k*55); // v0.32: 속성색 일반화 + 5매치(유성)는 big
           hitEnemy(e, val);
         });
         renderEnemies(null, true);
@@ -2836,7 +2998,7 @@ async function performHeroAction(a){
       }
       // v0.31: 선 → (텀) → 침투 링 + ☠ — "독이 스며든다". 반복 로그 제거 (배지+림라이트가 정보)
       targets.forEach((e,k)=>{
-        drawLine(heroChipEl(1), enemyEl(enemies.indexOf(e)), '#7cc25a',
+        drawLine(heroChipEl(a.type), enemyEl(enemies.indexOf(e)), '#7cc25a', // v0.32: a.type 일반화
                  {width:2.6, bend:18 + k*5, alpha:.75, duration:200});
       });
       await delay(200);
@@ -2881,7 +3043,7 @@ async function performHeroAction(a){
         if(act.type==='cleanseHeal') cleansed = cleanseHero(tgt, 1); // 해로운 효과 1개 해제
         renderParty(a.type); // 회복: 대상 플로팅+회복선으로 전달 (☠ 배지도 즉시 소거)
         // v0.31: 회복 아치 → (텀) → 도착 금빛 반짝임 — 회복선이 닿는 게 보인다
-        drawLine(heroChipEl(2), heroChipEl(tgt), TYPE_COLORS[2],
+        drawLine(heroChipEl(a.type), heroChipEl(tgt), TYPE_COLORS[a.type], // v0.32: a.type 일반화
                  {width:3.5, bend:-24, alpha:.9, duration:260});
         await delay(240);
         spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
@@ -2909,7 +3071,7 @@ async function performHeroAction(a){
         applyEmpower(t, act.dmgMult, job.name);
         spawnRingFX(heroChipEl(t), '#b88aff', true); // 안으로 감기는 주입
         spawnAbsorb(heroChipEl(t), '#b88aff', 1.1);
-        floatText(heroChipEl(t), '✦ 다음 행동 강화!', 'guard');
+        floatText(heroChipEl(t), '♪ 다음 행동 강화!', 'guard'); // v0.32: 바드 — 노래가 힘이 된다
       });
       renderParty(a.type); // ✦N 배지 즉시 표시
       if(!targets.length){
@@ -2925,7 +3087,16 @@ async function performHeroAction(a){
       }
       renderParty(a.type); // shielded 외곽선 즉시 반영
       drawGuardRing(); // 임시 정책: 보호는 "파티 전체" — 링이 진영을 감싼다
-      floatText(heroChipEl(3), '🛡 방어', 'guard');
+      floatText(heroChipEl(a.type), '🛡 방어', 'guard');
+    }
+    else if(act.type==='frontGuard'){ // v0.32 철벽 수호자: 전열 한정 피해 감소 — "앞줄을 버틴다"
+      frontRed = Math.max(frontRed, act.red);
+      frontUntil = Date.now() + (act.dur || SHIELD_MS);
+      renderParty(a.type); // 전열 fortified 강조 즉시 반영
+      // 전열 칩들에 강철 링 — "벽이 선다" (전체 링과 구분: 진영 전체가 아니라 앞줄만)
+      aliveHeroes().filter(t=>heroLine(t)==='front')
+        .forEach(t=>spawnRingFX(heroChipEl(t), '#7fa2d8', false));
+      floatText(heroChipEl(a.type), '🧱 전열 보호', 'guard');
     }
     else if(act.type==='snipeWeak'){ // 궁수: 최저 HP 적 저격
       const pool = aliveEnemies();
@@ -2933,15 +3104,15 @@ async function performHeroAction(a){
       if(tgt){
         const ti = enemies.indexOf(tgt);
         // v0.17: 얇고 빠른 화살 점선 — 4매치+(연속 사격)는 90ms 간격 2발 잔상
-        drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4], {dashed:true, width:2.2, linger:300}); // 점선 조준은 짧게
+        drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type], {dashed:true, width:2.2, linger:300}); // 점선 조준은 짧게 (v0.32: a.type)
         if(a.tier >= 2){
-          setTimeout(()=>drawLine(heroChipEl(4), enemyEl(ti), TYPE_COLORS[4],
+          setTimeout(()=>drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type],
                                   {dashed:true, width:2.2, bend:9, alpha:.7, linger:300}), 90);
         }
         await delay(110); // v0.31: 화살이 닿는 짧은 텀 — 저격은 빠르다
         if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망 — 헛발
-        spawnPierceFX(enemyEl(ti), TYPE_COLORS[4]); // v0.31: 관통/박힘
-        if(a.tier===3) spawnImpact(enemyEl(ti), TYPE_COLORS[4], true);
+        spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]); // v0.31: 관통/박힘 (v0.32: 속성색 일반화)
+        if(a.tier===3) spawnImpact(enemyEl(ti), TYPE_COLORS[a.type], true);
         const r = dealDamage(tgt, val);
         floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
         if(tgt.hp<=0) addLog(tgt.name+' 처치!', 'gold');
@@ -3010,6 +3181,11 @@ const BOSS_PREP_MS = 2600;  // 마왕 강공 준비 시간 — 방패 블록을 
 const SPEEDS = {slime:9, goblin:12, bat:17, elite:8, boss:11}; // %/초 (임시값)
 
 let shieldUntil = 0;
+/* v0.32: 철벽 수호자 — 전열 한정 피해 감소 (FABLE_TASK_032 F항목)
+   방패 병사(shieldRed, 파티 전체)와 곱연산 중첩 — 상위호환 없음: 전체 vs 전열의 양자택일.
+   도발/어그로/pickDefender 무변경 */
+let frontRed = 0;
+let frontUntil = 0;
 let attackQueue = [];
 let attackBusy = false;
 
@@ -3043,9 +3219,11 @@ async function enemyAttack(e){
   if(tgt===null) return;
   const raw = e.atk;
   // v0.21: 방패 감소 후 영웅 Defense 감산 — 최종 = max(1, ...)
-  const shielded = Math.round(raw * (1 - shieldRed));
+  // v0.32: 전열 보호(frontGuard) — 대상이 전열이면 추가 감산 (방패 병사와 곱연산 중첩)
+  let shielded = Math.round(raw * (1 - shieldRed));
+  if(frontRed > 0 && heroLine(tgt) === 'front') shielded = Math.round(shielded * (1 - frontRed));
   const eff = Math.max(1, shielded - heroDefOf(tgt));
-  const blocked = (shieldRed>0 || heroDefOf(tgt)>0) && eff<raw;
+  const blocked = (shieldRed>0 || (frontRed>0 && heroLine(tgt)==='front') || heroDefOf(tgt)>0) && eff<raw;
   drawStrikeLine(enemyEl(ei), heroChipEl(tgt), '#e0504a', blocked);
   await delay(160);
   if(blocked) drawBlockFlash(heroChipEl(tgt));
@@ -3115,7 +3293,9 @@ async function bossBigAttack(e){
   await delay(300);
   hitList.forEach(t=>{
     const prev = heroHp[t];
-    const fin = Math.max(1, eff - heroDefOf(t)); // v0.21: 영웅 방어 감산
+    // v0.32: 전열 보호 — 강공도 전열에게는 감산 (배너 기준치 eff는 파티 공통 표기 유지)
+    const base = (frontRed > 0 && heroLine(t) === 'front') ? Math.round(eff * (1 - frontRed)) : eff;
+    const fin = Math.max(1, base - heroDefOf(t)); // v0.21: 영웅 방어 감산
     heroHp[t] -= fin;
     if(heroHp[t] < 0) heroHp[t] = 0; // v0.19: 클램프
     if(prev > 0 && heroHp[t] <= 0){
@@ -3175,6 +3355,10 @@ function tick(){
   updateStatusEffects(now); // v0.24: time 기반 상태이상 — 단일 루프에서 진행
   if(shieldRed>0 && now >= shieldUntil){
     shieldRed = 0; shieldCounter = 0;
+    renderParty();
+  }
+  if(frontRed>0 && now >= frontUntil){ // v0.32: 전열 보호 만료
+    frontRed = 0;
     renderParty();
   }
   for(const e of enemies){
@@ -3371,6 +3555,7 @@ function setupBattle(){
   bossTurn = 0;
   shieldRed = 0;
   shieldCounter = 0;
+  frontRed = 0; frontUntil = 0; // v0.32: 전열 보호 전투 간 미이월
   mageCharge = null; // 전투 간 집중 미이월 (v0.25: 집중 발동 직업은 없으나 시스템 보존)
   heroBuffs = {};    // v0.25: action 버프 전투 간 미이월 — 다시 도전 초기화 보장
   heroStatus = {};   // v0.27: 아군 상태이상(중독) 전투 간 미이월 — 다시 도전 초기화 보장
@@ -3422,6 +3607,7 @@ function renderPartySelect(){
       + '<div class="info">'
       +   '<div class="slotName">'+slot.name+' · '+slot.blockName
       +     ' <i class="lineTag'+(slot.line==='front'?' front':'')+'">'+(slot.line==='front'?'전열':'후열')+'</i></div>' // v0.30
+      +   '<div class="slotAsk">'+slot.desc+'</div>' // v0.32: 역할군의 양자택일 질문 — 선택 이유가 한 줄로
       +   '<div class="jobName">'+job.name+'</div>'
       +   '<div class="jobSummary">'+job.summary+'</div>'
       +   '<div class="slotPicks">'+SLOT_JOBS[slot.id].map(jid=>{
@@ -3456,7 +3642,7 @@ function renderCodexCategory(){
   selectedCodexSlot = null;
   $('#codexBack').style.display = 'none';
   $('#codexTitle').textContent = '직업 도감';
-  $('#codexSub').textContent = '5개의 직업 카테고리 — 앞으로 카테고리당 4직업, 총 20직업으로 확장';
+  $('#codexSub').textContent = '5개의 역할군 × 2직업 = 10직업 — 역할군마다 양자택일 (장기: 카테고리당 4직업)'; // v0.32
   const body = $('#codexBody');
   body.innerHTML = '';
   body.scrollTop = 0;
