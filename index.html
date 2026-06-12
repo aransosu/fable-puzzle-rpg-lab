@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.38 — FABLE_TASK_038: Chain Momentum & Cascade Acceleration Pass
+<!-- Emblem Quest Lab v0.39 — FABLE_TASK_039: Shield Gem 4 Job Foundation / Guardian Choice
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -10,7 +10,8 @@
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
            v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
-           v0.35: Stage Composition / v0.36: Readability Playtest / v0.37: Damage & Signature FX -->
+           v0.35: Stage Composition / v0.36: Readability Playtest / v0.37: Damage & Signature FX /
+           v0.38: Chain Momentum -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -1253,6 +1254,78 @@
     box-shadow:-9px 8px 0 -2px #8a9cc0, 9px 8px 0 -2px #8a9cc0, -9px 28px 0 -2px #8a9cc0, 9px 28px 0 -2px #8a9cc0;
   }
   /* v0.32: 전열 보호(fortified) 강조 — 철벽 수호자의 가호가 전열 칩에 보인다 */
+  /* ── 맹세의 수호자 · 탱커 — 흰+금 서약 기사: 금색 어깨띠 + 가슴 서약 문양 + 둥근 빛방패 ── */
+  .jb-oathGuardian{--leg:#6a6050;--arm:#9a8d72;}
+  .jb-oathGuardian .torso{background:linear-gradient(#efe8d8,#c2b698);width:46px;}
+  .jb-oathGuardian .torso::before{ /* 가슴의 서약 문양 — 금빛 매듭 */
+    content:'∞';position:absolute;top:2px;left:50%;transform:translateX(-50%);
+    font-size:15px;font-weight:900;color:#caa54a;
+    text-shadow:0 0 6px rgba(240,210,130,.9);
+  }
+  .jb-oathGuardian .torso::after{ /* 금색 어깨띠(새시) — 빛의 끈 */
+    content:'';position:absolute;top:-2px;left:6px;
+    width:7px;height:34px;background:linear-gradient(#f0d282,#caa54a);
+    border-radius:4px;transform:rotate(-22deg);
+  }
+  .jb-oathGuardian .gear{ /* 둥근 빛방패 — 작고 따뜻한 라운드 실드 (왼쪽) */
+    left:-8px;top:36px;width:26px;height:26px;
+    background:radial-gradient(circle at 40% 35%, #fdf7e4, #d8c592 58%, #9a834e);
+    border:3px solid #8a6a2d;border-radius:50%;z-index:7;
+    box-shadow:0 0 6px rgba(240,210,130,.5);
+  }
+  .jb-oathGuardian .gear::before{ /* v0.34 문법: 방패 모서리를 잡은 손 */
+    content:'';position:absolute;top:8px;right:-4px;
+    width:8px;height:9px;background:#e6c699;border-radius:50%;
+  }
+  .jb-oathGuardian .gear2{ /* 금 서클릿 */
+    top:9px;left:50%;transform:translateX(-50%);
+    width:38px;height:6px;background:#caa54a;border-radius:4px;z-index:6;
+  }
+  /* ── 도발 기사 · 탱커 — 진홍 갑주 + 문장 깃발 + ❗ 문양: "나를 봐라" ── */
+  .jb-tauntKnight{--leg:#4a1c1c;--arm:#8a3a30;}
+  .jb-tauntKnight .torso{background:linear-gradient(#b04438,#7e2a24);width:48px;}
+  .jb-tauntKnight .torso::before{ /* 가슴의 도발 문양 */
+    content:'❗';position:absolute;top:3px;left:50%;transform:translateX(-50%);
+    font-size:13px;font-weight:900;color:#ffd97a;
+    text-shadow:0 0 6px rgba(255,154,141,.9);
+  }
+  .jb-tauntKnight .gear{ /* 문장 깃발 — 높이 든 폴 + 진홍 삼각기 (오른쪽 위) */
+    right:-4px;top:-16px;width:5px;height:64px;
+    background:#5a4226;border-radius:3px;
+  }
+  .jb-tauntKnight .gear::after{ /* 펄럭이는 삼각기 */
+    content:'';position:absolute;top:1px;right:4px;width:0;height:0;
+    border-top:9px solid transparent;border-bottom:9px solid transparent;
+    border-right:22px solid #d84838;
+    filter:drop-shadow(0 0 4px rgba(224,80,74,.55));
+  }
+  .jb-tauntKnight .gear::before{ /* 폴 하단을 쥔 손 */
+    content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+    width:10px;height:9px;background:#e6c699;border-radius:50%;
+  }
+  .jb-tauntKnight .gear2{ /* 붉은 깃 장식 투구 */
+    top:8px;left:50%;transform:translateX(-50%);
+    width:42px;height:14px;background:linear-gradient(#aab8d0,#7a8aa8);
+    border-radius:11px 11px 4px 4px;z-index:6;
+  }
+  .jb-tauntKnight .gear2::after{ /* 투구 위 붉은 깃 */
+    content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    width:7px;height:10px;background:#d84838;border-radius:4px 4px 0 0;
+  }
+  /* v0.39: 결속/도발 표시 — 기존 상태 언어(☠ 녹/✦ 골드/🧱 강철)와 구분: 결속=따뜻한 금끈, 도발=붉음 */
+  .ally.oathed .av{filter:drop-shadow(0 0 4px rgba(240,210,130,.55));}
+  .ally.taunting .av{filter:drop-shadow(0 0 5px rgba(224,80,74,.6));}
+  .oathTag{ /* 좌측 중단 — ☠(좌상)/✦(우상)과 비충돌 */
+    position:absolute;top:16px;left:-7px;font-size:9.5px;font-weight:900;
+    background:#2e2616;border:1px solid #8a6a2d;border-radius:8px;padding:1px 4px;
+    color:#f0d282;z-index:6;
+  }
+  .tauntTag{ /* 좌측 중단 — ☠(좌상)/✦(우상)과 비충돌 */
+    position:absolute;top:16px;left:-7px;font-size:9.5px;font-weight:900;
+    background:#321414;border:1px solid #8a3a30;border-radius:8px;padding:1px 4px;
+    color:#ff9a8d;z-index:6;
+  }
+  .tauntTag b{color:#ffd97a;}
   .ally.fortified .mini{box-shadow:0 0 7px rgba(110,160,230,.85), 0 0 0 1.5px #46659e;}
   .ally.fortified .shadow{
     background:radial-gradient(ellipse, rgba(70,110,180,.55) 0%, rgba(0,0,0,0) 74%);
@@ -1315,7 +1388,8 @@
   @keyframes orbSurge{45%{box-shadow:0 0 17px rgba(205,165,255,1);transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1)}}
   .ally.gain.jb-priest .gear, .ally.gain.jb-purifier .gear{animation:haloSurge .3s ease-out;} /* 사제/정화사: 금빛·은빛이 스며듦 */
   @keyframes haloSurge{45%{box-shadow:0 0 16px rgba(240,210,110,1);opacity:1}}
-  .ally.gain.jb-guardSoldier .gear, .ally.gain.jb-bulwark .gear{animation:shieldGlint .3s ease-out;} /* 방패 병사/철벽: 남청 막이 방패에 번쩍 */
+  .ally.gain.jb-guardSoldier .gear, .ally.gain.jb-bulwark .gear,
+  .ally.gain.jb-oathGuardian .gear, .ally.gain.jb-tauntKnight .gear{animation:shieldGlint .3s ease-out;} /* 방패석 4직업: 막이 번쩍 */
   @keyframes shieldGlint{45%{filter:brightness(1.6);box-shadow:0 0 12px rgba(120,165,230,.95)}100%{filter:brightness(1)}}
   .ally.gain.jb-archer .gear::after{animation:stringFlash .3s ease-out;} /* 궁수: 청록 빛이 시위를 스침 */
   @keyframes stringFlash{45%{opacity:1;box-shadow:0 0 8px rgba(120,230,195,.95)}100%{opacity:.65}}
@@ -1645,7 +1719,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.38 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.39 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1748,7 +1822,7 @@ function applyFxTune(){
    - hp는 HERO_MAX와 동일값 표시용. power/defense는 v0.21 스탯 프레임워크용 자리 (전투 미적용)
    - 매치 설명은 JOBS.actions + actionValue 공식에서 생성 — 도감과 전투의 단일 진실 소스 */
 const JOB_SLOTS = [ // v0.30: line = 슬롯의 기본 진형 (front 전열 / back 후열) — 배치 UI 도입 대비 데이터화
-  { id:'tank',    blockType:3, line:'front', name:'탱커',        blockName:'방패석', desc:'피해를 받아내는 역할 — 모두를 지킬까, 앞줄을 버틸까' },
+  { id:'tank',    blockType:3, line:'front', name:'탱커',        blockName:'방패석', desc:'위험을 어떻게 받아낼까 — 지킬까, 버틸까, 나눌까, 끌어올까' },
   { id:'melee',   blockType:0, line:'front', name:'근접 딜러',   blockName:'대검석', desc:'전열에서 적을 부수는 역할 — 베어낼까, 장갑을 깨뜨릴까' },
   { id:'ranged',  blockType:4, line:'back',  name:'원거리 딜러', blockName:'조준석', desc:'멀리서 적에게 힘을 겨누는 역할 — 하나를 끝낼까, 여럿을 칠까' },
   { id:'support', blockType:1, line:'back',  name:'서포터',      blockName:'마나석', desc:'전장을 기울이는 역할 — 적을 독으로 압박할까, 아군을 강화할까' },
@@ -1840,6 +1914,26 @@ const JOBS = {
       2:{type:'frontGuard', red:0.6,            label:'전열 방벽', desc:'6초간 전열 피해 60% 감소'},
       3:{type:'frontGuard', red:0.6, dur:9000,  label:'철벽 진형', desc:'9초간 전열 피해 60% 감소 — 더 오래 버틴다'},
     }},
+  // ── v0.39 (FABLE_TASK_039): 방패석 4직업 확장 — "위험을 어떻게 받아낼 것인가?"
+  //    방패 병사(모두를) / 철벽(앞줄을) / 맹세(고통을 나눠) / 도발(위험을 끌어와) — 상위호환 없는 4방식
+  oathGuardian: { slot:'tank', blockType:3, name:'맹세의 수호자', hp:46, power:5, defense:3,
+    // 결속: 막는 게 아니라 함께 맞는다 — 위험한 아군의 피해 일부를 자신이 나눠 받는다.
+    // 철벽과 달리 전열/후열 무관, 도발과 달리 타겟은 그대로 둔다
+    summary:'고통을 나눠 입는다 — 위험한 아군의 피해를 함께 받는 결속의 탱커', tags:['결속','피해 분담','희생'],
+    actions:{
+      1:{type:'oath', share:0.30, dur:6000, label:'수호 맹세', desc:'가장 위험한 아군의 피해 30%를 6초간 나눠 받는다'},
+      2:{type:'oath', share:0.40, dur:6000, label:'굳은 맹세', desc:'가장 위험한 아군의 피해 40%를 6초간 나눠 받는다'},
+      3:{type:'oath', share:0.50, dur:9000, label:'불굴의 맹세', desc:'가장 위험한 아군의 피해 50%를 9초간 나눠 받는다'},
+    }},
+  tauntKnight: { slot:'tank', blockType:3, name:'도발 기사', hp:50, power:4, defense:4,
+    // 도발: 맞을 사람을 자신으로 바꾼다 — 일정 시간 적의 공격을 끌어오고 보호막으로 버틴다.
+    // 박쥐의 후열 우선보다도 도발이 우선 (태스크 권장 — 도발의 의미가 선명해야 한다)
+    summary:'위험을 끌어온다 — 적의 공격을 자신에게 모으고 보호막으로 버티는 탱커', tags:['도발','보호막','버티기'],
+    actions:{
+      1:{type:'taunt', dur:4000, shield:6,  label:'도발',        desc:'4초간 적이 자신을 노린다 + 보호막 6'},
+      2:{type:'taunt', dur:6000, shield:10, label:'굳건한 도발', desc:'6초간 적이 자신을 노린다 + 보호막 10'},
+      3:{type:'taunt', dur:8000, shield:16, label:'기사의 선언', desc:'8초간 적이 자신을 노린다 + 보호막 16'},
+    }},
   crusher: { slot:'melee', blockType:0, name:'분쇄자', hp:44, power:8, defense:3,
     summary:'장갑을 깨뜨린다 — 방어 균열로 후속타의 틈을 여는 근접 딜러', tags:['전열','방어력 감소','후속타'],
     actions:{ // v0.26: 방깎 = hit 기반 — 다음 3회 피격까지 (피해/amount 수치는 불변)
@@ -1849,8 +1943,8 @@ const JOBS = {
     }},
 };
 // v0.32: 5역할 × 2직업 = 10직업 체계 (FABLE_TASK_032). 4칸 프레임은 20직업 확장 대비 보존 ('준비 중')
-const SLOT_JOBS = {
-  tank:['guardSoldier','bulwark',null,null],
+const SLOT_JOBS = { // v0.39: 방패석 4 / 4 — 20직업 확장 1단계 (다른 역할군은 2 / 4 유지)
+  tank:['guardSoldier','bulwark','oathGuardian','tauntKnight'],
   melee:['greatswordWarrior','crusher',null,null],
   ranged:['archer','mage',null,null],       // 조준석: 단일 저격 vs 범위 폭발
   support:['trapper','bard',null,null],     // 마나석: 적 중독 압박 vs 아군 강화
@@ -2106,6 +2200,8 @@ function actionDesc(job, tier){
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
     case 'frontGuard':  return act.label+' — '+((act.dur||6000)/1000)+'초간 전열 피해 '+Math.round(act.red*100)+'% 감소 (앞줄 한정)'; // v0.32
+    case 'oath':        return act.label+' — '+(act.dur/1000)+'초간 가장 위험한 아군의 피해 '+Math.round(act.share*100)+'%를 나눠 받음'; // v0.39
+    case 'taunt':       return act.label+' — '+(act.dur/1000)+'초간 적의 공격을 자신에게 + 보호막 '+act.shield; // v0.39
     case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 10초간 2초마다 '+act.tickDmg+' (방어 무시)';
     case 'empower':     return act.label+' — 공격 아군 '+act.targets+'명의 다음 피해 행동 ×'+act.dmgMult+' (행동까지 보존, 최대 20초)';
   }
@@ -2209,6 +2305,8 @@ function resumeGame(){
   for(const t in heroBuffs){ heroBuffs[t].expiresAt += dt; }
   if(shieldRed > 0) shieldUntil += dt;
   if(frontRed > 0) frontUntil += dt; // v0.32: 전열 보호도 정지분 연장
+  if(oath) oath.until += dt;          // v0.39: 결속/도발도 동결
+  if(taunt) taunt.until += dt;
   paused = false;
 }
 // async 큐 경계 게이트: 일시정지면 대기, 풀리면 "아직 같은 런/전투인가"를 반환
@@ -3052,6 +3150,8 @@ function renderParty(actType){
       + ' jb-'+equippedJobs[BLOCK_SLOT[typeId]] // v0.32: 직업별 고유 조형 (10직업 아바타)
       + ' '+heroLine(typeId) // v0.30: front/back — 위치·z-index·접지를 CSS가 결정
       + (heroLine(typeId)==='front' && frontRed>0 ? ' fortified' : '') // v0.32: 전열 보호 중 강조
+      + (oath && (typeId===oath.guardian || typeId===oath.ward) ? ' oathed' : '') // v0.39: 결속 — 금색 끈
+      + (taunt && typeId===taunt.holder ? ' taunting' : '') // v0.39: 도발 — 붉은 타겟 외곽
       + (actType===typeId?' act':'')
       + (mageCharge && typeId===1 ? ' charged':'')
       + (cur<=0 ? ' down' : ratio<=0.3 ? ' warn' : ''); // 쓰러짐 / 저체력 경고
@@ -3065,6 +3165,9 @@ function renderParty(actType){
       +   '<div class="gear"></div><div class="gear2"></div>'
       + '</div>'
       + (heroBuffs[typeId] ? '<div class="buffTag">✦<b>'+heroBuffs[typeId].uses+'</b></div>' : '') // v0.29: 횟수=골드 (적 ×N과 동일 문법)
+      + (oath && typeId===oath.ward && cur>0 ? '<div class="oathTag">🤝</div>' : '') // v0.39: 결속 대상 배지
+      + (taunt && typeId===taunt.holder && cur>0 && taunt.barrier>0
+          ? '<div class="tauntTag">❗<b>'+taunt.barrier+'</b></div>' : '') // v0.39: 보호막 잔량
       + ((heroStatus[typeId] && heroStatus[typeId].poison && cur>0) ? (()=>{ // v0.27: 아군 중독 배지
           const p = heroStatus[typeId].poison;
           const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
@@ -3321,6 +3424,29 @@ async function performHeroAction(a){
       drawGuardRing(); // 임시 정책: 보호는 "파티 전체" — 링이 진영을 감싼다
       floatText(heroChipEl(a.type), '🛡 방어', 'guard');
     }
+    else if(act.type==='oath'){ // v0.39 맹세의 수호자: 가장 위험한 아군과 결속 — "함께 맞는다"
+      const pool = aliveHeroes().filter(t=>t !== a.type);
+      const ward = pool.length ? pool.reduce((m,t)=> (heroHp[t]/heroMaxOf(t)) < (heroHp[m]/heroMaxOf(m)) ? t : m, pool[0]) : null;
+      if(ward !== null){
+        oath = { guardian: a.type, ward, share: act.share, until: Date.now() + act.dur };
+        renderParty(a.type); // 결속 표시 즉시 반영
+        // 빛의 끈 — 수호자→대상 금색 연결선 + 양쪽 표식
+        drawLine(heroChipEl(a.type), heroChipEl(ward), '#f0d282', {width:2.6, bend:-16, alpha:.85, duration:240, linger:560});
+        spawnRingFX(heroChipEl(ward), '#f0d282', true); // 결속이 감긴다
+        floatText(heroChipEl(a.type), '🤝 맹세!', 'guard');
+        floatText(heroChipEl(ward), '🤝 결속', 'guard');
+      } else {
+        floatText(heroChipEl(a.type), '대상 없음', 'guard');
+      }
+    }
+    else if(act.type==='taunt'){ // v0.39 도발 기사: 위험을 끌어오고 보호막으로 버틴다
+      taunt = { holder: a.type, until: Date.now() + act.dur,
+                barrier: Math.round(act.shield * a.mult) }; // 연쇄 보너스는 보호막에만 (수치 원칙: 단순)
+      renderParty(a.type);
+      spawnRingFX(heroChipEl(a.type), '#e0504a', false); // 붉은 타겟 링 — "나를 봐라"
+      drawGuardRing(); // 보호막 — 기존 shield 계열 시각 언어 재사용
+      floatText(heroChipEl(a.type), '❗ 도발! 나를 봐라!', 'dmg');
+    }
     else if(act.type==='frontGuard'){ // v0.32 철벽 수호자: 전열 한정 피해 감소 — "앞줄을 버틴다"
       frontRed = Math.max(frontRed, act.red);
       frontUntil = Date.now() + (act.dur || SHIELD_MS);
@@ -3405,6 +3531,9 @@ async function processHeroActions(){
 // 적 공격 대상 선정 (임시 우선순위): 방패 병사(탱커) 생존 → 대검 전사 생존 → 최저 HP 생존 영웅
 // 향후 몬스터별 타겟팅으로 확장 가능하도록 단일 지점으로 분리
 function pickDefender(attacker){
+  // v0.39: 도발 — 모든 위험을 자신에게. 박쥐의 후열 우선보다도 우선한다 (태스크 권장:
+  // 그래야 도발의 의미가 선명하다). 보스 강공(전원 타격)은 기존대로 전체 — 도발 무관
+  if(taunt && Date.now() < taunt.until && !isFallen(taunt.holder)) return taunt.holder;
   /* v0.30: 전열/후열 타겟팅 — 단순 샘플 (어그로/도발/위협도 없음, 차기 R&D)
      일반 적: 전열(근접·탱커) 우선 — HP 비율 최저, 동률이면 탱커가 받아낸다. 전열 전멸 시 후열.
      박쥐 계열(kind 'bat' — 독성 박쥐 포함): 후열 우선 압박 샘플. 후열 전멸 시 전열. */
@@ -3439,6 +3568,12 @@ let shieldUntil = 0;
    도발/어그로/pickDefender 무변경 */
 let frontRed = 0;
 let frontUntil = 0;
+/* v0.39: 방패석 신규 상태 2종 (FABLE_TASK_039) — 둘 다 t3 슬롯 전용이라 동시 존재 불가.
+   oath  = 결속: ward가 받는 피해의 share만큼 guardian이 나눠 받는다 (적 일반 공격 한정 —
+           보스 강공(전원 타격)과 독 틱(흐르는 피해)은 분담 비대상: "공격을 나눠 받는다"의 의미 보존)
+   taunt = 도발: pickDefender가 holder를 최우선 선택 (박쥐 후열 우선보다 우선) + 개인 흡수 보호막 */
+let oath = null;  // {guardian, ward, share, until}
+let taunt = null; // {holder, until, barrier}
 let attackQueue = [];
 let attackBusy = false;
 
@@ -3481,8 +3616,34 @@ async function enemyAttack(e){
   drawStrikeLine(enemyEl(ei), heroChipEl(tgt), '#e0504a', blocked);
   await delay(160);
   if(blocked) drawBlockFlash(heroChipEl(tgt));
+  // v0.39: 도발 보호막 — 최종 피해를 흡수 (기사 본인 피격 한정, 0까지 허용)
+  let fin = eff, absorbed = 0;
+  if(taunt && tgt === taunt.holder && taunt.barrier > 0 && Date.now() < taunt.until){
+    absorbed = Math.min(taunt.barrier, fin);
+    taunt.barrier -= absorbed;
+    fin -= absorbed;
+  }
+  // v0.39: 맹세 분담 — ward의 최종 피해 share만큼 guardian이 나눠 받는다 ("함께 맞는다")
+  let shared = 0;
+  if(oath && tgt === oath.ward && Date.now() < oath.until
+     && !isFallen(oath.guardian) && heroHp[oath.guardian] > 0){
+    shared = Math.floor(fin * oath.share);
+    if(shared > 0){
+      fin -= shared;
+      const gPrev = heroHp[oath.guardian];
+      heroHp[oath.guardian] = Math.max(0, heroHp[oath.guardian] - shared);
+      // 나눔의 순간: 결속선 짧은 재점등 + 수호자 쪽 피해 플로팅
+      drawLine(heroChipEl(tgt), heroChipEl(oath.guardian), '#f0d282', {width:2, bend:-12, alpha:.7, duration:160, linger:260});
+      floatText(heroChipEl(oath.guardian), '🤝 -'+shared, 'guard');
+      hurtHero(oath.guardian);
+      if(gPrev > 0 && heroHp[oath.guardian] <= 0){
+        addLog('💔 '+heroNameOf(oath.guardian)+'이(가) 맹세를 지키다 쓰러졌다!', 'boss');
+        oath = null; // 결속 즉시 해제
+      }
+    }
+  }
   const prevHp = heroHp[tgt];
-  heroHp[tgt] -= eff;
+  heroHp[tgt] -= fin;
   if(heroHp[tgt] < 0) heroHp[tgt] = 0; // v0.19: 0 미만 유지 안 함 (이미 0이면 추가 피해 무의미)
   if(prevHp > 0 && heroHp[tgt] <= 0){
     addLog('💔 '+heroNameOf(tgt)+'이(가) 쓰러졌다!', 'boss'); // 강한 정보 (v0.14 토스트 정책 유지)
@@ -3493,8 +3654,12 @@ async function enemyAttack(e){
   hurtHero(tgt);
   spawnImpact(heroChipEl(tgt), blocked ? '#ffd97a' : '#e0504a', false); // v0.17: 피격 스파크
   // v0.36 (D-5항목): 무엇이 막았는지 구분 — 철벽(전열 한정)은 🧱, 방패/방어는 🛡.
-  // "철벽은 앞줄을 버틴다"가 매 피격 플로팅에서 읽힌다
-  floatText(heroChipEl(tgt), blocked ? (frontHit ? '🧱 ' : '🛡 ')+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
+  // v0.39: 도발 흡수로 0이면 "❗ 흡수!" 단독 (소음 최소 — 잔량은 ❗N 배지가 전달)
+  if(absorbed > 0 && fin === 0 && shared === 0){
+    floatText(heroChipEl(tgt), '❗ 흡수!', 'guard');
+  } else {
+    floatText(heroChipEl(tgt), blocked ? (frontHit ? '🧱 ' : '🛡 ')+raw+'→'+fin : '-'+fin, blocked?'guard':'dmg');
+  }
   // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
   if(e.venom && heroHp[tgt] > 0){
     applyHeroPoison(tgt, 1, 'venomBat'); // v0.28: 10초간 2초마다 1 — 총 5, 방어 무시 (구 6초/2×3=6)
@@ -3618,6 +3783,12 @@ function tick(){
   if(frontRed>0 && now >= frontUntil){ // v0.32: 전열 보호 만료
     frontRed = 0;
     renderParty();
+  }
+  if(oath && (now >= oath.until || isFallen(oath.guardian) || isFallen(oath.ward))){
+    oath = null; renderParty(); // v0.39: 맹세 만료/어느 한쪽 쓰러짐 — 결속 해제
+  }
+  if(taunt && (now >= taunt.until || isFallen(taunt.holder))){
+    taunt = null; renderParty(); // v0.39: 도발 만료/기사 쓰러짐 — 즉시 종료
   }
   for(const e of enemies){
     if(e.hp<=0) continue;
@@ -3831,6 +4002,7 @@ function setupBattle(){
   shieldRed = 0;
   shieldCounter = 0;
   frontRed = 0; frontUntil = 0; // v0.32: 전열 보호 전투 간 미이월
+  oath = null; taunt = null;    // v0.39: 결속/도발 전투 간 미이월
   mageCharge = null; // 전투 간 집중 미이월 (v0.25: 집중 발동 직업은 없으나 시스템 보존)
   heroBuffs = {};    // v0.25: action 버프 전투 간 미이월 — 다시 도전 초기화 보장
   heroStatus = {};   // v0.27: 아군 상태이상(중독) 전투 간 미이월 — 다시 도전 초기화 보장
