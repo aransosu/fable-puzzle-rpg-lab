@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.36 — FABLE_TASK_036: Status & Role Readability Playtest Pass
+<!-- Emblem Quest Lab v0.37 — FABLE_TASK_037: Damage Readability & Signature Action FX Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -10,7 +10,7 @@
            v0.27: Enemy Poison & Cleanse / v0.28: Readability & Status Visibility /
            v0.29: Presence & Space Expansion / v0.30: Ally Formation / v0.31: Exchange FX /
            v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
-           v0.35: Stage Composition -->
+           v0.35: Stage Composition / v0.36: Readability Playtest -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -337,7 +337,33 @@
     text-shadow:0 1px 3px rgba(0,0,0,.7);
     white-space:nowrap;
   }
-  .float.dmg{color:#ff8a7d;}
+  /* v0.37 (A항목): 데미지 = 전투 판단 정보. 종류별 언어 분리 —
+     dmg 일반(적) / dmgBig 강화 일격 / clang 철갑 막힘("안 박힌다") / poison 독("흐르는 피해") */
+  .float.dmg{color:#ff8a7d;font-size:16px;}
+  .float.dmgBig{
+    color:#e7c4ff;font-size:18.5px;font-weight:900;
+    text-shadow:0 0 9px rgba(202,166,255,.75), 0 1px 3px rgba(0,0,0,.7);
+  }
+  .float.clang{ /* 철갑/방어 막힘 — 탁한 강철, 둔탁하게 튕겨 떨어짐: "이건 그냥은 안 들어간다" */
+    color:#9aa6b8;font-size:13.5px;font-weight:900;
+    animation:clangDrop .8s ease-out forwards;
+  }
+  @keyframes clangDrop{
+    0%{opacity:0;transform:translate(-50%,2px) scale(.9)}
+    18%{opacity:1;transform:translate(calc(-50% + 3px),-4px) scale(1.06)}
+    36%{transform:translate(calc(-50% - 2px),-7px) scale(1)}
+    100%{opacity:0;transform:translate(-50%,3px) scale(.9)}
+  }
+  .float.poison{ /* 독 — 녹색 + 좌우 흔들림 (나라님 PASS 표현의 명문화) */
+    color:#9fe07a;animation:poisonShake .85s ease-out forwards;
+  }
+  @keyframes poisonShake{
+    0%{opacity:0;transform:translate(-50%,6px) scale(.8)}
+    16%{opacity:1;transform:translate(calc(-50% - 3px),0) scale(1.08)}
+    32%{transform:translate(calc(-50% + 3px),-5px)}
+    48%{transform:translate(calc(-50% - 2px),-9px)}
+    100%{opacity:0;transform:translate(-50%,-22px) scale(1)}
+  }
   .float.heal{color:#7df0a0;}
   .float.guard{color:#ffd97a;}
   @keyframes floatUp{
@@ -689,6 +715,52 @@
     0%{transform:translate(-50%,-50%) scale(1.5) rotate(0deg);opacity:0}
     30%{opacity:.95}
     100%{transform:translate(-50%,-50%) scale(.4) rotate(-50deg);opacity:0}
+  }
+  .fxScope{ /* v0.37: 궁수 5매치 조준 — 십자선 링이 "찌이잉" 수축 잠금 */
+    position:absolute;width:34px;height:34px;border-radius:50%;
+    border:2px solid var(--fc,#fff);
+    box-shadow:0 0 7px var(--fc,#fff), inset 0 0 5px var(--fc,#fff);
+    transform:translate(-50%,-50%) scale(1.8);opacity:0;
+    animation:scopeLock .44s ease-in forwards;pointer-events:none;
+  }
+  .fxScope::before,.fxScope::after{content:'';position:absolute;background:var(--fc,#fff);opacity:.9;}
+  .fxScope::before{left:50%;top:-5px;bottom:-5px;width:1.5px;transform:translateX(-50%);}
+  .fxScope::after{top:50%;left:-5px;right:-5px;height:1.5px;transform:translateY(-50%);}
+  @keyframes scopeLock{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(1.9) rotate(24deg)}
+    35%{opacity:.95}
+    100%{opacity:.9;transform:translate(-50%,-50%) scale(.85) rotate(0deg)}
+  }
+  .fxMeteor{ /* v0.37: 마법사 유성 — 위에서 떨어지는 빛줄기 (직후 폭발과 연결) */
+    position:absolute;width:5px;height:34px;border-radius:3px;
+    background:linear-gradient(transparent,#fff 38%,var(--fc,#fff));
+    box-shadow:0 0 7px var(--fc,#fff);
+    transform:translate(-50%,-54px);opacity:0;
+    animation:meteorDrop .26s ease-in forwards;pointer-events:none;
+  }
+  @keyframes meteorDrop{
+    0%{opacity:0;transform:translate(-50%,-56px)}
+    30%{opacity:1}
+    100%{opacity:.9;transform:translate(-50%,-12px)}
+  }
+  .fxHealDrop{ /* v0.37: 치유 분수 입자 — 솟았다 반짝이며 떨어짐 */
+    position:absolute;width:5px;height:5px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#f0d282 55%,transparent 80%);
+    box-shadow:0 0 5px rgba(240,210,130,.95);
+    transform:translate(-50%,-8px);opacity:0;
+    animation:healFount .62s ease-out forwards;pointer-events:none;
+  }
+  .fxNote{ /* v0.37: 바드 음표 — 같은 분수 곡선, 글리프 */
+    position:absolute;font-size:12.5px;font-weight:900;color:#caa6ff;
+    text-shadow:0 0 6px rgba(184,138,255,.95);
+    transform:translate(-50%,-8px);opacity:0;
+    animation:healFount .72s ease-out forwards;pointer-events:none;
+  }
+  @keyframes healFount{
+    0%{opacity:0;transform:translate(-50%,-8px) scale(.5)}
+    24%{opacity:1;transform:translate(calc(-50% + var(--hx,0px)*.6),-27px) scale(1.12)}
+    62%{opacity:.95;transform:translate(calc(-50% + var(--hx,0px)*.9),-18px) scale(.95)}
+    100%{opacity:0;transform:translate(calc(-50% + var(--hx,0px)),-4px) scale(.55)}
   }
   .fxImpact{ /* 타격 스파크: 명중 지점의 짧은 십자 섬광 (D항목) */
     position:absolute;width:22px;height:22px;
@@ -1565,7 +1637,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.36 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.37 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -1872,7 +1944,7 @@ function updateStatusEffects(now){
       p.nextTickAt += p.tickMs;
       renderEnemies(i); // 틱마다 재렌더 → ☠ 남은 횟수 배지 자동 감소
       flashPoisonTick(enemyEl(i)); // v0.28: "지금 독이 들어갔다" 림라이트
-      floatText(enemyEl(i), '☠ -'+p.damage, 'dmg');
+      floatText(enemyEl(i), '☠ -'+p.damage, 'poison'); // v0.37: 독 전용 언어 (녹색·흔들림)
       if(e.hp <= 0){
         addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
         floatText(enemyEl(i), '☠ 중독 처치!', 'guard'); // v0.31: 특수 순간 — 전장 위에서도 읽힌다
@@ -1902,7 +1974,7 @@ function updateStatusEffects(now){
       p.nextTickAt += p.tickMs;
       renderParty();
       flashPoisonTick(heroChipEl(t)); // v0.28: 아군에게도 동일한 발동 신호
-      floatText(heroChipEl(t), '☠ -'+p.damage, 'dmg');
+      floatText(heroChipEl(t), '☠ -'+p.damage, 'poison'); // v0.37: 독 전용 언어
       if(heroHp[t] <= 0){ // 독으로 영웅 쓰러짐 가능
         addLog('💔 '+heroNameOf(t)+'이(가) 중독으로 쓰러졌다!', 'boss');
         delete heroStatus[t]; // 쓰러진 영웅의 독 제거
@@ -2222,6 +2294,37 @@ function spawnFxNode(el, cls, color, opts){
   setTimeout(()=>d.remove(), 480);
 }
 function spawnSlashFX(el, color, big){ spawnFxNode(el, 'fxSlash'+(big?' big':''), color, {angle: -30 - Math.random()*20}); } // 베기
+function spawnHealSparkles(el, n){ // v0.37: 치유 분수 — 머리 위에서 솟았다 떨어지는 금빛 입자 (순차 = "촤라라랑")
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [x, y] = centerOf(el);
+  for(let k = 0; k < (n || 5); k++){
+    const d = document.createElement('div');
+    d.className = 'fxHealDrop';
+    d.style.left = x + 'px';
+    d.style.top = (y - 16) + 'px';
+    d.style.setProperty('--hx', (Math.random()*36 - 18).toFixed(1) + 'px');
+    d.style.animationDelay = (k * 55) + 'ms';
+    layer.appendChild(d);
+    setTimeout(()=>d.remove(), 1150);
+  }
+}
+function spawnNotesFX(el){ // v0.37: 바드 승전가 — 음표가 아군 주위로 감긴다
+  const layer = $('#trailLayer');
+  if(!layer || !el) return;
+  const [x, y] = centerOf(el);
+  ['♪','♫','♪'].forEach((g, k)=>{
+    const d = document.createElement('div');
+    d.className = 'fxNote';
+    d.textContent = g;
+    d.style.left = x + 'px';
+    d.style.top = (y - 14) + 'px';
+    d.style.setProperty('--hx', ((k - 1) * 15 + Math.random()*6 - 3).toFixed(1) + 'px');
+    d.style.animationDelay = (k * 90) + 'ms';
+    layer.appendChild(d);
+    setTimeout(()=>d.remove(), 1100);
+  });
+}
 function spawnBlastFX(el, color, big){ spawnFxNode(el, 'fxBlast'+(big?' big':''), color); }                                   // 폭발
 function spawnPierceFX(el, color){ spawnFxNode(el, 'fxPierce', color); }                                                      // 관통
 function spawnRingFX(el, color, inward){ spawnFxNode(el, 'fxAura'+(inward?' in':''), color); }                                // 정화(밖)/침투·주입(안) — v0.33: 보드 fxRing과 충돌해 개명
@@ -3020,7 +3123,9 @@ async function performHeroAction(a){
       const r = dealDamage(e, raw, opts);
       // v0.31: 틈(armorDown) 이용 타격 — ✂ 마커 (피해가 커진 이유가 읽힌다)
       if(r.brokeArmor) spawnRingFX(enemyEl(enemies.indexOf(e)), '#bcd0ec', false); // v0.36: 틈이 벌어지는 강철 링
-      floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
+      // v0.37 (B항목): 철갑 의도 — 최종 1까지 깎였으면 clang("안 박힌다"), 강화 소비면 dmgBig
+      const fcls = (r.eff <= 1 && r.reduced) ? 'clang' : (empowered ? 'dmgBig' : 'dmg');
+      floatText(enemyEl(enemies.indexOf(e)), (empowered?'✦ ':'')+'-'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), fcls);
       if(e.hp<=0) addLog(e.name+' 처치!', 'gold');
       else checkBossReaction(e); // v0.23: 피해 적용 후 보스 반응 검사
       return r;
@@ -3034,7 +3139,11 @@ async function performHeroAction(a){
         drawLine(heroChipEl(a.type), enemyEl(ti0), TYPE_COLORS[a.type], {width:6, bend:10, duration:150}); // v0.32: a.type 일반화
         await delay(160); // 선이 닿는 텀 — "공방"이 보인다
         if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망(독 틱 등) — 헛스윙 처리
-        spawnSlashFX(enemyEl(ti0), TYPE_COLORS[0], a.tier===3); // v0.31: 베기 궤적 (5매치는 큼)
+        spawnSlashFX(enemyEl(ti0), TYPE_COLORS[a.type], a.tier===3); // v0.31: 베기 궤적 (5매치는 큼)
+        if(a.tier===3) setTimeout(()=>{ // v0.37: 5매치 — 역방향 2격, X자 교차 대베기
+          const el2 = enemyEl(ti0);
+          if(el2) spawnFxNode(el2, 'fxSlash big', TYPE_COLORS[a.type], {angle: 26 + Math.random()*16});
+        }, 110);
         spawnImpact(enemyEl(ti0), TYPE_COLORS[0], a.tier===3);
         hitEnemy(tgt, val);
         if(act.armorBreak && tgt.hp > 0){
@@ -3078,7 +3187,11 @@ async function performHeroAction(a){
         await delay(220);
         targets.forEach((e,k)=>{
           if(e.hp <= 0) return; // v0.31: 텀 사이 사망 — 시체 타격/중복 처치 로그 방지
-          setTimeout(()=>spawnBlastFX(enemyEl(enemies.indexOf(e)), TYPE_COLORS[a.type], a.tier>=3), k*55); // v0.32: 속성색 일반화 + 5매치(유성)는 big
+          if(a.tier >= 3){ // v0.37: 유성 낙하 — 하늘에서 떨어지는 빛줄기 → 폭발 (낙하감)
+            setTimeout(()=>spawnFxNode(enemyEl(enemies.indexOf(e)), 'fxMeteor', TYPE_COLORS[a.type]), k*55);
+          }
+          setTimeout(()=>spawnBlastFX(enemyEl(enemies.indexOf(e)), TYPE_COLORS[a.type], a.tier>=3),
+                     k*55 + (a.tier>=3 ? 140 : 0));
           hitEnemy(e, val);
         });
         renderEnemies(null, true);
@@ -3146,6 +3259,7 @@ async function performHeroAction(a){
                  {width:3.5, bend:-24, alpha:.9, duration:260});
         await delay(240);
         spawnAbsorb(heroChipEl(tgt), TYPE_COLORS[2], 1.15);
+        spawnHealSparkles(heroChipEl(tgt), a.tier===3 ? 8 : 5); // v0.37 (D-7): 머리 위 "촤라라랑" 금빛 분수
         floatText(heroChipEl(tgt), '+'+gained+(cleansed?' ✨':''), 'heal');
         if(cleansed){ // v0.27: 정화 성공은 반드시 읽혀야 한다
           spawnRingFX(heroChipEl(tgt), '#9fe07a', false); // v0.31: 벗겨지는 소거 링
@@ -3170,6 +3284,7 @@ async function performHeroAction(a){
         applyEmpower(t, act.dmgMult, job.name);
         spawnRingFX(heroChipEl(t), '#b88aff', true); // 안으로 감기는 주입
         spawnAbsorb(heroChipEl(t), '#b88aff', 1.1);
+        if(a.tier === 3) spawnNotesFX(heroChipEl(t)); // v0.37: 승전가 — 음표가 감긴다 (3매치는 조용히)
         floatText(heroChipEl(t), '♪ 다음 행동 강화!', 'guard'); // v0.32: 바드 — 노래가 힘이 된다
       });
       renderParty(a.type); // ✦N 배지 즉시 표시
@@ -3202,19 +3317,37 @@ async function performHeroAction(a){
       const tgt = pool.length ? pool.reduce((m,e)=> e.hp<m.hp ? e : m, pool[0]) : null;
       if(tgt){
         const ti = enemies.indexOf(tgt);
-        // v0.17: 얇고 빠른 화살 점선 — 4매치+(연속 사격)는 90ms 간격 2발 잔상
-        drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type], {dashed:true, width:2.2, linger:300}); // 점선 조준은 짧게 (v0.32: a.type)
-        if(a.tier >= 2){
-          setTimeout(()=>drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type],
-                                  {dashed:true, width:2.2, bend:9, alpha:.7, linger:300}), 90);
+        if(a.tier === 3){
+          /* v0.37 (E항목): 5매치 속사 샘플 — "찌이잉" 조준 → 푯푯푯 3발 순차 → 최종 피해 1회.
+             피해 계산은 기존 1회 유지 (연출만 다단) — 실시간 전투의 연속 행동감 */
+          spawnFxNode(enemyEl(ti), 'fxScope', TYPE_COLORS[a.type]);
+          floatText(heroChipEl(a.type), '🎯 조준...', 'guard');
+          await delay(440);
+          for(let k = 0; k < 3; k++){
+            if(tgt.hp <= 0) break; // 조준 중 사망(독 틱 등) — 사격 중단
+            drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type],
+                     {dashed:true, width:2, bend:(k-1)*8, alpha:.85, linger:220});
+            spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]);
+            renderEnemies(ti); // 발마다 짧은 피격 흔들림
+            await delay(120);
+          }
+          if(tgt.hp <= 0){ renderEnemies(); return; } // 속사 도중 사망 — 헛발
+          spawnImpact(enemyEl(ti), TYPE_COLORS[a.type], true);
+        } else {
+          // v0.17: 얇고 빠른 화살 점선 — 4매치(연속 사격)는 90ms 간격 2발 잔상
+          drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type], {dashed:true, width:2.2, linger:300});
+          if(a.tier >= 2){
+            setTimeout(()=>drawLine(heroChipEl(a.type), enemyEl(ti), TYPE_COLORS[a.type],
+                                    {dashed:true, width:2.2, bend:9, alpha:.7, linger:300}), 90);
+          }
+          await delay(110); // v0.31: 화살이 닿는 짧은 텀 — 저격은 빠르다
+          if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망 — 헛발
+          spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]); // v0.31: 관통/박힘
         }
-        await delay(110); // v0.31: 화살이 닿는 짧은 텀 — 저격은 빠르다
-        if(tgt.hp <= 0){ renderEnemies(); return; } // v0.31: 텀 사이 사망 — 헛발
-        spawnPierceFX(enemyEl(ti), TYPE_COLORS[a.type]); // v0.31: 관통/박힘 (v0.32: 속성색 일반화)
-        if(a.tier===3) spawnImpact(enemyEl(ti), TYPE_COLORS[a.type], true);
         const r = dealDamage(tgt, val);
         if(r.brokeArmor) spawnRingFX(enemyEl(ti), '#bcd0ec', false); // v0.36: 틈 이용 가시화 (저격 경로도 동일 언어)
-        floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), 'dmg');
+        const scls = (r.eff <= 1 && r.reduced) ? 'clang' : (empowered ? 'dmgBig' : 'dmg'); // v0.37
+        floatText(enemyEl(ti), (empowered?'✦ ':'')+'🎯 -'+r.eff+(r.brokeArmor?' ✂':r.reduced?' 🛡':''), scls);
         if(tgt.hp<=0){
           floatText(enemyEl(ti), '🎯 마무리!', 'guard'); // v0.36: 궁수 정체성 — 저격으로 끝냈다
           addLog(tgt.name+' 처치!', 'gold');
