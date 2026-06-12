@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.27 — FABLE_TASK_027: Enemy Poison & Cleanse Counterplay Sample
+<!-- Emblem Quest Lab v0.28 — FABLE_TASK_028: Battlefield Readability & Status Visibility Pass
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
            v0.21: 20 Job Framework & Armor / v0.22: 5 Battle Mini Run / v0.23: Boss Reaction /
-           v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown -->
+           v0.24: Hybrid Effect Timing / v0.25: Mage Empower / v0.26: Hit ArmorDown /
+           v0.27: Enemy Poison & Cleanse -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -77,15 +78,17 @@
   }
   /* 3열 진영: 후후열(가장 멀리) → 중간열 → 전열 */
   /* v0.11: 적은 수일 때도 가로로 퍼져 전장을 점유 (space-evenly), 다수일 때는 gap이 최소 간격 */
+  /* v0.28: 모바일 최소 표현 크기 우선 — 원근감은 유지하되 축소 배율을 완화 (.68→.74 / .84→.88),
+     음수 여백도 완화해 후열 HP바/배지가 전열 몸체에 덜 묻히게 */
   .rowBack{
     display:flex;justify-content:space-evenly;align-items:flex-end;gap:6px;
-    transform:scale(.68);opacity:.84;
-    margin-bottom:-6px; /* v0.13: 겹침 완화 — 게이지 가독성 */
+    transform:scale(.74);opacity:.88;
+    margin-bottom:-3px;
   }
   .rowMid{
     display:flex;justify-content:space-evenly;align-items:flex-end;gap:7px;
-    transform:scale(.84);opacity:.93;
-    margin-bottom:-8px; /* v0.13: 겹침 완화 */
+    transform:scale(.88);opacity:.94;
+    margin-bottom:-5px;
   }
   .rowFront{
     display:flex;justify-content:space-evenly;align-items:flex-end;gap:8px;
@@ -143,15 +146,19 @@
   .mob.armored{border-color:#4a6090;} /* 강철톤 테두리 — 한눈에 "단단함" */
   .mob.venom{border-color:#6c4a90;} /* v0.27: 독성 박쥐 — 보랏빛 테두리 (아바타 재작업 없이 구분) */
   .mob.venom .mAv{filter:hue-rotate(40deg) saturate(1.3);} /* 박쥐 조형 재사용 + 독기 틴트 */
-  .mob .stRow{ /* v0.21: 상태이상 미니 배지 (독/방어 감소) */
-    position:absolute;top:-3px;left:-5px;display:flex;gap:2px;z-index:7;
+  .mob .stRow{ /* v0.21 도입 → v0.28: 모바일 가독 보정 (크기/패딩/대비 상향) */
+    position:absolute;top:-5px;left:-5px;display:flex;gap:2px;z-index:7;
   }
   .mob .stRow i{
-    font-style:normal;font-size:8.5px;font-weight:800;
-    background:#241b30;border:1px solid #5b3a5e;border-radius:6px;
-    padding:0 4px;color:#e8c8ff;
+    font-style:normal;font-size:9.5px;font-weight:800;line-height:14px;
+    background:#241b30;border:1px solid #6e4a78;border-radius:7px;
+    padding:0 5px;color:#e8c8ff;
+    box-shadow:0 1px 3px rgba(0,0,0,.5);
   }
-  .mob .stRow i.stA{border-color:#3a5a94;color:#bcd0ec;}
+  .mob .stRow i.stA{border-color:#4a6aa4;color:#bcd0ec;}
+  .mob .stRow b{ /* v0.28: 남은 사용 횟수 — "앞으로 몇 번 더 틈을 이용할 수 있는가" */
+    font-weight:900;color:#ffd97a;margin-left:1px;
+  }
   .mob .intent{
     position:absolute;top:-16px;left:50%;transform:translateX(-50%);
     background:#5b1f1f;color:#ffd28a;border:1px solid #a35b2c;
@@ -171,6 +178,17 @@
   .kind-boss .gauge{width:152px;}
   .mob.ready .gauge i{background:#e08a3a;}
   .mob.ready{animation:tremble .16s linear infinite;}
+  /* v0.28: poison tick 림라이트 — "지금 독이 발동했다"의 단발 신호 (0.42s, 무한 총량 불변).
+     녹색 = 독의 시각 언어 통일 (덫꾼 독/박쥐 독침 동일). ☠-N 플로팅과 역할 분담:
+     플로팅 = 수치, 림라이트 = 발동 순간의 체감. 적 .charge와 겹치면 림라이트가 잠깐 우선,
+     아군 .act(행동 런지)와 겹치면 행동 연출 우선 (캐스케이드 순서 — 의도된 우열) */
+  .mob.ptick .mAv{animation:poisonPulse .42s ease-out;}
+  .ally.ptick .av{animation:poisonPulse .42s ease-out;}
+  @keyframes poisonPulse{
+    0%{filter:brightness(1)}
+    30%{filter:drop-shadow(0 0 9px rgba(140,225,95,.95)) brightness(1.3) saturate(1.3)}
+    100%{filter:brightness(1)}
+  }
   @keyframes tremble{0%,100%{transform:translateX(0)}50%{transform:translateX(1.7px)}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
@@ -232,7 +250,11 @@
   }
 
   /* 박쥐: 날갯짓 */
+  /* v0.28: 소형 몬스터 최소 표현 크기 — hover에 --mScale 합성 (레이아웃 박스 불변, 시각만 보정).
+     박쥐(62×36 본체 ~18px)가 후열 축소까지 겹치면 식별 불가 → 행별 역보정 (실루엣 개성은 유지) */
   .kind-bat .mAv{width:62px;height:36px;animation:hover 1.6s ease-in-out infinite;}
+  .rowBack .kind-bat .mAv{--mScale:1.16;}
+  .rowMid .kind-bat .mAv{--mScale:1.08;}
   .bBody{
     position:absolute;left:50%;top:7px;transform:translateX(-50%);
     width:18px;height:22px;background:#4a3a5e;border-radius:9px;z-index:2;
@@ -247,7 +269,7 @@
   .wr{right:0;clip-path:polygon(0 15%,100% 0,78% 100%,0 85%);transform-origin:left center;animation:flapR .5s ease-in-out infinite alternate;}
   @keyframes flapL{from{transform:rotate(10deg)}to{transform:rotate(-20deg)}}
   @keyframes flapR{from{transform:rotate(-10deg)}to{transform:rotate(20deg)}}
-  @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes hover{0%,100%{transform:translateY(0) scale(var(--mScale,1))}50%{transform:translateY(-5px) scale(var(--mScale,1))}}
 
   /* 거대 보스: 상단 공간을 점유하는 단독 아바타 */
   .kind-boss .mAv{width:196px;height:142px;animation:breath 3s ease-in-out infinite;}
@@ -559,24 +581,35 @@
     background:var(--panel);
     border:1px solid var(--line);
     border-radius:10px;
-    padding:8px 9px 9px; /* 공유 HP바 제거분 — 아바타 진영이 전부 사용 */
+    padding:14px 9px 9px; /* v0.28: 상단 +6px — 상태 배지(필) 헤드룸 확보 */
     position:relative;
     transition:border-color .25s, box-shadow .25s;
+  }
+  #partyArea::after{ /* v0.28: 공통 바닥선 — 간격을 벌려도 "한 팀" 무리감 유지 (정적) */
+    content:'';position:absolute;left:6%;right:6%;bottom:16px;height:2px;
+    border-radius:2px;pointer-events:none;z-index:0;
+    background:linear-gradient(90deg, transparent, rgba(154,147,181,.30) 16%,
+               rgba(154,147,181,.30) 84%, transparent);
   }
   /* 방패 효과 활성: 파티 전체에 방어막 표시 */
   #partyArea.shielded{
     border-color:var(--gold);
     box-shadow:0 0 10px rgba(232,179,75,.4), inset 0 0 14px rgba(232,179,75,.08);
   }
-  /* 아군 5인: 정면 레고형 아바타 무리 (v0.16: 정면 응시 + 조립형 파츠) */
+  /* 아군 5인: 정면 레고형 아바타 무리 (v0.16: 정면 응시 + 조립형 파츠)
+     v0.28: 겹침(-7px) 구도 → 간격 구도. 정보량(독/강화/사용횟수) 증가에 따라 각 영웅 단위
+     가독성을 우선. "한 팀" 느낌은 공통 바닥선(#partyArea::after) + 약한 높낮이 차로 유지 */
   #heroes{
-    display:flex;justify-content:center;align-items:flex-end;
-    min-height:122px;
+    display:flex;justify-content:space-evenly;align-items:flex-end;
+    min-height:124px;
+    position:relative;z-index:1; /* 바닥선 위 */
   }
   .ally{
     position:relative;
     display:flex;flex-direction:column;align-items:center;gap:4px;
-    margin:0 -7px;
+    /* 화면폭 적응: 좁은 기기(≤340px 내부폭)는 -7px(기존 겹침)까지 허용,
+       넓을수록 0~+5px로 벌어짐 — 5인 × 76px가 한 줄을 안 깨는 한계식 */
+    margin:0 clamp(-7px, calc((100% - 396px) / 10), 5px);
     transition:transform .15s;
   }
   .ally:nth-child(1){z-index:1;}
@@ -584,7 +617,7 @@
   .ally:nth-child(3){z-index:3;}
   .ally:nth-child(4){z-index:2;}
   .ally:nth-child(5){z-index:1;}
-  .ally:nth-child(even) .av{margin-top:6px;}
+  .ally:nth-child(even){margin-bottom:5px;} /* v0.28: 약한 높낮이 차 — 무리감 (구 .av margin-top 대체) */
   .ally.act{z-index:9;}
   .ally.act .av{ /* v0.17: 행동 시 앞으로(위로) 튀어나가는 런지 후 정착 */
     filter:drop-shadow(0 0 10px var(--gold)) brightness(1.3);
@@ -864,16 +897,22 @@
   .ally.down .face::before,.ally.down .face::after{height:2px;border-radius:1px;} /* 감긴 눈 */
   .ally.down .gear,.ally.down .gear2{opacity:.45;} /* 장비 생기 감소 */
   .ally.down .shadow{opacity:.5;}
-  .ally .poisonTag{ /* v0.27: 아군 중독 배지 — 정적, 칩 좌상단 (✦+와 겹침 회피) */
-    position:absolute;top:-7px;left:-4px;z-index:6;
-    font-size:9.5px;font-weight:900;color:#9fe07a;
-    text-shadow:0 0 6px rgba(110,200,80,.7), 0 1px 2px rgba(0,0,0,.6);
+  .ally .poisonTag{ /* v0.27 도입 → v0.28: 필 형태 — 칩 좌상단, "어떤 영웅이 중독인지" 즉독 */
+    position:absolute;top:-11px;left:-3px;z-index:6;
+    font-size:10px;font-weight:900;color:#cdf0a8;
+    background:#1c2a16;border:1px solid #5d8a4a;border-radius:7px;
+    padding:0 5px;line-height:14px;
+    text-shadow:0 1px 2px rgba(0,0,0,.6);
+    box-shadow:0 0 6px rgba(110,200,80,.35);
     pointer-events:none;
   }
-  .ally .buffTag{ /* v0.25: action 버프 대기 배지 — 정적, 칩 우상단 */
-    position:absolute;top:-7px;right:-4px;z-index:6;
-    font-size:10px;font-weight:900;color:#caa6ff;
-    text-shadow:0 0 6px rgba(184,138,255,.8), 0 1px 2px rgba(0,0,0,.6);
+  .ally .buffTag{ /* v0.25 도입 → v0.28: 필 형태 + 남은 사용 횟수(✦N) — 칩 우상단 */
+    position:absolute;top:-11px;right:-3px;z-index:6;
+    font-size:10px;font-weight:900;color:#e2ccff;
+    background:#251a3a;border:1px solid #7a55b8;border-radius:7px;
+    padding:0 5px;line-height:14px;
+    text-shadow:0 1px 2px rgba(0,0,0,.6);
+    box-shadow:0 0 6px rgba(184,138,255,.4);
     pointer-events:none;
   }
   .ally.down::after{ /* 어지럼 표식 — 전투 불능이 한눈에 (애니메이션 없음: 무한 총량 동결) */
@@ -1316,10 +1355,10 @@ const JOBS = {
     }},
   trapper: { slot:'support', blockType:1, name:'덫꾼', hp:32, power:6, defense:1,
     summary:'방어를 무시하는 독으로 철갑을 녹이는 서포터', tags:['독','지속피해','방어무시'],
-    actions:{ // v0.24: 시간 기반 독 — tickDmg는 2초당 피해 (총량 = ×3틱, 연쇄 무관 고정)
-      1:{type:'poison', target:'one', tickDmg:4, label:'독침',   desc:'적 1명 중독 — 6초간 퍼짐'},
-      2:{type:'poison', target:'one', tickDmg:6, label:'맹독침', desc:'적 1명에게 강한 중독'},
-      3:{type:'poison', target:'all', tickDmg:4, label:'독안개', desc:'적 전체 중독'},
+    actions:{ // v0.24 시간 기반 독 → v0.28: 10초/5틱 재조정 — tickDmg는 2초당 피해 (총량 = ×5틱, 연쇄 무관 고정)
+      1:{type:'poison', target:'one', tickDmg:2, label:'독침',   desc:'적 1명 중독 — 10초간 퍼짐'},
+      2:{type:'poison', target:'one', tickDmg:3, label:'맹독침', desc:'적 1명에게 강한 중독'},
+      3:{type:'poison', target:'all', tickDmg:2, label:'독안개', desc:'적 전체 중독'},
     }},
   crusher: { slot:'melee', blockType:0, name:'분쇄자', hp:44, power:8, defense:3,
     summary:'장갑에 균열을 내 후속타의 틈을 여는 철갑 대응 근접 딜러', tags:['전열','방어력 감소','장갑 대응'],
@@ -1365,8 +1404,8 @@ function actionValue(job, tier, chainMult){
    ④ hit (피격 소모형)     : 대상이 맞을 때 의미 — 방깎/취약/보호막/반격 준비
                              {timing:'hit', hits} — armorDown의 장기 전환 후보 (이번 버전 보류)
    ════════════════════════════════════════════════════════════════════ */
-const POISON_DURATION_MS = 6000; // 중독 지속 (time 기반)
-const POISON_TICK_MS     = 2000; // 중독 발동 주기 → 6초/2초 = 3틱
+const POISON_DURATION_MS = 10000; // v0.28: 중독 지속 6초→10초 — "스쳐가는 숫자"가 아니라 전장 위를 흐르는 압박
+const POISON_TICK_MS     = 2000;  // 중독 발동 주기 → 10초/2초 = 5틱
 
 /* ════ v0.21: 방어력 공식 + 상태이상 골격 (FABLE_TASK_021 D/F항목) ════
    - 물리 피해: 최종 피해 = max(1, 기본 피해 - 유효 Defense)
@@ -1423,7 +1462,13 @@ function applyArmorDown(e, amount){
   e.status.armorDown = { timing:'hit', amount: cap, uses: ARMOR_DOWN_USES }; // 신규/더 강한 방깎으로 교체
 }
 /* v0.24: 시간 기반 상태이상 진행 — 게임 루프 tick()에서 매 프레임 호출 (단일 setInterval 재사용,
-   몬스터별 타이머/setInterval 다중 생성 금지). 틱→만료 순서: 마지막 틱(6초 시점)이 만료보다 먼저 처리됨 */
+   몬스터별 타이머/setInterval 다중 생성 금지). 틱→만료 순서: 마지막 틱(10초 시점)이 만료보다 먼저 처리됨 */
+// v0.28: poison tick 림라이트 — 단발 클래스 부착/해제 (재렌더로 교체된 노드는 자연 소거 — 누적 없음)
+function flashPoisonTick(el){
+  if(!el) return;
+  el.classList.add('ptick');
+  setTimeout(()=>{ el.classList.remove('ptick'); }, 460); // 분리된 구 노드에 remove해도 무해
+}
 function updateStatusEffects(now){
   let someoneKilled = false;
   enemies.forEach((e, i)=>{
@@ -1433,6 +1478,7 @@ function updateStatusEffects(now){
       e.hp -= p.damage; // time 기반 발동 — 대상 행동과 무관, 방어 무시
       p.nextTickAt += p.tickMs;
       renderEnemies(i); // 틱마다 재렌더 → ☠ 남은 횟수 배지 자동 감소
+      flashPoisonTick(enemyEl(i)); // v0.28: "지금 독이 들어갔다" 림라이트
       floatText(enemyEl(i), '☠ -'+p.damage, 'dmg');
       if(e.hp <= 0){
         addLog(e.name+'이(가) 독으로 쓰러졌다!', 'gold');
@@ -1461,6 +1507,7 @@ function updateStatusEffects(now){
       if(heroHp[t] < 0) heroHp[t] = 0;
       p.nextTickAt += p.tickMs;
       renderParty();
+      flashPoisonTick(heroChipEl(t)); // v0.28: 아군에게도 동일한 발동 신호
       floatText(heroChipEl(t), '☠ -'+p.damage, 'dmg');
       if(heroHp[t] <= 0){ // 독으로 영웅 쓰러짐 가능
         addLog('💔 '+heroNameOf(t)+'이(가) 중독으로 쓰러졌다!', 'boss');
@@ -1574,7 +1621,7 @@ function actionDesc(job, tier){
     case 'cleanseHeal': return act.label+' — 가장 위험한 아군 '+v+' 회복 + 해로운 효과 1개 해제';
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
-    case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 6초간 2초마다 '+act.tickDmg+' (방어 무시)';
+    case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 10초간 2초마다 '+act.tickDmg+' (방어 무시)';
     case 'empower':     return act.label+' — 공격 아군 '+act.targets+'명의 다음 피해 행동 ×'+act.dmgMult+' (행동까지 보존, 최대 20초)';
   }
   return act.label;
@@ -2322,8 +2369,8 @@ function renderEnemies(hitIdx, hitAll){
         const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
         st += '<i class="stP">☠'+left+'</i>';
       }
-      if(e.status.armorDown && e.status.armorDown.amount > 0){ // v0.26: 남은 피격 횟수 표시
-        st += '<i class="stA">🛡-'+e.status.armorDown.amount+'×'+e.status.armorDown.uses+'</i>';
+      if(e.status.armorDown && e.status.armorDown.amount > 0){ // v0.26 → v0.28: 남은 이용 횟수를 골드로 분리 강조
+        st += '<i class="stA">🛡-'+e.status.armorDown.amount+'<b>×'+e.status.armorDown.uses+'</b></i>';
       }
     }
     d.innerHTML =
@@ -2391,7 +2438,7 @@ function renderParty(actType){
       +   '<div class="head"><div class="face"></div></div>'
       +   '<div class="gear"></div><div class="gear2"></div>'
       + '</div>'
-      + (heroBuffs[typeId] ? '<div class="buffTag">✦+</div>' : '') // v0.25: 강화 대기 배지
+      + (heroBuffs[typeId] ? '<div class="buffTag">✦'+heroBuffs[typeId].uses+'</div>' : '') // v0.25 → v0.28: 남은 사용 횟수 (현 1회, 다회 버프 대비)
       + ((heroStatus[typeId] && heroStatus[typeId].poison && cur>0) ? (()=>{ // v0.27: 아군 중독 배지
           const p = heroStatus[typeId].poison;
           const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
@@ -2595,7 +2642,7 @@ async function performHeroAction(a){
         spawnAbsorb(heroChipEl(t), '#b88aff', 1.1);
         floatText(heroChipEl(t), '✦ 다음 행동 강화!', 'guard');
       });
-      renderParty(a.type); // ✦+ 배지 즉시 표시
+      renderParty(a.type); // ✦N 배지 즉시 표시
       if(targets.length){
         addLog(job.name+'이(가) 마력을 주입한다! '+targets.map(heroNameOf).join(', ')+'의 다음 피해 행동 ×'+act.dmgMult, 'gold');
       } else {
@@ -2730,7 +2777,7 @@ async function enemyAttack(e){
   floatText(heroChipEl(tgt), blocked ? '🛡 '+raw+'→'+eff : '-'+eff, blocked?'guard':'dmg');
   // v0.27: 독성 박쥐 — 즉시 피해(위 기존 규칙: 방패→영웅 방어) 후 time 중독 부여
   if(e.venom && heroHp[tgt] > 0){
-    applyHeroPoison(tgt, 2, 'venomBat'); // 6초간 2초마다 2 — 총 6, 방어 무시
+    applyHeroPoison(tgt, 1, 'venomBat'); // v0.28: 10초간 2초마다 1 — 총 5, 방어 무시 (구 6초/2×3=6)
     addLog(e.name+'이(가) '+heroNameOf(tgt)+'에게 독침을 쏜다!', 'boss');
     floatText(heroChipEl(tgt), '☠ 중독!', 'dmg');
     renderParty(); // ☠ 배지 즉시 표시
