@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.40A — FABLE_TASK_040PRE: Combat Grammar & Rhythm Rule Pass
+<!-- Emblem Quest Lab v0.40B — FABLE_TASK_040B: Board Soft Settlement / Gem Physics Feel
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -12,7 +12,7 @@
            v0.32: 10 Job Roster / v0.33: Block Presence Hotfix / v0.34: Grip & Rear Perspective /
            v0.35: Stage Composition / v0.36: Readability Playtest / v0.37: Damage & Signature FX /
            v0.38: Chain Momentum / v0.39: Shield Gem 4 Jobs / v0.39A: Float Anchor & Banner /
-           v0.39B: Float Visibility & Air-Rise / v0.40: Greatsword 4 Jobs -->
+           v0.39B: Float Visibility & Air-Rise / v0.40: Greatsword 4 Jobs / v0.40A: Combat Grammar -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -572,8 +572,29 @@
     58%{transform:translateY(calc(var(--lift,7px)*-1)) scale(1.7);opacity:.95;filter:brightness(1.7)} /* 대팡! */
     100%{transform:scale(.08);opacity:0;filter:brightness(1)}
   }
-  .cell.spawn{animation:drop .25s;}
-  @keyframes drop{from{transform:translateY(-14px);opacity:.3}to{transform:translateY(0);opacity:1}}
+  /* v0.40B (FABLE_TASK_040B): 보드 물성 — 딱딱한 정렬감 제거.
+     ① spawn(신규 낙하): 직선 "딱 멈춤" → ease-out 낙하(0~68%) + 미세 눌림·갸우뚱 settle(68~100%).
+        총 시간 .25s 불변 — 내부 배분만 바꿔 Chain Momentum 템포/정착 대기(260×mo)와 정합 유지.
+     ② slide(기존 블록 정렬): 종전엔 renderBoard 전체 재렌더로 "순간이동" — 기계적 강제 정렬감의
+        진범. 이동 거리(--fall)만큼 위에서 미끄러져 내려와 settle. 셀+gap ≈ 111%/칸 근사.
+     ③ --wb(짝수 셀 역방향 갸우뚱 — 전부 같은 방향이면 기계적) / --st(6연쇄+ 들썩 강화, 기본 1).
+        전부 forwards 아님·단발(.25s/.23s) — 무한 0 추가, 셀은 다음 렌더에서 재생성되어 잔존 0 */
+  .cell.spawn{animation:drop .25s cubic-bezier(.3,.75,.4,1);}
+  .cell.spawn:nth-child(even){--wb:-1;}
+  @keyframes drop{
+    0%{transform:translateY(-18px) scale(.96);opacity:.25}
+    68%{transform:translateY(0) scale(1);opacity:1}
+    82%{transform:translateY(calc(1.4px * var(--st,1))) rotate(calc(.9deg * var(--wb,1) * var(--st,1))) scale(.985)}
+    100%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}
+  }
+  .cell.slide{animation:slideSettle .23s cubic-bezier(.3,.75,.4,1);}
+  .cell.slide:nth-child(odd){--wb:-1;}
+  @keyframes slideSettle{
+    0%{transform:translateY(var(--fall,-111%))}
+    70%{transform:translateY(0)}
+    85%{transform:translateY(calc(1.2px * var(--st,1))) rotate(calc(-.7deg * var(--wb,1) * var(--st,1))) scale(.99)}
+    100%{transform:translateY(0) rotate(0deg) scale(1)}
+  }
   /* ---------- v0.15: 터짐 FX 레이어 (보드 위, 터치 통과, 연출 후 노드 즉시 제거) ---------- */
   #burstLayer{position:absolute;inset:0;pointer-events:none;z-index:24;overflow:hidden;border-radius:12px;}
   .fxFlash{ /* 셀 중심 속성색 섬광 — v0.33: 코어 더 크고 짧게 — "방출" 체감 */
@@ -1850,7 +1871,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.40A — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.40B — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -4190,12 +4211,13 @@ async function resolveBoard(){
     // 삭제 → 낙하 → 생성
     removeSet.forEach(i=>{ board[i]=null; });
     const spawnSet = new Set();
+    const movedBy = new Map(); // v0.40B: 정렬로 내려온 기존 블록 — idx → 이동 칸 수 (시각 전용, 판정 무관)
     for(let c=0;c<COLS;c++){
       let write = ROWS-1;
       for(let r=ROWS-1;r>=0;r--){
         if(board[idx(r,c)]!==null){
           board[idx(write,c)] = board[idx(r,c)];
-          if(write!==r) board[idx(r,c)] = null;
+          if(write!==r){ board[idx(r,c)] = null; movedBy.set(idx(write,c), write - r); }
           write--;
         }
       }
@@ -4205,12 +4227,22 @@ async function resolveBoard(){
       }
     }
     renderBoard(spawnSet);
-    if(mo < 1){ // v0.38: 새 블록 낙하(drop .25s)도 모멘텀 동기 — 셀은 다음 렌더에서 재생성되므로 잔존 없음
+    const st = chain >= 6 ? '1.35' : ''; // v0.40B (C항목): 6연쇄+ = 속도는 max 유지, 안착 들썩만 강화
+    if(mo < 1 || st){ // v0.38: 새 블록 낙하(drop .25s) 모멘텀 동기 + v0.40B 들썩 변수
       document.querySelectorAll('#board .cell.spawn').forEach(c=>{
-        c.style.animationDuration = Math.round(250*mo) + 'ms';
+        if(mo < 1) c.style.animationDuration = Math.round(250*mo) + 'ms';
+        if(st) c.style.setProperty('--st', st);
       });
     }
-    await delay(Math.round(260 * mo)); // v0.38: Chain Momentum — 정착→다음 판정 가속
+    movedBy.forEach((dist, i)=>{ // v0.40B: 기존 블록의 정렬 — 순간이동 대신 미끄러져 내려와 settle
+      const c = document.querySelector('#board .cell[data-i="' + i + '"]');
+      if(!c || c.classList.contains('spawn')) return;
+      c.style.setProperty('--fall', 'calc(-' + dist + ' * 111%)'); // 셀+gap(5px) 근사 — 시각 전용
+      if(st) c.style.setProperty('--st', st);
+      c.style.animationDuration = Math.round(230 * mo) + 'ms'; // 정착 대기(260×mo)보다 항상 짧게 — 템포 비간섭
+      c.classList.add('slide');
+    });
+    await delay(Math.round(260 * mo)); // v0.38: Chain Momentum — 정착→다음 판정 가속 (v0.40B: 불변)
   }
 
   // 보드 안정: 즉시 조작 해제 (v0.13 핵심 — 연출이 손을 막지 않는다)
