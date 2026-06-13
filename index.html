@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.41 — FABLE_TASK_041: Aim Gem 4 Job Foundation / Ranged Choice Pass
+<!-- Emblem Quest Lab v0.41A — FABLE_TASK_041A: Board Feel Regression Diagnosis / Soft Board Recovery (v0.41 base)
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -14,7 +14,8 @@
            v0.38: Chain Momentum / v0.39: Shield Gem 4 Jobs / v0.39A: Float Anchor & Banner /
            v0.39B: Float Visibility & Air-Rise / v0.40: Greatsword 4 Jobs / v0.40A: Combat Grammar /
            v0.40B: Board Soft Settlement / v0.40C: Combat Text Readability /
-           v0.40D: Board Impact Echo / v0.40E: Chain Visual Polish -->
+           v0.40D: Board Impact Echo / v0.40E: Chain Visual Polish /
+           v0.41: Aim Gem 4 Jobs -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -1975,7 +1976,7 @@
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.41 — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.41A — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -4449,7 +4450,10 @@ async function resolveBoard(){
     const echoStrength = chain >= 6 ? 1.25 : chain >= 3 ? 1.0 : 0.7; // 연쇄 연동 (6+ max 고정 — 무한 강화 금지)
     const ECHO_CAP = 8; // 한 번의 매치(연쇄 스텝)당 반응 블록 상한 — "소음" 아닌 "여파"
     const echoTargets = new Set();
-    const RC = [[-1,0],[1,0],[0,-1],[0,1]]; // 상하좌우만 (대각 제외 — 너무 넓게 잡지 않음)
+    // v0.41A 회귀 복구: 상하좌우 + 대각 4방향. 가로 매치는 위 칸이 전부 낙하(movedBy 제외)되어
+    // echo가 1개만 붙던 한계 → 대각 인접(보통 정지 블록)을 더해 "여파"가 가로 매치에서도 보이게.
+    // 충돌 방지 규칙(removeSet/spawnSet/movedBy 제외 + 이중 가드)은 불변이라 대각도 정지 블록만. cap 8로 과밀 방지.
+    const RC = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
     removeSet.forEach(ri=>{
       const r = Math.floor(ri / COLS), cc = ri % COLS;
       RC.forEach(([dr,dc])=>{
