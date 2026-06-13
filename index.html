@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- Emblem Quest Lab v0.41A — FABLE_TASK_041A: Board Feel Regression Diagnosis / Soft Board Recovery (v0.41 base)
+<!-- Emblem Quest Lab v0.43 — FABLE_TASK_043: Healer Gem 4 Job Foundation / Recovery Choice Pass (20직업 완성)
      계보: v0.15: Stone Burst / v0.15.5: Five Roles / v0.16: Front Avatars /
            v0.17: Energy Trail & Impact / v0.18: Actor Feedback & 2.5D Stage / v0.18B: Scatter & Rumble /
            v0.19: Fallen Hero & Dead Block / v0.20: Game Flow Shell / v0.20B: Codex Navigation /
@@ -15,7 +15,8 @@
            v0.39B: Float Visibility & Air-Rise / v0.40: Greatsword 4 Jobs / v0.40A: Combat Grammar /
            v0.40B: Board Soft Settlement / v0.40C: Combat Text Readability /
            v0.40D: Board Impact Echo / v0.40E: Chain Visual Polish /
-           v0.41: Aim Gem 4 Jobs -->
+           v0.41: Aim Gem 4 Jobs / v0.41A: Board Feel Recovery /
+           v0.42: Mana Gem 4 Jobs -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Emblem Quest Lab</title>
@@ -1493,6 +1494,114 @@
     border-radius:50%;box-shadow:0 0 10px #8fd0ff;
   }
   .jb-lightningMage .armR{right:2px;z-index:5;} /* 오른팔을 지팡이 축에 */
+  /* ── v0.42 마나석 신규 2직업 (FABLE_TASK_042) — 덫꾼(독병)/바드(류트)와 한눈에 다른 실루엣 ── */
+  /* 교란꾼 · 서포터 — 청록+회보라 노이즈 로브 + 나선 소용돌이 보주 = "흐름을 흩뜨린다" */
+  .jb-disruptor{--leg:#2a4248;--arm:#3e6670;}
+  .jb-disruptor .torso{background:linear-gradient(135deg,#4a6e78,#2e4650 60%,#586a86);width:40px;}
+  .jb-disruptor .torso::before{ /* 가슴의 나선 교란 문장 ◴ */
+    content:'◴';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-size:15px;color:#bfe8e0;text-shadow:0 0 6px #8fd0c8;z-index:5;
+  }
+  .jb-disruptor .gear2{ /* 비대칭 노이즈 두건 — 한쪽으로 기운 (혼란의 인상) */
+    top:7px;left:50%;transform:translateX(-54%) rotate(-6deg);
+    width:44px;height:15px;background:linear-gradient(90deg,#3a565e,#52707a);
+    border-radius:12px 8px 6px 5px;z-index:6;
+  }
+  .jb-disruptor .gear{ /* 소용돌이 보주 지팡이 — 끝에 나선 파동 (오른쪽) */
+    right:-3px;top:24px;width:4px;height:48px;background:linear-gradient(#5a7a82,#2e4650);
+    border-radius:2px;z-index:6;
+  }
+  .jb-disruptor .gear::before{ /* 지팡이를 쥔 손 */
+    content:'';position:absolute;bottom:5px;left:-3px;width:9px;height:10px;background:#e6c699;border-radius:50%;
+  }
+  .jb-disruptor .gear::after{ /* 나선 소용돌이 보주 — 청록 파동 */
+    content:'';position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    width:14px;height:14px;border-radius:50%;
+    background:conic-gradient(from 0deg,#bfe8e0,#4a6e78,#bfe8e0,#2e4650,#bfe8e0);
+    box-shadow:0 0 9px #8fd0c8;
+  }
+  .jb-disruptor .armR{right:2px;z-index:5;}
+  /* 약화술사 · 서포터 — 어두운 자보라 로브 + 해골 낙인 + 저주 오브 = "힘을 깎는 저주" */
+  .jb-weakener{--leg:#2e1e3e;--arm:#4e3266;}
+  .jb-weakener .torso{background:linear-gradient(#3e2856,#241636);width:40px;}
+  .jb-weakener .torso::before{ /* 가슴의 쇠약 낙인 ✖ (저주 표식) */
+    content:'☠';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-size:14px;color:#b89ad0;text-shadow:0 0 6px #9a6fd0;z-index:5;
+  }
+  .jb-weakener .gear2{ /* 뿔 달린 어두운 두건 (저주술사) */
+    top:6px;left:50%;transform:translateX(-50%);
+    width:42px;height:15px;background:#2e1e44;border-radius:12px 12px 4px 4px;z-index:6;
+  }
+  .jb-weakener .gear2::before{ /* 두건 좌측 뿔 */
+    content:'';position:absolute;top:-7px;left:4px;width:5px;height:9px;
+    background:#241636;border-radius:3px 3px 0 0;transform:rotate(-16deg);
+  }
+  .jb-weakener .gear2::after{ /* 두건 우측 뿔 */
+    content:'';position:absolute;top:-7px;right:4px;width:5px;height:9px;
+    background:#241636;border-radius:3px 3px 0 0;transform:rotate(16deg);
+  }
+  .jb-weakener .gear{ /* 저주 오브를 든 손 — 손바닥 위 떠있는 어두운 보라 구체 (왼쪽) */
+    left:-6px;top:34px;width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#c4a8e0,#6a4a9a 55%,#2e1644);
+    box-shadow:0 0 10px #9a6fd0;z-index:6;
+  }
+  .jb-weakener .gear::after{ /* 오브 아래 받친 손 */
+    content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
+    width:9px;height:8px;background:#e6c699;border-radius:50% 50% 40% 40%;
+  }
+  .jb-weakener .armL{left:1px;transform:rotate(8deg);z-index:5;} /* 왼팔을 오브 쪽으로 */
+  /* ── v0.43 치유석 신규 2직업 (FABLE_TASK_043) — 사제(후광+베일)/정화사(연녹 별빛)와 한눈에 다른 실루엣 ── */
+  /* 보호술사 · 힐러 — 흰+하늘색 수호 로브 + 빛 방패 + 가슴 수호 문장 = "맞기 전에 감싼다" */
+  .jb-protector{--leg:#9ab0c8;--arm:#cfe0f0;}
+  .jb-protector .torso{background:linear-gradient(#dcecfa,#aac6e2);width:42px;}
+  .jb-protector .torso::before{ /* 가슴의 수호 문장 ◈ (하늘빛) */
+    content:'◈';position:absolute;top:7px;left:50%;transform:translateX(-50%);
+    font-size:13px;color:#5a9ad8;text-shadow:0 0 6px #9fd0ff;z-index:5;
+  }
+  .jb-protector .gear2{ /* 빛 두건 — 부드러운 곡선 (수호의 인상) */
+    top:8px;left:50%;transform:translateX(-50%);
+    width:44px;height:16px;background:linear-gradient(#eaf4ff,#bcd6ee);
+    border-radius:14px 14px 6px 6px;z-index:6;
+  }
+  .jb-protector .gear{ /* 둥근 빛 방패 — 왼팔에 든 보호의 상징 */
+    left:-9px;top:30px;width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#fff,#bcd6ee 60%,#7fa8d0);
+    border:2px solid #eaf4ff;box-shadow:0 0 9px rgba(159,208,255,.7);z-index:6;
+  }
+  .jb-protector .gear::before{ /* 방패 중앙 십자 빛 */
+    content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:10px;height:10px;background:radial-gradient(#fff,transparent 70%);border-radius:50%;
+  }
+  .jb-protector .armL{left:1px;transform:rotate(6deg);z-index:5;} /* 왼팔을 방패 쪽으로 */
+  /* 해제사 · 힐러 — 청색 마력 로브 + 해체 룬 오브 + 마법진 고리 = "강화를 풀어낸다" */
+  .jb-dispeller{--leg:#1e3a52;--arm:#356a8e;}
+  .jb-dispeller .torso{background:linear-gradient(#3a7098,#244c68);width:40px;}
+  .jb-dispeller .torso::before{ /* 가슴의 해제 룬 ⊘ (청색) */
+    content:'⊘';position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-size:15px;color:#9fe0ff;text-shadow:0 0 7px #5ac0ff;z-index:5;
+  }
+  .jb-dispeller .gear2{ /* 청색 마법사 두건 — 각진 모서리 (마법적) */
+    top:7px;left:50%;transform:translateX(-50%);
+    width:42px;height:15px;background:#1e4258;border-radius:10px 10px 4px 4px;z-index:6;
+  }
+  .jb-dispeller .gear2::after{ /* 두건 이마의 작은 룬 빛 */
+    content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);
+    width:5px;height:5px;background:radial-gradient(#dffaff,#5ac0ff);border-radius:50%;box-shadow:0 0 5px #5ac0ff;
+  }
+  .jb-dispeller .gear{ /* 해체 룬 오브 — 오른손 위 떠있는 청색 고리 구체 */
+    right:-7px;top:32px;width:16px;height:16px;border-radius:50%;
+    background:radial-gradient(circle at 42% 38%,#dffaff,#5ac0ff 52%,#1e4258);
+    box-shadow:0 0 10px #5ac0ff;z-index:6;
+  }
+  .jb-dispeller .gear::before{ /* 오브를 두른 해체 마법진 고리 (가는 테) */
+    content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;
+    border:1.5px solid #9fe0ff;border-radius:50%;opacity:.75;
+  }
+  .jb-dispeller .gear::after{ /* 오브 아래 받친 손 */
+    content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
+    width:9px;height:8px;background:#e6c699;border-radius:50% 50% 40% 40%;
+  }
+  .jb-dispeller .armR{right:1px;transform:rotate(-6deg);z-index:5;} /* 오른팔을 오브 쪽으로 */
   /* ── 맹세의 수호자 · 탱커 — 흰+금 서약 기사: 금색 어깨띠 + 가슴 서약 문양 + 둥근 빛방패 ── */
   .jb-oathGuardian{--leg:#6a6050;--arm:#9a8d72;}
   .jb-oathGuardian .torso{background:linear-gradient(#efe8d8,#c2b698);width:46px;}
@@ -1565,6 +1674,12 @@
     color:#ff9a8d;z-index:6;
   }
   .tauntTag b{color:#ffd97a;}
+  .shieldBadge{ /* v0.43: 보호술사 막 잔량 — 우측 중단 (tauntTag 좌측과 비충돌), 청백 보호 */
+    position:absolute;top:16px;right:-7px;font-size:9.5px;font-weight:900;
+    background:#142838;border:1px solid #3a7aa8;border-radius:8px;padding:1px 4px;
+    color:#9fd0ff;z-index:6;
+  }
+  .shieldBadge b{color:#cfeaff;}
   .ally.fortified .mini{box-shadow:0 0 7px rgba(110,160,230,.85), 0 0 0 1.5px #46659e;}
   .ally.fortified .shadow{
     background:radial-gradient(ellipse, rgba(70,110,180,.55) 0%, rgba(0,0,0,0) 74%);
@@ -1855,6 +1970,34 @@
   .screen .tagline{font-size:13px;color:var(--dim);line-height:1.8;text-align:center;white-space:pre-line;}
   .screen .verTag{font-size:10.5px;color:#5e5878;letter-spacing:1px;}
   .screen .menuBtns{display:flex;flex-direction:column;gap:10px;width:78%;max-width:280px;margin-top:18px;}
+  /* ════ v0.44: 테마 선택 카드 — 색감만, 무한 애니메이션 0 ════ */
+  .screen .themeSelectLabel{font-size:11px;color:var(--dim);letter-spacing:1px;font-weight:700;margin:6px 0 2px;display:flex;align-items:center;gap:6px;}
+  .rndPill{font-size:8.5px;font-weight:800;color:#1a1428;background:var(--gold);border-radius:6px;padding:1px 5px;letter-spacing:.5px;}
+  .themeCards{display:flex;flex-direction:column;gap:8px;width:86%;max-width:330px;}
+  .themeCard{
+    text-align:left;border-radius:12px;padding:10px 12px;cursor:pointer;
+    background:var(--panel);border:1.5px solid var(--line);transition:border-color .15s, background .15s, transform .1s;
+    position:relative;
+  }
+  .themeCard:active{transform:scale(.985);}
+  .themeCard .tcName{font-size:13.5px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:6px;}
+  .themeCard .tcSub{font-size:10.5px;color:#bdb6d2;margin-top:1px;}
+  .themeCard .tcTags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px;}
+  .themeCard .tcTags i{font-style:normal;font-size:8.5px;padding:1.5px 6px;border-radius:7px;background:#221c38;color:var(--dim);}
+  .themeCard .tcDot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .themeCard.sel{border-color:var(--gold);background:#2a2418;}
+  .themeCard.sel .tcName{color:var(--gold);}
+  /* 테마별 색 도트/선택 강조 */
+  .thm-beginner .tcDot{background:#e8c88c;}
+  .thm-poison   .tcDot{background:#6fe0c0;}
+  .thm-armor    .tcDot{background:#aab4c4;}
+  .thm-assault  .tcDot{background:#9a7fd0;}
+  .themeCard.thm-poison.sel{border-color:#6fe0c0;background:#13332e;}
+  .themeCard.thm-poison.sel .tcName{color:#9fe8d8;}
+  .themeCard.thm-armor.sel{border-color:#aab4c4;background:#262b32;}
+  .themeCard.thm-armor.sel .tcName{color:#d4dce6;}
+  .themeCard.thm-assault.sel{border-color:#9a7fd0;background:#221a3a;}
+  .themeCard.thm-assault.sel .tcName{color:#c4a8e8;}
   .screen button.primary{
     background:var(--gold);color:#241c08;border:none;border-radius:11px;
     font-size:15px;font-weight:800;padding:12px 10px;cursor:pointer;letter-spacing:1px;
@@ -1972,11 +2115,14 @@
     <div class="gameLogo">EMBLEM<br>QUEST LAB</div>
     <div class="tagline">블록을 깨워 영웅에게 힘을 보내라.
 5개의 역할 슬롯으로 전장을 돌파하라.</div>
+    <!-- v0.44: 테마 선택 카드 — THEMES 데이터로 동적 렌더. 선택 = selectedThemeId 저장 (해금 없음) -->
+    <div class="themeSelectLabel">전장 선택 <span class="rndPill">R&amp;D</span></div>
+    <div id="themeCards" class="themeCards"></div>
     <div class="menuBtns">
       <button class="primary" id="btnToParty">⚔ 전투 준비</button>
       <button class="ghost" id="btnToCodex">📖 직업 도감</button>
     </div>
-    <div class="verTag">R&amp;D BUILD v0.41A — Emblem Quest Lab</div>
+    <div class="verTag">R&amp;D BUILD v0.44 — Emblem Quest Lab</div>
   </div>
 
   <div id="screenParty" class="screen">
@@ -2237,14 +2383,53 @@ const JOBS = {
       2:{type:'chainLightning', cap:3, falloff:0.7, label:'연쇄 전격',  desc:'번개가 튕겨 최대 3체 전이 (전이 약화)'},
       3:{type:'chainLightning', cap:4, falloff:0.75, label:'필살·뇌광 연쇄', desc:'번개가 튕겨 최대 4체 전이 (전이 약화)'},
     }},
+  // ── v0.42 (FABLE_TASK_042): 마나석 4 / 4 — 확장 4단계. 덫꾼/바드와 다른 "흐름을 바꾸는" 선택지로 ──
+  // 교란꾼: 적 행동 게이지(e.gauge 0~100)를 깎아 다음 행동을 늦춘다. 게이지는 speed로 재충전 → 영구 무력화 불가.
+  // 즉발(지속 상태 없음)이라 중첩 누적 불가. 직접 피해 없음 — "시간을 번다"가 정체성. 게이지 최고(가장 임박) 적 우선.
+  disruptor: { slot:'support', blockType:1, name:'교란꾼', hp:30, power:4, defense:1,
+    summary:'시간을 흩뜨린다 — 곧 행동할 적의 게이지를 깎아 흐름을 늦추는 템포 제어 서포터', tags:['행동 지연','템포 제어','교란'],
+    actions:{
+      1:{type:'disrupt', drain:35, count:1, label:'지연술',   desc:'곧 행동할 적 1명의 행동 게이지 감소'},
+      2:{type:'disrupt', drain:55, count:1, label:'시간 교란', desc:'곧 행동할 적 1명의 행동 게이지 크게 감소'},
+      3:{type:'disrupt', drain:45, count:3, label:'흐름 차단', desc:'적 다수(최대 3)의 행동 게이지 감소'},
+    }},
+  // 약화술사: 적 공격력(e.atk)에 weaken 배율 상태 부여 → enemyAttack raw에 반영. 더 강한 약화로 교체만(무중첩),
+  // 시간 만료 → 영구 무력화 불가. 아군 보호막/치유와 구분: "적을 약하게" 방향. atk 최고(가장 위협) 적 우선.
+  weakener: { slot:'support', blockType:1, name:'약화술사', hp:30, power:4, defense:1,
+    summary:'힘을 깎아낸다 — 적의 공격력을 낮춰 피해 위협을 줄이는 안정화 서포터', tags:['공격력 감소','위협 완화','약화'],
+    actions:{
+      1:{type:'weaken', mult:0.7, count:1, label:'약화',     desc:'가장 위협적인 적 1명의 공격력 감소 (8초)'},
+      2:{type:'weaken', mult:0.55, count:1, label:'쇠약의 저주', desc:'가장 위협적인 적 1명의 공격력 크게 감소 (8초)'},
+      3:{type:'weaken', mult:0.65, count:3, label:'힘의 붕괴', desc:'적 다수(최대 3)의 공격력 감소 (8초)'},
+    }},
+  // ── v0.43 (FABLE_TASK_043): 치유석 4 / 4 — 확장 5단계(최종). 사제/정화사와 다른 "안정화" 선택지로 ──
+  // 보호술사: heroShield[typeId]={amount,expiresAt} 부여 → enemyAttack에서 HP 차감 전 흡수. 더 큰 막만 교체(무중첩),
+  // 10초 만료 → 영구 무적 불가. 사제(잃은 HP 회복)와 구분: "앞으로 받을 피해를 막는다". HP비율 최저 아군 우선.
+  protector: { slot:'healer', blockType:2, name:'보호술사', hp:30, power:5, defense:2,
+    summary:'맞기 전에 감싼다 — 보호막으로 다가올 피해를 흡수하는 예방형 힐러', tags:['보호막','피해 흡수','예방'],
+    actions:{
+      1:{type:'shieldAlly', shield:10, count:1, label:'수호',     desc:'가장 약한 아군에 보호막 (10초, HP 전에 흡수)'},
+      2:{type:'shieldAlly', shield:16, count:1, label:'빛의 보호', desc:'가장 약한 아군에 큰 보호막 (10초)'},
+      3:{type:'shieldAlly', shield:12, count:3, label:'성역 전개', desc:'아군 다수(최대 3)에 보호막 (10초)'},
+    }},
+  // 해제사: 적의 이로운 효과 제거. 현재 코드의 유일한 실재 positive = 보스 "장갑 강화"(checkBossReaction의 e.defense+1).
+  // 해제 = e.defense 원복 + e.reacted 해제. 약화술사(지속 공격력 감소)와 구분: "이미 붙은 좋은 효과를 지움".
+  // 해제할 버프 없으면 약한 단일 타격(지속 약화 부여 안 함). 강화된 적 우선.
+  dispeller: { slot:'healer', blockType:2, name:'해제사', hp:30, power:6, defense:1,
+    summary:'강화를 풀어낸다 — 적의 이로운 효과를 지워 위협을 되돌리는 해체 힐러', tags:['버프 해제','강화 무효','위협 완화'],
+    actions:{
+      1:{type:'dispel', count:1, label:'해제',      desc:'강화된 적 1명의 이로운 효과 해제 (없으면 약한 타격)'},
+      2:{type:'dispel', count:1, hit:true, label:'강화 해체', desc:'강화된 적 1명 해제 + 약한 피해'},
+      3:{type:'dispel', count:3, label:'마력 해제', desc:'적 다수(최대 3)의 이로운 효과 해제'},
+    }},
 };
 // v0.32: 5역할 × 2직업 = 10직업 체계 (FABLE_TASK_032). 4칸 프레임은 20직업 확장 대비 보존 ('준비 중')
 const SLOT_JOBS = { // v0.39: 방패석 4 / 4 — 20직업 확장 1단계 (다른 역할군은 2 / 4 유지)
   tank:['guardSoldier','bulwark','oathGuardian','tauntKnight'],
   melee:['greatswordWarrior','crusher','vanguard','breaker'], // v0.40: 대검석 4 / 4 — 확장 2단계
   ranged:['archer','mage','sniper','lightningMage'], // v0.41: 조준석 4 / 4 — 확장 3단계. 속사·광역·단일저격·전이
-  support:['trapper','bard',null,null],     // 마나석: 적 중독 압박 vs 아군 강화
-  healer:['priest','purifier',null,null],
+  support:['trapper','bard','disruptor','weakener'], // v0.42: 마나석 4 / 4 — 확장 4단계. 독압박·아군강화·행동지연·공격약화
+  healer:['priest','purifier','protector','dispeller'], // v0.43: 치유석 4 / 4 — 확장 5단계(최종). 회복·정화·보호·해제 → 20직업 완성
 };
 // 현재 장착 직업 — v0.21: 편성 화면에서 교체 가능, 전투가 이 값을 직접 읽는다.
 // v0.32: support 기본 = 바드 (마법사 empower 승계 — 기본 파티 손맛 보존)
@@ -2365,6 +2550,14 @@ function updateStatusEffects(now){
       renderEnemies(i);
     }
   });
+  // v0.42: 약화술사 weaken 만료 — 시간 경과 시 해제 (영구 무력화 방지). poison과 별개 루프 (독 없는 적도 약화 가능)
+  enemies.forEach((e, i)=>{
+    if(e.hp <= 0 || !e.status || !e.status.weaken) return;
+    if(now >= e.status.weaken.expiresAt){
+      delete e.status.weaken; // 약화 만료 — 공격력 원복
+      renderEnemies(i);       // ⬇ 약화 배지 소거
+    }
+  });
   if(someoneKilled){
     renderEnemies();
     if(aliveEnemies().length === 0) onBattleWon(); // async — 승리 판정은 기존 경로 그대로
@@ -2400,6 +2593,10 @@ function updateStatusEffects(now){
   for(const t in heroBuffs){
     if(now > heroBuffs[t].expiresAt){ delete heroBuffs[t]; renderParty(); }
   }
+  // v0.43: 보호막 시간 만료 (영구 무적 방지) — 막 배지도 함께 소거
+  for(const t in heroShield){
+    if(now >= heroShield[t].expiresAt){ delete heroShield[t]; renderParty(); }
+  }
 }
 // v0.27: 적 → 아군 중독 — 플레이어 poison과 같은 time 문법 공유 (수치만 다름)
 function applyHeroPoison(typeId, damage, source){
@@ -2424,6 +2621,7 @@ function applyHeroPoison(typeId, damage, source){
    maxDurationMs(20초)는 무한 저장 방지용 보조 안전장치일 뿐, 주 문법은 "다음 1회 행동" */
 const EMPOWER_MAX_MS = 20000;
 let heroBuffs = {}; // typeId → {type:'empower', timing:'action', uses, expiresAt, damageMultiplier, source}
+let heroShield = {}; // v0.43: 보호술사 보호막 — typeId → {amount, expiresAt}. enemyAttack에서 HP 전에 흡수, 시간 만료/소진 시 제거 (영구 무적 불가)
 function applyEmpower(typeId, mult, source){
   heroBuffs[typeId] = { // 같은 대상 재부여 = 갱신 (중첩/누적 없음)
     type:'empower', timing:'action', uses:1,
@@ -2495,6 +2693,8 @@ function actionDesc(job, tier){
     case 'charge':      return act.label+' — '+v+' 비축 → 다음 마나석 매치에 원형 파동';
     case 'healSingle':  return act.label+' — 가장 위험한 아군 '+v+' 회복';
     case 'cleanseHeal': return act.label+' — 가장 위험한 아군 '+v+' 회복 + 해로운 효과 1개 해제';
+    case 'shieldAlly':  return act.label+' — '+(act.count>1?'아군 '+act.count+'명':'가장 약한 아군')+'에 보호막 '+act.shield+' (10초, HP 전에 흡수)'; // v0.43 보호술사
+    case 'dispel':      return act.label+' — '+(act.count>1?'적 '+act.count+'명':'강화된 적')+'의 이로운 효과 해제'+(act.hit?' + 약한 피해':' (없으면 약한 타격)'); // v0.43 해제사
     case 'cleanseAll':  return act.label+' — 아군 전체 정화 + 각 '+v+' 회복';
     case 'guard':       return act.label+' — 6초간 파티 피해 '+Math.round(act.red*100)+'% 감소'+(act.counter ? ' + 반격 '+act.counter : '');
     case 'frontGuard':  return act.label+' — '+((act.dur||6000)/1000)+'초간 전열 피해 '+Math.round(act.red*100)+'% 감소 (앞줄 한정)'; // v0.32
@@ -2503,12 +2703,15 @@ function actionDesc(job, tier){
     case 'oath':        return act.label+' — '+(act.dur/1000)+'초간 가장 위험한 아군의 피해 '+Math.round(act.share*100)+'%를 나눠 받음'; // v0.39
     case 'taunt':       return act.label+' — '+(act.dur/1000)+'초간 적의 공격을 자신에게 + 보호막 '+act.shield; // v0.39
     case 'poison':      return act.label+' — 적 '+(act.target==='all'?'전체':'1명')+' 중독: 10초간 2초마다 '+act.tickDmg+' (방어 무시)';
+    case 'disrupt':     return act.label+' — 곧 행동할 적 '+(act.count>1?act.count+'명':'1명')+'의 행동 게이지 -'+act.drain+' (지연, 보스는 절반)'; // v0.42 교란꾼
+    case 'weaken':      return act.label+' — 위협적인 적 '+(act.count>1?act.count+'명':'1명')+'의 공격력 ×'+act.mult+' (8초, 보스는 지속 절반)'; // v0.42 약화술사
     case 'empower':     return act.label+' — 공격 아군 '+act.targets+'명의 다음 피해 행동 ×'+act.dmgMult+' (행동까지 보존, 최대 20초)';
   }
   return act.label;
 }
 
-const BATTLES = [
+// ════ v0.44 (FABLE_TASK_044): 기존 5전투 = beginner 테마의 stagePlan으로 보존 (내용 불변) ════
+const BEGINNER_BATTLES = [
   // ════ v0.22: 5전투 미니런 — "철갑 질문" 점층 구성 (FABLE_TASK_022) ════
   // Stage 1 — 손풀기: 직업 선택 → "내 블록이 행동이 된다" 확인 (기존 전투 1 유지)
   {label:'Stage 1', note:'손풀기 · 소형 다수', enemies:[
@@ -2551,6 +2754,129 @@ const BATTLES = [
     {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
   ]},
 ];
+
+/* ════ v0.44: 테마별 stagePlan — 기존 적(slime/goblin/elite/bat·venom/boss) 재배치 (B안 Lite).
+   신규 적/기믹 0 — 기존 종류·수치 그대로 조합만 다르게. 깊은 몬스터 세트는 후속 태스크.
+   각 테마 5전투 유지. 수치는 모두 기존 BATTLES에서 쓰던 값(임시 조합값) ════ */
+// 독무 늪지: 독성 박쥐(venom) 다수 + 후열 독 + 장기 압박. 정화/회복/보호/지속전 검증.
+const POISON_BATTLES = [
+  {label:'늪 1', note:'독 맛보기 · 독성 박쥐', enemies:[
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+  ]},
+  {label:'늪 2', note:'후열 다수 독', enemies:[
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'mid'},
+  ]},
+  {label:'늪 3', note:'독 + 일반 압박', enemies:[
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'mid', venom:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'front'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+  ]},
+  {label:'늪 4', note:'장기전 압박 · 독 다수', enemies:[
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'mid', venom:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'front'},
+  ]},
+  {label:'늪 5', note:'붕괴 보스 후보 · 철갑 대장 + 독', enemies:[
+    {name:'철갑 대장', kind:'boss', maxHp:140, atk:7, defense:7, boss:true, armorNote:true, row:'front'},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+    {name:'독성 박쥐', kind:'bat', maxHp:32, atk:3, defense:0, row:'back', venom:true},
+  ]},
+];
+// 장갑 성채: 높은 방어(철갑) + 정예 + 장갑 강화 보스. 분쇄/해제/약화/저격/마법/보호/철벽 검증.
+const ARMOR_BATTLES = [
+  {label:'성채 1', note:'단단한 전열 · 철갑', enemies:[
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+  ]},
+  {label:'성채 2', note:'방어 높은 적 + 후열', enemies:[
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'front'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+  ]},
+  {label:'성채 3', note:'장갑 강화 맛보기 · 정예 다수', enemies:[
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'front'},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'mid'},
+  ]},
+  {label:'성채 4', note:'느리지만 큰 타격 · 이중 철갑', enemies:[
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'mid'},
+  ]},
+  {label:'성채 5', note:'장갑 강화 보스 후보 · 철갑 대장', enemies:[
+    {name:'철갑 대장', kind:'boss', maxHp:140, atk:7, defense:7, boss:true, armorNote:true, row:'front'},
+    {name:'철갑 슬라임', kind:'slime', maxHp:28, atk:5, defense:9, row:'front', armorNote:true},
+    {name:'고블린 정예', kind:'elite', maxHp:60, atk:10, defense:2, row:'mid'},
+  ]},
+];
+// 그림자 습격대: 빠른 박쥐(speed↑) 다수 + 후열 우선 + 낮은 체력 위험. 교란/도발/저격/전이/돌파 검증.
+const ASSAULT_BATTLES = [
+  {label:'습격 1', note:'빠른 소형 적 · 박쥐', enemies:[
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+  ]},
+  {label:'습격 2', note:'후열 우선 공격 · 박쥐 다수', enemies:[
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'mid'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+  ]},
+  {label:'습격 3', note:'다수 소형 적', enemies:[
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'front'},
+    {name:'슬라임', kind:'slime', maxHp:30, atk:6, defense:0, row:'mid'},
+  ]},
+  {label:'습격 4', note:'행동 임박 압박 · 고속 다수', enemies:[
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'front'},
+    {name:'고블린 전사', kind:'goblin', maxHp:45, atk:9, defense:0, row:'mid'},
+  ]},
+  {label:'습격 5', note:'습격 보스 후보 · 대장 + 고속 호위', enemies:[
+    {name:'철갑 대장', kind:'boss', maxHp:140, atk:7, defense:7, boss:true, armorNote:true, row:'front'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+    {name:'박쥐', kind:'bat', maxHp:25, atk:5, defense:0, row:'back'},
+  ]},
+];
+
+/* ════ v0.44: 테마 = 단일 데이터 소스 (id/name/subtitle/desc/focusTags/themeClass/stagePlan/watchNotes).
+   해금/잠금 없음 — 전부 R&D에서 즉시 선택. beginner가 기본값/폴백 ════ */
+const THEMES = [
+  { id:'beginner', name:'초보자의 길', subtitle:'기본 전투 감각 확인',
+    desc:'기존 5전투 미니런 — 20직업 테스트의 기준점',
+    focusTags:['균형', '기본기', '입문'], themeClass:'thm-beginner',
+    stagePlan: BEGINNER_BATTLES,
+    watchNotes:'기준선 — 기존 흐름 보존' },
+  { id:'poison', name:'독무 늪지', subtitle:'독과 붕괴를 버틴다',
+    desc:'시간이 지날수록 무너지는 전장 — 정화/회복/보호/지속전',
+    focusTags:['정화사', '사제', '보호술사', '덫꾼', '바드'], themeClass:'thm-poison',
+    stagePlan: POISON_BATTLES,
+    watchNotes:'독 다수/후열 독/장기 붕괴 — 세부 몬스터는 후속' },
+  { id:'armor', name:'장갑 성채', subtitle:'강화와 장갑을 벗긴다',
+    desc:'단단해지고 버프를 두르는 적 — 분쇄/해제/약화/큰 한 방',
+    focusTags:['분쇄자', '해제사', '약화술사', '저격수', '철벽수호자'], themeClass:'thm-armor',
+    stagePlan: ARMOR_BATTLES,
+    watchNotes:'해제사 홈구장 — positive status 확장은 후속' },
+  { id:'assault', name:'그림자 습격대', subtitle:'빠른 위협을 끊는다',
+    desc:'빠르게 움직이고 후열을 찌르는 적 — 교란/도발/저격/전이',
+    focusTags:['도발기사', '교란꾼', '저격수', '번개술사', '돌파자'], themeClass:'thm-assault',
+    stagePlan: ASSAULT_BATTLES,
+    watchNotes:'고속 게이지/후열 우선 — 세부 몬스터는 후속' },
+];
+function themeById(id){ return THEMES.find(t=>t.id===id) || THEMES[0]; } // 없으면 beginner 폴백
+function getActiveBattles(){ return themeById(selectedThemeId).stagePlan; } // 활성 테마의 stagePlan
+// 활성 전투 배열 — startRun에서 선택 테마로 재할당. 기본값 = beginner (기존 BATTLES[...] 참조 전부 그대로 동작)
+let BATTLES = BEGINNER_BATTLES;
 // 파티 편성: TYPES 인덱스 배열. 항목을 빼면 4인 파티 표시도 같은 코드로 대응
 // (이번 버전은 5인 고정 — 4인 모드 실제 구현은 금지 범위)
 const PARTY = [0, 1, 2, 3, 4];
@@ -2619,6 +2945,7 @@ let heroQueueBusy = false; // 영웅 행동 연출 큐 실행 중 — 조작과 
 // 조작 허용 조건: 전투 진행 중 + 보드 안정 + 쇼케이스 아님
 function canPlay(){ return state!=='over' && !boardBusy && !showcase && !paused; } // v0.29: 일시정지 중 입력 차단
 let battleIdx = 0;
+let selectedThemeId = 'beginner'; // v0.44: 선택된 테마 (기본/폴백 = beginner). startRun이 BATTLES를 이 테마로 재할당
 let enemies = [];
 let heroHp = {};         // 영웅별 현재 HP: {typeId: currentHp}
 function initHeroHp(){ PARTY.forEach(t=>{ heroHp[t] = heroMaxOf(t); }); }
@@ -3537,6 +3864,8 @@ function renderParty(actType){
       + (oath && typeId===oath.ward && cur>0 ? '<div class="oathTag">🤝</div>' : '') // v0.39: 결속 대상 배지
       + (taunt && typeId===taunt.holder && cur>0 && taunt.barrier>0
           ? '<div class="tauntTag">❗<b>'+taunt.barrier+'</b></div>' : '') // v0.39: 보호막 잔량
+      + (heroShield[typeId] && heroShield[typeId].amount>0 && cur>0 && Date.now()<heroShield[typeId].expiresAt
+          ? '<div class="shieldBadge">🛡<b>'+heroShield[typeId].amount+'</b></div>' : '') // v0.43: 보호술사 막 잔량
       + ((heroStatus[typeId] && heroStatus[typeId].poison && cur>0) ? (()=>{ // v0.27: 아군 중독 배지
           const p = heroStatus[typeId].poison;
           const left = Math.max(1, Math.ceil((p.expiresAt - Date.now()) / p.tickMs));
@@ -3556,7 +3885,7 @@ function renderParty(actType){
 }
 
 function renderStage(){
-  $('#stageLabel').textContent = BATTLES[battleIdx].label + '/'+BATTLES.length+' · ' + BATTLES[battleIdx].note;
+  $('#stageLabel').textContent = themeById(selectedThemeId).name + ' · ' + BATTLES[battleIdx].label + '/'+BATTLES.length+' · ' + BATTLES[battleIdx].note;
 }
 
 function renderAll(){
@@ -3590,7 +3919,7 @@ async function performHeroAction(a){
     }
     const job = jobOf(a.type);
     const act = job.actions[a.tier];
-    const OFFENSIVE = ['strikeFront','snipeWeak','novaAll','poison','snipeStrong','chainLightning']; // v0.41: 신규 조준석 2종 추가
+    const OFFENSIVE = ['strikeFront','snipeWeak','novaAll','poison','snipeStrong','chainLightning','disrupt','weaken','dispel']; // v0.41~43 신규 (적 대상이라 전멸 시 스킵). shieldAlly는 아군 대상이라 제외
     if(aliveEnemies().length===0 && OFFENSIVE.includes(act.type)) return;
     // v0.39B (E항목): 5매치(필살) 행동이 실행되는 바로 그 순간 띠지 배너 — 행동 큐와 완전 동기.
     if(a.tier === 3) queueUltBanner(act.label + '!', TYPE_COLORS[a.type]);
@@ -3765,6 +4094,47 @@ async function performHeroAction(a){
       });
       renderEnemies();
     }
+    else if(act.type==='disrupt'){ // v0.42 교란꾼: 적 행동 게이지를 깎아 다음 행동을 늦춘다 (직접 피해 없음 — "시간을 번다")
+      // 대상: 게이지 최고(가장 곧 행동할) 적 우선. count만큼 (다수는 게이지 내림차순)
+      const pool = aliveEnemies().slice().sort((a,b)=>(b.gauge||0)-(a.gauge||0));
+      const targets = pool.slice(0, act.count);
+      targets.forEach((e,k)=>{
+        drawLine(heroChipEl(a.type), enemyEl(enemies.indexOf(e)), '#c8a0ff', // 교란 = 보라 파동선
+                 {width:2.6, bend:-16 - k*5, alpha:.75, duration:200, dashed:true});
+      });
+      await delay(200);
+      targets.forEach((e)=>{
+        if(e.hp <= 0) return; // 텀 사이 사망 — 무효
+        // 보스는 게이지 감소 절반 (영구 묶임 방지 — 보스/강적이 멈추면 안 됨)
+        const drain = e.boss ? Math.round(act.drain * 0.5) : act.drain;
+        e.gauge = Math.max(0, (e.gauge||0) - drain); // 게이지는 speed로 다시 차오름 → 영구 무력화 불가, 즉발이라 상태 중첩 없음
+        spawnFxNode(enemyEl(enemies.indexOf(e)), 'fxSpark', '#c8a0ff'); // 교란 파동
+        floatText(enemyEl(enemies.indexOf(e)), e.boss ? '⏳ 지연! (저항)' : '⏳ 지연!', 'guard');
+      });
+      renderEnemies(); // 게이지 바 즉시 갱신 — "늦춰졌다"가 보인다
+    }
+    else if(act.type==='weaken'){ // v0.42 약화술사: 적 공격력을 낮춘다 (맞기 전에 약하게 — 적 쪽을 깎는 안정화)
+      // 대상: atk 최고(가장 위협적) 적 우선. count만큼
+      const pool = aliveEnemies().slice().sort((a,b)=>(b.atk||0)-(a.atk||0));
+      const targets = pool.slice(0, act.count);
+      targets.forEach((e,k)=>{
+        drawLine(heroChipEl(a.type), enemyEl(enemies.indexOf(e)), '#9a6fd0', // 약화 = 어두운 보라 저주선
+                 {width:2.8, bend:14 + k*5, alpha:.78, duration:210});
+      });
+      await delay(210);
+      targets.forEach((e)=>{
+        if(e.hp <= 0) return;
+        e.status = e.status || {};
+        // 보스는 지속 절반 (영구 약화 방지). 더 강한 약화로만 교체(무중첩 — 독/방깎과 동일 규칙)
+        const dur = e.boss ? 4000 : 8000;
+        const prev = e.status.weaken;
+        const nextMult = (prev && prev.mult < act.mult) ? prev.mult : act.mult; // 더 강한(작은 mult) 약화 유지
+        e.status.weaken = { mult: nextMult, expiresAt: Date.now() + dur };
+        spawnRingFX(enemyEl(enemies.indexOf(e)), '#9a6fd0', true); // 저주가 감기는 링
+        floatText(enemyEl(enemies.indexOf(e)), e.boss ? '⬇ 약화! (저항)' : '⬇ 약화!', 'guard');
+      });
+      renderEnemies(); // ⬇ 약화 배지 표시
+    }
     else if(act.type==='healSingle' || act.type==='cleanseHeal' || act.type==='cleanseAll'){ // 사제/정화사
       const alive = aliveHeroes();
       if(!alive.length){ /* 전멸 직전 — 회복 대상 없음 */ }
@@ -3810,6 +4180,64 @@ async function performHeroAction(a){
           addLog(job.name+'이(가) '+heroNameOf(tgt)+'의 중독을 걷어냈다!', 'gold');
         }
       }
+    }
+    else if(act.type==='shieldAlly'){ // v0.43 보호술사: 아군에게 보호막 — HP 차감 전 흡수 (사제=회복과 구분, "막는다")
+      // 대상: HP 비율 최저 아군 우선. count만큼
+      const alive = aliveHeroes();
+      if(alive.length){
+        const sorted = alive.slice().sort((a,b)=>(heroHp[a]/heroMaxOf(a))-(heroHp[b]/heroMaxOf(b)));
+        const targets = sorted.slice(0, act.count);
+        const amount = Math.round(act.shield * (a.mult || 1)); // 연쇄 보너스는 막에만 (taunt와 동일 수치 원칙)
+        targets.forEach(t=>{
+          drawLine(heroChipEl(a.type), heroChipEl(t), '#7fd0ff', {width:3.5, bend:-22, alpha:.9, duration:240}); // 보호 = 청백 빛
+        });
+        await delay(220);
+        targets.forEach(t=>{
+          // 더 큰 막으로만 교체 (무중첩 — 영구 누적 차단). 10초 만료는 updateStatusEffects가 처리
+          const prev = heroShield[t];
+          const nextAmt = (prev && prev.amount > amount && Date.now() < prev.expiresAt) ? prev.amount : amount;
+          heroShield[t] = { amount: nextAmt, expiresAt: Date.now() + 10000 };
+          spawnAbsorb(heroChipEl(t), '#7fd0ff', 1.1); // 감싸는 빛
+          spawnRingFX(heroChipEl(t), '#7fd0ff', false); // 보호막 전개 링
+          floatText(heroChipEl(t), '🛡 보호막 +'+nextAmt, 'guard');
+        });
+        renderParty(a.type); // 막 잔량 표시
+      }
+    }
+    else if(act.type==='dispel'){ // v0.43 해제사: 적의 이로운 효과 제거 (약화술사=지속 약화와 구분, "이미 붙은 좋은 것을 지움")
+      // 현재 코드의 유일한 실재 positive = 보스 "장갑 강화"(checkBossReaction의 e.defense+1, e.reacted=true).
+      // 강화된 적(reacted+방어 상승) 우선, 없으면 선두. count만큼
+      const pool = aliveEnemies();
+      const buffed = pool.filter(e => e.reacted && (e.defense||0) > (e.baseDefense||0));
+      const cand = buffed.length ? buffed : pool;
+      const targets = cand.slice(0, act.count);
+      targets.forEach((e,k)=>{
+        drawLine(heroChipEl(a.type), enemyEl(enemies.indexOf(e)), '#8fb0ff', // 해제 = 청색 마력 해체선
+                 {width:2.8, bend:-14 - k*5, alpha:.8, duration:210, dashed:true});
+      });
+      await delay(210);
+      targets.forEach((e)=>{
+        if(e.hp <= 0) return;
+        const ei = enemies.indexOf(e);
+        // 장갑 강화 해제: e.defense를 baseDefense로 원복 + reacted 해제(재강화 가능 — 영구 박탈 아님)
+        if(e.reacted && (e.defense||0) > (e.baseDefense||0)){
+          const before = e.defense;
+          e.defense = e.baseDefense || 0;
+          e.reacted = false; // 다시 50% 반응 가능 — 핵심 패턴 영구 무력화 아님
+          spawnRingFX(enemyEl(ei), '#8fb0ff', false); // 강화가 벗겨지는 해체 링
+          floatText(enemyEl(ei), '✦ 강화 해제! ('+before+'→'+e.defense+')', 'guard');
+          addLog(job.name+'이(가) '+e.name+'의 장갑 강화를 해제했다! (방어 '+before+'→'+e.defense+')', 'gold');
+        } else {
+          // 해제할 이로운 효과 없음 — 약한 단일 타격 (지속 약화 부여 안 함: 약화술사와 구분). tier2(hit)는 약간 더
+          const dmg = act.hit ? val : Math.round(val * 0.5);
+          spawnFxNode(enemyEl(ei), 'fxSpark', '#8fb0ff');
+          const r = dealDamage(e, dmg);
+          floatText(enemyEl(ei), '✦ -'+r.eff, 'dmg'); // 조용한 약한 타격
+          if(e.hp<=0) addLog(e.name+' 처치!', 'gold'); else checkBossReaction(e);
+        }
+      });
+      renderEnemies();
+      if(aliveEnemies().length===0 && state!=='over'){ await onBattleWon(); return; }
     }
     else if(act.type==='empower'){ // v0.25 마법사: 마력 주입/전투 증폭 — 공격 아군의 다음 일격 강화
       // 대상 선정: 살아있는 "공격 가능" 아군 중 Power 최고 순 (본인 제외) — 구현 단순안 채택.
@@ -4092,7 +4520,9 @@ async function enemyAttack(e){
   if(e.hp <= 0) return; // v0.24: 큐 대기 중 독(시간 틱)으로 사망 — 공격 불발 (기존 안전 처리 승계)
   const tgt = pickDefender(e); // v0.30: 공격자 종에 따라 전열/후열 우선이 갈린다
   if(tgt===null) return;
-  const raw = e.atk;
+  // v0.42: 약화술사 weaken — 적 공격력 일시 감소 (활성 시 raw 축소). 시간 만료는 updateStatusEffects가 처리
+  const weakened = !!(e.status && e.status.weaken && Date.now() < e.status.weaken.expiresAt);
+  const raw = weakened ? Math.max(1, Math.round(e.atk * e.status.weaken.mult)) : e.atk;
   // v0.21: 방패 감소 후 영웅 Defense 감산 — 최종 = max(1, ...)
   // v0.32: 전열 보호(frontGuard) — 대상이 전열이면 추가 감산 (방패 병사와 곱연산 중첩)
   let shielded = Math.round(raw * (1 - shieldRed));
@@ -4128,6 +4558,16 @@ async function enemyAttack(e){
         oath = null; // 결속 즉시 해제
       }
     }
+  }
+  // v0.43: 보호술사 보호막 — HP 차감 직전 흡수 (taunt/oath 처리 후). 소진/만료 시 제거 → 영구 무적 불가
+  let shieldAbsorbed = 0;
+  const hs = heroShield[tgt];
+  if(hs && hs.amount > 0 && Date.now() < hs.expiresAt){
+    shieldAbsorbed = Math.min(hs.amount, fin);
+    hs.amount -= shieldAbsorbed;
+    fin -= shieldAbsorbed;
+    if(hs.amount <= 0) delete heroShield[tgt]; // 막 소진 — 즉시 제거
+    if(shieldAbsorbed > 0) floatText(heroChipEl(tgt), '🛡 막음 -'+shieldAbsorbed, 'guard'); // 흡수 가시화
   }
   const prevHp = heroHp[tgt];
   heroHp[tgt] -= fin;
@@ -4496,7 +4936,7 @@ async function onBattleWon(){
   await delay(500);
   if(battleIdx >= BATTLES.length-1){
     // v0.20 result flow: 클리어 — 다시 도전 / 타이틀로
-    showOverlay('전체 클리어!', '철갑 대장을 물리쳤다!\n다섯 영웅의 모험은 계속된다...', [
+    showOverlay('전체 클리어!', '['+themeById(selectedThemeId).name+'] 돌파!\n철갑 대장을 물리쳤다 — 다섯 영웅의 모험은 계속된다...', [
       {label:'다시 도전', onClick:startRun},
       {label:'타이틀로', onClick:()=>showScreen('title')},
     ]);
@@ -4540,6 +4980,7 @@ function setupBattle(){
   enemies = BATTLES[battleIdx].enemies.map(e=>({
     ...e, hp:e.maxHp, charging:false,
     status:{}, // v0.21: 상태이상은 전투마다 새 객체 — 이월/누적 원천 차단
+    baseDefense: e.defense || 0, // v0.43: 해제사 장갑 강화 해제 시 원복 기준 (초기 방어 보존)
     speed: SPEEDS[e.kind] || 10,
     gauge: Math.random()*35,
   }));
@@ -4558,6 +4999,7 @@ function setupBattle(){
   floatStagger = new Map();     // v0.39B: 피해 숫자 스태거 큐 리셋
   mageCharge = null; // 전투 간 집중 미이월 (v0.25: 집중 발동 직업은 없으나 시스템 보존)
   heroBuffs = {};    // v0.25: action 버프 전투 간 미이월 — 다시 도전 초기화 보장
+  heroShield = {};   // v0.43: 보호막도 전투 간 미이월 — 영구 누적 차단
   heroStatus = {};   // v0.27: 아군 상태이상(중독) 전투 간 미이월 — 다시 도전 초기화 보장
   fallenNoticed = new Set(); // v0.31: 쓰러짐 안내 1회 카운터 리셋
   showcase = false;
@@ -4590,6 +5032,7 @@ function startRun(){
   boardBusy = false; heroQueueBusy = false; attackBusy = false; // 구 루프가 잡고 있던 플래그 회수
   attackQueue = [];
   clearAimLines();
+  BATTLES = getActiveBattles(); // v0.44: 선택 테마의 stagePlan 활성화 (기본 beginner — 폴백 안전)
   resetGame();         // battleIdx=0, HP 초기화, 큐 비움, state='idle'
   showScreen('battle');
 }
@@ -4830,6 +5273,27 @@ $('#btnPartyToTitle').addEventListener('click', ()=>showScreen('title'));
 $('#btnCodexToParty').addEventListener('click', ()=>showScreen('partySelect'));
 $('#codexBack').addEventListener('click', renderCodexCategory); // v0.20B: 상세 → 카테고리
 $('#btnCodexToTitle').addEventListener('click', ()=>showScreen('title'));
+// v0.44: 테마 선택 카드 렌더 — THEMES 데이터 기반. 클릭 = selectedThemeId 갱신 + 강조 (해금 없음, 즉시 선택)
+function renderThemeCards(){
+  const wrap = $('#themeCards');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  THEMES.forEach(t=>{
+    const card = document.createElement('div');
+    card.className = 'themeCard ' + t.themeClass + (t.id === selectedThemeId ? ' sel' : '');
+    card.dataset.theme = t.id;
+    card.innerHTML =
+      '<div class="tcName"><span class="tcDot"></span>'+t.name+'</div>'
+      + '<div class="tcSub">'+t.subtitle+'</div>'
+      + '<div class="tcTags">'+t.focusTags.map(tag=>'<i>'+tag+'</i>').join('')+'</div>';
+    card.addEventListener('click', ()=>{
+      selectedThemeId = t.id;       // 선택 저장 — startRun이 이 테마의 stagePlan을 활성화
+      renderThemeCards();           // 강조 갱신
+    });
+    wrap.appendChild(card);
+  });
+}
+renderThemeCards();
 showScreen('title'); // 게임은 타이틀에서 시작 — 전투는 편성의 [전투 시작]으로
 </script>
 </body>
